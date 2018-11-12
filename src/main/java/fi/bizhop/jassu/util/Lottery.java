@@ -1,7 +1,13 @@
 package fi.bizhop.jassu.util;
 
 
+import fi.bizhop.jassu.exception.ProbabilityException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Lottery {
+    private final static Logger LOG = LoggerFactory.getLogger(Lottery.class);
+
     private final int RETURN_PERCENTAGE;
 
     public Lottery(int returnPercentage) {
@@ -9,11 +15,20 @@ public class Lottery {
     }
 
     public double doubleOrNothing(double wager) {
-        if(RandomUtil.win(50)) {
-            return wager * 2 * RETURN_PERCENTAGE / 100;
-        }
-        else {
-            return 0;
+        return anythingGoes(wager, 50);
+    }
+
+    public double anythingGoes(double wager, int probability) {
+        try {
+            if(RandomUtil.win(probability)) {
+                return wager / probability * RETURN_PERCENTAGE;
+            }
+            else {
+                return 0.0d;
+            }
+        } catch (ProbabilityException e) {
+            LOG.error("Unfair probability", e);
+            return wager;
         }
     }
 }
