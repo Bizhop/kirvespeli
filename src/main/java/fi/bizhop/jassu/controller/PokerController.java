@@ -12,20 +12,20 @@ public class PokerController {
     @Autowired
     PokerService service;
 
-    @RequestMapping(value = "/poker/deal", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/poker/deal", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody PokerGameOut deal() {
         PokerGame game = service.newGame();
         game.deal();
         return new PokerGameOut(game);
     }
 
-    @RequestMapping(value = "/poker/{id}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/poker/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody PokerGameOut getGame(@PathVariable Long id) {
         PokerGame game = service.getGame(id);
         return new PokerGameOut(game);
     }
 
-    @RequestMapping(value = "/poker", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/api/poker", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public @ResponseBody PokerGameOut action(@RequestBody PokerGameIn in) {
         PokerGame game = service.action(in);
         return new PokerGameOut(game);

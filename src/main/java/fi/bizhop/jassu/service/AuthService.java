@@ -6,9 +6,13 @@ import fi.bizhop.jassu.security.JWTAuth;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AuthService {
+    private static final Map<String, User> users = new HashMap<>();
+
     private static final String HEADER_STRING = "Authorization";
     
     public User login(HttpServletRequest request) throws Exception {
@@ -17,8 +21,15 @@ public class AuthService {
             return null;
         }
         else {
-            String jwt = JWTAuth.getJwt(userEmail);
-            return new User(userEmail, jwt);
+            if(users.get(userEmail) == null) {
+                String jwt = JWTAuth.getJwt(userEmail);
+                User user = new User(userEmail, jwt);
+                users.put(userEmail, user);
+                return user;
+            }
+            else {
+                return users.get(userEmail);
+            }
         }
     }
 
