@@ -3,19 +3,10 @@ package fi.bizhop.jassu.models;
 import java.util.List;
 
 public class PokerGameIn {
-    private Long gameId;
     private PokerGame.Action action;
     private List<Integer> parameters;
 
     public PokerGameIn() {}
-
-    public Long getGameId() {
-        return gameId;
-    }
-
-    public void setGameId(Long gameId) {
-        this.gameId = gameId;
-    }
 
     public PokerGame.Action getAction() {
         return action;

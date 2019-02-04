@@ -6,10 +6,11 @@ import java.util.List;
 import static fi.bizhop.jassu.models.PokerGame.Action;
 
 public class PokerGameOut {
-    private String hand;
+    private List<String> hand;
     private String handValue;
     private Long gameId;
     private BigDecimal money;
+    private String message;
 
     private List<Action> availableActions = new ArrayList<>();
 
@@ -17,17 +18,21 @@ public class PokerGameOut {
 
     public PokerGameOut(PokerGame game) {
         this.handValue = game.getHand().evaluate().toString();
-        this.hand = game.getHand().toString();
+        this.hand = game.getHand().getCardsOut();
         this.gameId = game.getGameId();
         this.availableActions = game.getAvailableActions();
         this.money = game.getMoney();
     }
 
-    public String getHand() {
+    public PokerGameOut(String message) {
+        this.message = message;
+    }
+
+    public List<String> getHand() {
         return hand;
     }
 
-    public void setHand(String hand) {
+    public void setHand(List<String> hand) {
         this.hand = hand;
     }
 
@@ -61,5 +66,13 @@ public class PokerGameOut {
 
     public void setHandValue(String handValue) {
         this.handValue = handValue;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

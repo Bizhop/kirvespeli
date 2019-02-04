@@ -29,10 +29,10 @@ public class Card implements Comparable<Card> {
     }
 
     public enum Suit {
-        CLUBS(1, "C"),
-        DIAMONDS(2, "D"),
-        HEARTS(3, "H"),
-        SPADES(4, "S");
+        CLUBS(1, "c"),
+        DIAMONDS(2, "d"),
+        HEARTS(3, "h"),
+        SPADES(4, "s");
 
         private final int value;
         private final String abbr;

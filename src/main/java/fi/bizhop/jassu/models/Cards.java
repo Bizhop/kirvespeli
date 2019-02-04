@@ -294,4 +294,10 @@ public class Cards {
                 .collect(Collectors.toList());
         return new Cards(bySuit);
     }
+
+    public List<String> getCardsOut() {
+        return this.cards.stream()
+                .map(Card::toString)
+                .collect(Collectors.toList());
+    }
 }

@@ -1,9 +1,8 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.models.Cards;
+import fi.bizhop.jassu.exception.PokerGameException;
 import fi.bizhop.jassu.models.PokerGame;
 import fi.bizhop.jassu.models.PokerGameIn;
-import fi.bizhop.jassu.models.StandardDeck;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,7 +18,14 @@ public class PokerService {
     private Long sequence = 0L;
 
     public PokerGame newGame() {
-        PokerGame game = new PokerGame(sequence++, BigDecimal.valueOf(1));
+        return newGameForPlayer("");
+    }
+
+    public PokerGame newGameForPlayer(String email) {
+        BigDecimal wager = BigDecimal.valueOf(1);
+        UserService.modifyMoney(wager.negate(), email);
+        PokerGame game = new PokerGame(sequence++, wager);
+        game.setPlayer(email);
         games.put(game.getGameId(), game);
         return game;
     }
@@ -28,8 +34,11 @@ public class PokerService {
         return games.get(id);
     }
 
-    public PokerGame action(PokerGameIn in) {
-        PokerGame game = games.get(in.getGameId());
+    public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException {
+        PokerGame game = games.get(id);
+        if(!email.equals(game.getPlayer())) {
+            throw new PokerGameException("Not your game");
+        }
         if(game.getAvailableActions().contains(in.getAction())) {
             System.out.println("Perform action " + in.getAction().name());
             if(in.getAction() == STAY) {

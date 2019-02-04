@@ -35,8 +35,7 @@ public class JWTAuth {
             return null;
         }
 
-        String email = (String)claims.get("email");
-        return email;
+        return (String)claims.get("email");
     }
 
     private static Claims getClaims(String token) {

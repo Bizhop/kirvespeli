@@ -3,15 +3,15 @@ package fi.bizhop.jassu.service;
 import fi.bizhop.jassu.models.User;
 import fi.bizhop.jassu.security.GoogleAuth;
 import fi.bizhop.jassu.security.JWTAuth;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class AuthService {
-    private static final Map<String, User> users = new HashMap<>();
+    @Autowired
+    UserService userService;
 
     private static final String HEADER_STRING = "Authorization";
     
@@ -21,14 +21,14 @@ public class AuthService {
             return null;
         }
         else {
-            if(users.get(userEmail) == null) {
+            if(userService.get(userEmail) == null) {
                 String jwt = JWTAuth.getJwt(userEmail);
                 User user = new User(userEmail, jwt);
-                users.put(userEmail, user);
+                userService.add(user);
                 return user;
             }
             else {
-                return users.get(userEmail);
+                return userService.get(userEmail);
             }
         }
     }
@@ -43,5 +43,10 @@ public class AuthService {
             userEmail = GoogleAuth.getUserEmail(token);
         }
         return userEmail;
+    }
+
+    public String getEmailFromJWT(HttpServletRequest request) {
+        String token = request.getHeader(HEADER_STRING);
+        return JWTAuth.getUserEmail(token);
     }
 }

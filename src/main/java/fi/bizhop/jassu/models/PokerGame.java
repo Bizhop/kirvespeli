@@ -1,5 +1,7 @@
 package fi.bizhop.jassu.models;
 
+import fi.bizhop.jassu.service.UserService;
+
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -9,6 +11,7 @@ public class PokerGame {
     private Long gameId;
     private BigDecimal money;
     private List<Action> availableActions = Arrays.asList(Action.HOLD, Action.STAY);
+    private String player;
 
     private static final Map<PokerHand.Type, BigDecimal> multipliers;
 
@@ -45,6 +48,14 @@ public class PokerGame {
 
     public List<Action> getAvailableActions() { return this.availableActions; }
 
+    public String getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(String player) {
+        this.player = player;
+    }
+
     public PokerGame deal() {
         this.hand = this.deck.give(5);
         return this;
@@ -53,6 +64,7 @@ public class PokerGame {
     public void collect() {
         PokerHand ev = hand.evaluate();
         this.money = this.money.multiply(multipliers.get(ev.type));
+        UserService.modifyMoney(this.money, this.player);
         this.availableActions = new ArrayList<>();
     }
 
