@@ -6,7 +6,8 @@ import fi.bizhop.jassu.models.PokerHand;
 import static fi.bizhop.jassu.models.PokerHand.Type.*;
 
 public class PokerHandEvaluator {
-    public static PokerHand evaluate(Cards cards) {
+    public static PokerHand evaluate(Cards originalCards) {
+        Cards cards = originalCards.copy();
         if(cards.size() != 5) {
             return new PokerHand(0, INVALID);
         }

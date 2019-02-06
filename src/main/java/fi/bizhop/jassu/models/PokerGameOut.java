@@ -11,17 +11,27 @@ public class PokerGameOut {
     private Long gameId;
     private BigDecimal money;
     private String message;
+    private BigDecimal userMoney;
 
     private List<Action> availableActions = new ArrayList<>();
 
     public PokerGameOut() {}
 
     public PokerGameOut(PokerGame game) {
+        this.setInitialValues(game, BigDecimal.valueOf(0));
+    }
+
+    public PokerGameOut(PokerGame game, BigDecimal userMoney) {
+        this.setInitialValues(game, userMoney);
+    }
+
+    private void setInitialValues(PokerGame game, BigDecimal userMoney) {
         this.handValue = game.getHand().evaluate().toString();
         this.hand = game.getHand().getCardsOut();
         this.gameId = game.getGameId();
         this.availableActions = game.getAvailableActions();
         this.money = game.getMoney();
+        this.userMoney = userMoney;
     }
 
     public PokerGameOut(String message) {
@@ -74,5 +84,13 @@ public class PokerGameOut {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public BigDecimal getUserMoney() {
+        return userMoney;
+    }
+
+    public void setUserMoney(BigDecimal userMoney) {
+        this.userMoney = userMoney;
     }
 }

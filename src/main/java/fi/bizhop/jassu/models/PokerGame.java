@@ -68,6 +68,10 @@ public class PokerGame {
         this.availableActions = new ArrayList<>();
     }
 
+    public boolean active() {
+        return !this.availableActions.isEmpty();
+    }
+
     public enum Action {
         HOLD, STAY
     }

@@ -216,7 +216,10 @@ public class Cards {
 
     public void hold(List<Integer> params, Cards deck) {
         //sanity check
-        if(params == null || params.isEmpty() || params.size() > cards.size()) {
+        if(params == null || params.size() > cards.size()) {
+            return;
+        } else if (params.isEmpty()) {
+            this.cards = deck.give(5).cards;
             return;
         }
         params.sort(Integer::compareTo);
@@ -224,20 +227,18 @@ public class Cards {
             return;
         }
 
-        List<Card> held = new ArrayList<>();
-        for(Integer i : params) {
-            held.add(cards.get(i));
+        for(int i=0; i < cards.size(); i++) {
+            if(!params.contains(i)) {
+                this.cards.set(i, deck.give(1).cards.get(0));
+            }
         }
-        this.cards = held;
-        Cards newCards = deck.give(5 - params.size());
-        this.add(newCards);
     }
 
     private void add(Cards cardsToAdd) {
         this.cards.addAll(cardsToAdd.cards);
     }
 
-    private Cards copy() {
+    public Cards copy() {
         return new Cards(new ArrayList<>(this.cards));
     }
 

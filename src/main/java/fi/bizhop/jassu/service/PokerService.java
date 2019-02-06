@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.models.PokerGame.Action.HOLD;
 import static fi.bizhop.jassu.models.PokerGame.Action.STAY;
@@ -30,8 +32,24 @@ public class PokerService {
         return game;
     }
 
-    public PokerGame getGame(Long id) {
-        return games.get(id);
+    public PokerGame getGame(Long id, String email) throws PokerGameException {
+        PokerGame game = games.get(id);
+        if(game == null) {
+            throw new PokerGameException(String.format("No game with id: %d", id));
+        }
+        else if(!email.equals(game.getPlayer())) {
+            throw new PokerGameException(String.format("Not your game"));
+        }
+        else {
+            return game;
+        }
+    }
+
+    public List<PokerGame> getGames(String email) {
+        return games.values().stream()
+                .filter(game -> email.equals(game.getPlayer()))
+                .filter(PokerGame::active)
+                .collect(Collectors.toList());
     }
 
     public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException {
@@ -45,6 +63,7 @@ public class PokerService {
                 game.collect();
             }
             else if(in.getAction() == HOLD) {
+                System.out.println("Holds " + in.getParameters().stream().map(String::valueOf).collect(Collectors.joining(",")));
                 game.getHand().hold(in.getParameters(), game.getDeck());
                 game.collect();
             }

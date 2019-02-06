@@ -32,16 +32,16 @@ public class PokerHand {
     }
 
     public enum Type{
-        INVALID("Invalid"),
-        HIGH("High"),
-        PAIR("Pair"),
-        TWO_PAIRS("Two pairs"),
-        THREE_OF_A_KIND("Three of a kind"),
-        STRAIGHT("Straight"),
-        FLUSH("Flush"),
-        FULL_HOUSE("Full house"),
-        FOUR_OF_A_KIND("Four of a kind"),
-        STRAIGHT_FLUSH("Straight flush");
+        INVALID("Virhe"),
+        HIGH(""),
+        PAIR("Pari"),
+        TWO_PAIRS("Kaksi paria"),
+        THREE_OF_A_KIND("Kolmoset"),
+        STRAIGHT("Suora"),
+        FLUSH("Väri"),
+        FULL_HOUSE("Täyskäsi"),
+        FOUR_OF_A_KIND("Neloset"),
+        STRAIGHT_FLUSH("Värisuora");
 
         private final String text;
         Type(String text) {
@@ -54,6 +54,6 @@ public class PokerHand {
 
     @Override
     public String toString() {
-        return String.format("%s, %s high", this.type.getText(), cardNames.get(high).toLowerCase());
+        return this.type.getText();
     }
 }

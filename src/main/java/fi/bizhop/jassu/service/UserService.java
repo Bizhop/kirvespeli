@@ -28,4 +28,8 @@ public class UserService {
             user.setMoney(user.getMoney().add(value));
         }
     }
+
+    public static BigDecimal getUserMoney(String email) {
+        return users.get(email).getMoney();
+    }
 }
