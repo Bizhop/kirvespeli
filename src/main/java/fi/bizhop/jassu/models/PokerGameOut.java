@@ -3,6 +3,7 @@ package fi.bizhop.jassu.models;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 import static fi.bizhop.jassu.models.PokerGame.Action;
 
 public class PokerGameOut {
@@ -12,6 +13,7 @@ public class PokerGameOut {
     private BigDecimal money;
     private String message;
     private BigDecimal userMoney;
+    private List<MultiplierOut> multipliersTable;
 
     private List<Action> availableActions = new ArrayList<>();
 
@@ -32,6 +34,7 @@ public class PokerGameOut {
         this.availableActions = game.getAvailableActions();
         this.money = game.getMoney();
         this.userMoney = userMoney;
+        this.multipliersTable = PokerGame.getMultiplierTable();
     }
 
     public PokerGameOut(String message) {
@@ -92,5 +95,13 @@ public class PokerGameOut {
 
     public void setUserMoney(BigDecimal userMoney) {
         this.userMoney = userMoney;
+    }
+
+    public List<MultiplierOut> getMultipliersTable() {
+        return multipliersTable;
+    }
+
+    public void setMultipliersTable(List<MultiplierOut> multipliersTable) {
+        this.multipliersTable = multipliersTable;
     }
 }

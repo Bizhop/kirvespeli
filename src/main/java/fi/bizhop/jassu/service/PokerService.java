@@ -58,12 +58,10 @@ public class PokerService {
             throw new PokerGameException("Not your game");
         }
         if(game.getAvailableActions().contains(in.getAction())) {
-            System.out.println("Perform action " + in.getAction().name());
             if(in.getAction() == STAY) {
                 game.collect();
             }
             else if(in.getAction() == HOLD) {
-                System.out.println("Holds " + in.getParameters().stream().map(String::valueOf).collect(Collectors.joining(",")));
                 game.getHand().hold(in.getParameters(), game.getDeck());
                 game.collect();
             }

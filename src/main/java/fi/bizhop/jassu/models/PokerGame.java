@@ -4,6 +4,7 @@ import fi.bizhop.jassu.service.UserService;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PokerGame {
     private Cards deck = new StandardDeck().shuffle();
@@ -17,16 +18,16 @@ public class PokerGame {
 
     static {
         multipliers = new HashMap<>();
-        multipliers.put(PokerHand.Type.INVALID, new BigDecimal(0));
-        multipliers.put(PokerHand.Type.HIGH, new BigDecimal(0));
-        multipliers.put(PokerHand.Type.PAIR, new BigDecimal(0));
-        multipliers.put(PokerHand.Type.TWO_PAIRS, new BigDecimal(2));
-        multipliers.put(PokerHand.Type.THREE_OF_A_KIND, new BigDecimal(3));
-        multipliers.put(PokerHand.Type.STRAIGHT, new BigDecimal(6));
-        multipliers.put(PokerHand.Type.FLUSH, new BigDecimal(7));
-        multipliers.put(PokerHand.Type.FULL_HOUSE, new BigDecimal(13));
-        multipliers.put(PokerHand.Type.FOUR_OF_A_KIND, new BigDecimal(30));
-        multipliers.put(PokerHand.Type.STRAIGHT_FLUSH, new BigDecimal(50));
+        multipliers.put(PokerHand.Type.INVALID, BigDecimal.valueOf(0L));
+        multipliers.put(PokerHand.Type.HIGH, BigDecimal.valueOf(0L));
+        multipliers.put(PokerHand.Type.PAIR, BigDecimal.valueOf(0L));
+        multipliers.put(PokerHand.Type.TWO_PAIRS, BigDecimal.valueOf(2L));
+        multipliers.put(PokerHand.Type.THREE_OF_A_KIND, BigDecimal.valueOf(3L));
+        multipliers.put(PokerHand.Type.STRAIGHT, BigDecimal.valueOf(6L));
+        multipliers.put(PokerHand.Type.FLUSH, BigDecimal.valueOf(7L));
+        multipliers.put(PokerHand.Type.FULL_HOUSE, BigDecimal.valueOf(13L));
+        multipliers.put(PokerHand.Type.FOUR_OF_A_KIND, BigDecimal.valueOf(30L));
+        multipliers.put(PokerHand.Type.STRAIGHT_FLUSH, BigDecimal.valueOf(50L));
     }
 
     public PokerGame(Long gameId, BigDecimal wager) {
@@ -70,6 +71,14 @@ public class PokerGame {
 
     public boolean active() {
         return !this.availableActions.isEmpty();
+    }
+
+    public static List<MultiplierOut> getMultiplierTable() {
+        return multipliers.entrySet().stream()
+                .filter(e -> !e.getValue().equals(BigDecimal.valueOf(0L)))
+                .map(e -> new MultiplierOut(e.getKey().getText(), e.getValue()))
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public enum Action {
