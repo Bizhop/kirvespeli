@@ -301,4 +301,16 @@ public class Cards {
                 .map(Card::toString)
                 .collect(Collectors.toList());
     }
+
+    public void clear() {
+        cards = new ArrayList<>();
+    }
+
+    public Card first() {
+        return cards.get(0);
+    }
+
+    public void add(Card doubleCard) {
+        cards.add(doubleCard);
+    }
 }

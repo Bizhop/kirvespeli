@@ -28,7 +28,7 @@ public class PokerGameOut {
     }
 
     private void setInitialValues(PokerGame game, BigDecimal userMoney) {
-        this.handValue = game.getHand().evaluate().toString();
+        this.handValue = game.getEvaluation().toString();
         this.hand = game.getHand().getCardsOut();
         this.gameId = game.getGameId();
         this.availableActions = game.getAvailableActions();

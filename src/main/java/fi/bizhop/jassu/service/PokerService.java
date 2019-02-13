@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static fi.bizhop.jassu.models.PokerGame.Action.HOLD;
-import static fi.bizhop.jassu.models.PokerGame.Action.STAY;
+import static fi.bizhop.jassu.models.PokerGame.Action.*;
 
 @Service
 public class PokerService {
@@ -59,11 +58,13 @@ public class PokerService {
         }
         if(game.getAvailableActions().contains(in.getAction())) {
             if(in.getAction() == STAY) {
-                game.collect();
+                game.stay();
             }
             else if(in.getAction() == HOLD) {
-                game.getHand().hold(in.getParameters(), game.getDeck());
-                game.collect();
+                game.hold(in.getParameters());
+            }
+            else if(in.getAction() == DOUBLE_HIGH || in.getAction() == DOUBLE_LOW) {
+                game.tryDouble(in.getAction());
             }
         }
         return game;
