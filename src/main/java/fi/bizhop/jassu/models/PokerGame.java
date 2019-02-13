@@ -100,6 +100,9 @@ public class PokerGame {
             if((action == Action.DOUBLE_HIGH && doubleValue > 7) || action == Action.DOUBLE_LOW && doubleValue < 7 ) {
                 this.money = this.money.multiply(BigDecimal.valueOf(2));
                 doubles++;
+                if(doubles > 4) {
+                    stay();
+                }
             }
             else {
                 this.money = BigDecimal.valueOf(0);
