@@ -115,7 +115,7 @@ public class PokerGame {
         this.hand.hold(parameters, this.getDeck());
         this.evaluation = hand.evaluate();
         this.money = this.money.multiply(multipliers.get(this.evaluation.type));
-        this.availableActions = Arrays.asList(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
+        this.availableActions = this.money.equals(BigDecimal.valueOf(0)) ? new ArrayList<>() : Arrays.asList(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
     }
 
     public PokerHand getEvaluation() {
