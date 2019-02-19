@@ -1,42 +1,50 @@
 package fi.bizhop.jassu.service;
 
+import fi.bizhop.jassu.db.UserDB;
+import fi.bizhop.jassu.db.UserRepo;
 import fi.bizhop.jassu.models.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
-    private static final Map<String, User> users = new HashMap<>();
+    private static final Logger LOG = LogManager.getLogger(UserService.class);
+
+    @Autowired
+    UserRepo userRepo;
 
     public User get(String email) {
-        return users.get(email);
+        Optional<UserDB> user = userRepo.findByEmail(email);
+        if(user.isPresent()) {
+            return new User(user.get());
+        }
+        else {
+            return null;
+        }
     }
 
     public void add(User user) {
-        users.put(user.getEmail(), user);
+        UserDB userDB = new UserDB(user);
+        userRepo.save(userDB);
     }
 
     /**
      * Modify users money. Use negative values to subtract
      */
-    public static void modifyMoney(BigDecimal value, String email) {
-        User user = getUser(email);
-        user.setMoney(user.getMoney().add(value));
+    public void modifyMoney(BigDecimal value, String email) {
+        userRepo.findByEmail(email)
+                .ifPresent(u -> {
+                    u.money = u.money.add(value);
+                    this.userRepo.save(u);
+                });
     }
 
-    public static BigDecimal getUserMoney(String email) {
-        return getUser(email).getMoney();
-    }
-
-    private static User getUser(String email) {
-        User user = users.get(email);
-        if(user == null) {
-            user = new User(email, null);
-            users.put(email, user);
-        }
-        return user;
+    public BigDecimal getUserMoney(String email) {
+        return this.get(email).getMoney();
     }
 }

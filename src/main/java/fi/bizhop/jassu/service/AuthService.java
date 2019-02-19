@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.service;
 
+import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.models.User;
 import fi.bizhop.jassu.security.GoogleAuth;
 import fi.bizhop.jassu.security.JWTAuth;
@@ -21,15 +22,18 @@ public class AuthService {
             return null;
         }
         else {
-            if(userService.get(userEmail) == null) {
+            User user = userService.get(userEmail);
+            if(user == null) {
                 String jwt = JWTAuth.getJwt(userEmail);
-                User user = new User(userEmail, jwt);
+                user = new User(userEmail, jwt);
                 userService.add(user);
-                return user;
             }
             else {
-                return userService.get(userEmail);
+                String token = request.getHeader(HEADER_STRING);
+                String jwt = token.startsWith(JWTAuth.JWT_TOKEN_PREFIX) ? token : JWTAuth.getJwt(userEmail);
+                user.setJwt(jwt);
             }
+            return user;
         }
     }
 

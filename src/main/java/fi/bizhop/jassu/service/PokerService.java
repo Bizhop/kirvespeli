@@ -3,6 +3,7 @@ package fi.bizhop.jassu.service;
 import fi.bizhop.jassu.exception.PokerGameException;
 import fi.bizhop.jassu.models.PokerGame;
 import fi.bizhop.jassu.models.PokerGameIn;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,16 +16,19 @@ import static fi.bizhop.jassu.models.PokerGame.Action.*;
 
 @Service
 public class PokerService {
+    @Autowired
+    UserService userService;
+
     private Map<Long, PokerGame> games = new HashMap<>();
     private Long sequence = 0L;
 
     public PokerGame newGame() {
-        return newGameForPlayer("");
+        return newGameForPlayer("test@example.com");
     }
 
     public PokerGame newGameForPlayer(String email) {
         BigDecimal wager = BigDecimal.valueOf(1);
-        UserService.modifyMoney(wager.negate(), email);
+        this.userService.modifyMoney(wager.negate(), email);
         PokerGame game = new PokerGame(sequence++, wager);
         game.setPlayer(email);
         games.put(game.getGameId(), game);
@@ -58,13 +62,13 @@ public class PokerService {
         }
         if(game.getAvailableActions().contains(in.getAction())) {
             if(in.getAction() == STAY) {
-                game.stay();
+                game.stay(userService);
             }
             else if(in.getAction() == HOLD) {
                 game.hold(in.getParameters());
             }
             else if(in.getAction() == DOUBLE_HIGH || in.getAction() == DOUBLE_LOW) {
-                game.tryDouble(in.getAction());
+                game.tryDouble(in.getAction(), userService);
             }
         }
         return game;

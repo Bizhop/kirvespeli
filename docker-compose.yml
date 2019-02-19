@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:9.5
+    container_name: jassu-database
+    ports:
+     - "5432:5432"
+    environment:
+     - POSTGRES_USER=jassu
+     - POSTGRES_PASSWORD=jassu
+     - POSTGRES_DB=jassu

@@ -23,7 +23,8 @@ public class PokerServiceTest {
     @Autowired
     PokerService poker;
 
-    @Test
+    //don't run this with builds
+    //@Test
     public void testHand() {
         getHand(HIGH);
         getHand(PAIR);

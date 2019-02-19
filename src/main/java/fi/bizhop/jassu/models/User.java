@@ -1,5 +1,7 @@
 package fi.bizhop.jassu.models;
 
+import fi.bizhop.jassu.db.UserDB;
+
 import java.math.BigDecimal;
 
 public class User {
@@ -12,6 +14,11 @@ public class User {
         this.email = email;
         this.jwt = jwt;
         this.money = BigDecimal.valueOf(100L);
+    }
+
+    public User(UserDB userDB) {
+        this.email = userDB.email;
+        this.money = userDB.money;
     }
 
     public String getEmail() {

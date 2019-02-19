@@ -1,0 +1,21 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+				   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+	<changeSet author="Ville" id="CreateUserTable">
+		<createTable tableName="users">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="user_pkey" />
+			</column>
+			<column name="email" type="VARCHAR(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="money" type="DECIMAL(20,2)" />
+		</createTable>
+	</changeSet>
+	<changeSet id="CreateTestUser" author="Ville">
+		<insert tableName="users">
+			<column name="email" value="test@example.com" />
+			<column name="money" value="100.00" />
+		</insert>
+	</changeSet>
+</databaseChangeLog>

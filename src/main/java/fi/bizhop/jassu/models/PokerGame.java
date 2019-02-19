@@ -5,9 +5,11 @@ import fi.bizhop.jassu.service.UserService;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import static fi.bizhop.jassu.models.PokerHand.Type;
 
 public class PokerGame {
+
     private Cards deck = new StandardDeck().shuffle();
     private Cards hand;
     private Long gameId;
@@ -66,11 +68,11 @@ public class PokerGame {
         return this;
     }
 
-    public void stay() {
+    public void stay(UserService userService) {
         if(doubles == 0) {
             this.money = this.money.multiply(multipliers.get(this.evaluation.type));
         }
-        UserService.modifyMoney(this.money, this.player);
+        userService.modifyMoney(this.money, this.player);
         this.availableActions = new ArrayList<>();
     }
 
@@ -86,7 +88,7 @@ public class PokerGame {
                 .collect(Collectors.toList());
     }
 
-    public void tryDouble(Action action) {
+    public void tryDouble(Action action, UserService userService) {
         if(doubles < 5) {
             if(doubles == 0) {
                 this.hand.clear();
@@ -101,7 +103,7 @@ public class PokerGame {
                 this.money = this.money.multiply(BigDecimal.valueOf(2));
                 doubles++;
                 if(doubles > 4) {
-                    stay();
+                    stay(userService);
                 }
             }
             else {
@@ -110,7 +112,7 @@ public class PokerGame {
             }
         }
         else {
-            stay();
+            stay(userService);
         }
     }
 
