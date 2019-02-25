@@ -1,35 +1,47 @@
 package fi.bizhop.jassu.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jsoup.Jsoup;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 
 public class GoogleAuth {
-    private static final String GOOGLE_PARSER_URL_TEMPLATE = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s";
+    private static final Logger LOG = LogManager.getLogger(GoogleAuth.class);
 
-    public static String getUserEmail(String token) throws Exception {
-        Map<String, String> claims = getClaims(token);
+    private static final GoogleIdTokenVerifier VERIFIER;
 
-        if (claims == null || claims.get("email") == null) {
-            return null;
-        }
-
-        return claims.get("email");
+    static {
+        VERIFIER = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .setAudience(Arrays.asList(System.getenv("CLIENT_ID")))
+                .build();
     }
 
-    @SuppressWarnings("unchecked")
-    public static Map<String, String> getClaims(String token) throws Exception {
-        if (token == null) {
-            return null;
-        }
+    public static String getUserEmail(String token) {
+        LOG.debug(String.format("Authenticating with google token: %s", token));
 
-        try {
-            String json = Jsoup.connect(String.format(GOOGLE_PARSER_URL_TEMPLATE, token)).ignoreContentType(true).execute().body();
-            return new ObjectMapper().readValue(json, HashMap.class);
+        String email = verifyAndGetEmail(token);
+        if(email != null) {
+            LOG.debug(String.format("Google user found with email: %s", email));
         }
-        catch (Exception e) {
+        return email;
+    }
+
+    public static String verifyAndGetEmail(String token) {
+        try {
+            GoogleIdToken gToken = VERIFIER.verify(token);
+            if(gToken != null) {
+                return gToken.getPayload().getEmail();
+            }
+            else {
+                LOG.error("Invalid ID token");
+                return null;
+            }
+        } catch (Exception e) {
+            LOG.error("Error handling id token", e);
             return null;
         }
     }
