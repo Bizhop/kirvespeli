@@ -1,13 +1,13 @@
 package fi.bizhop.jassu.models;
 
 import fi.bizhop.jassu.exception.CardException;
-import fi.bizhop.jassu.util.PokerHandEvaluator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static fi.bizhop.jassu.models.Card.Suit.*;
 
 public class Cards {
     protected List<Card> cards = new ArrayList<>();
@@ -55,166 +55,16 @@ public class Cards {
         return this.cards.size();
     }
 
-    public int checkStraightFlush() {
-        final int MINHAND = 5;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-
-        this.sort();
-        List<Integer> highs = new ArrayList<>();
-        Cards spades = this.filterBySuit(SPADES);
-        Cards clubs = this.filterBySuit(CLUBS);
-        Cards diamonds = this.filterBySuit(DIAMONDS);
-        Cards hearts = this.filterBySuit(HEARTS);
-        highs.add(spades.checkStraight());
-        highs.add(clubs.checkStraight());
-        highs.add(diamonds.checkStraight());
-        highs.add(hearts.checkStraight());
-        highs.sort(Collections.reverseOrder());
-        return highs.get(0);
-    }
-
-    public int checkFourOfAKind() {
-        final int MINHAND = 4;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-
-        this.sort();
-        for(int i = 0; i < this.cards.size() - MINHAND + 1; i++) {
-            int rank = this.cards.get(i).getRank().getValue();
-            Cards rest = new Cards(this.cards.subList(i+1, this.cards.size()));
-            if(rest.checkThreeOfAKind() == rank) {
-                return rank;
-            }
-        }
-        return 0;
-    }
-
-    public int checkFullHouse() {
-        final int MINHAND = 5;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort();
-        int three = this.checkThreeOfAKind();
-        if(three > 0) {
-            Cards other = this.copy().removeFirstThree();
-            if(other.checkPair() > 0) {
-                return three;
-            }
-        }
-        return 0;
-    }
-
-    //return three of a kind value or 0 if not present
-    public int checkThreeOfAKind() {
-        final int MINHAND = 3;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort();
-        for(int i = 0; i < this.cards.size() - MINHAND + 1; i++) {
-            int rank = this.cards.get(i).getRank().getValue();
-            Cards rest = new Cards(this.cards.subList(i+1, this.cards.size()));
-            if(rest.checkPair() == rank) {
-                return rank;
-            }
-        }
-        return 0;
-    }
-
-    //return highest flush card value or 0 if not present
-    public int checkFlush() {
-        final int MINHAND = 5;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort();
-        for(int i=0; i < this.cards.size() - MINHAND + 1; i++) {
-            int suit = this.cards.get(i).getSuit().getValue();
-            Cards rest = new Cards(this.cards.subList(i+1, this.cards.size()));
-            if(rest.numOfSuit(suit) > 3) {
-                return this.cards.get(i).getRank().getValue();
-            }
-        }
-        return 0;
-    }
-
-    //return highest straight card value or 0 if not present
-    public int checkStraight() {
-        final int MINHAND = 5;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort();
-        int possibleHighest = 0;
-        for(int i=0; i < this.cards.size() - MINHAND + 1; i++) {
-            int rank = this.cards.get(i).getRank().getValue();
-            Cards rest = new Cards(this.cards.subList(i+1, this.cards.size()));
-            if(rank == 14) {
-                if(rest.containsRank(5) && rest.containsRank(4) && rest.containsRank(3) && rest.containsRank(2)) {
-                    possibleHighest = 5;
-                }
-            }
-            if(rank > 5) {
-                if(rest.containsRank(rank - 1) && rest.containsRank(rank -2) && rest.containsRank(rank - 3) && rest.containsRank(rank - 4)) {
-                    return rank;
-                }
-            }
-            return possibleHighest;
-        }
-        return 0;
-    }
-
-    //return higher pair value or 0 if not present
-    public int checkTwoPair() {
-        final int MINHAND = 4;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort();
-        int pair = this.checkPair();
-        if(pair > 0) {
-            Cards other = this.copy().removeFirstPair();
-            if(other.checkPair() > 0) {
-                return pair;
-            }
-        }
-        return 0;
-    }
-
-    //return pair value or 0 if not present
-    public int checkPair() {
-        final int MINHAND = 2;
-        if(this.cards.size() < MINHAND) {
-            return 0;
-        }
-        this.sort(); //sort first to get highest pair
-        for(int i = 0; i < this.cards.size() - MINHAND + 1; i++) {
-            int rank = this.cards.get(i).getRank().getValue();
-            Cards rest = new Cards(this.cards.subList(i+1, this.cards.size()));
-            if(rest.containsRank(rank)) {
-                return rank;
-            }
-        }
-        return 0;
-    }
-
     public int highValue() {
-        final int MINHAND = 1;
-        if(this.cards.size() < MINHAND) {
+        final int MIN_HAND = 1;
+        if(this.cards.size() < MIN_HAND) {
             return 0;
         }
         this.sort();
         return cards.get(0).getRank().getValue();
     }
 
-    public PokerHand evaluate() {
-        return PokerHandEvaluator.evaluate(this);
-    }
-
+    //TODO: consider moving this logic to some poker specific class
     public void hold(List<Integer> params, Cards deck) throws CardException {
         //sanity check
         if(params == null || params.size() > cards.size()) {
@@ -235,15 +85,11 @@ public class Cards {
         }
     }
 
-    private void add(Cards cardsToAdd) {
-        this.cards.addAll(cardsToAdd.cards);
-    }
-
     public Cards copy() {
         return new Cards(new ArrayList<>(this.cards));
     }
 
-    private Cards removeFirstPair() {
+    public Cards removeFirstPair() {
         if(this.cards.size() > 1) {
             for(int i=0; i < this.cards.size() - 1; i++) {
                 Card current = this.cards.get(i);
@@ -258,7 +104,7 @@ public class Cards {
         return this;
     }
 
-    private Cards removeFirstThree() {
+    public Cards removeFirstThree() {
         if(this.cards.size() > 2) {
             for(int i=0; i < this.cards.size() - 2; i++) {
                 Card current = this.cards.get(i);
@@ -275,7 +121,7 @@ public class Cards {
         return this;
     }
 
-    private boolean containsRank(int rank) {
+    public boolean containsRank(int rank) {
         for(Card card : this.cards) {
             if(card.getRank().getValue() == rank) {
                 return true;
@@ -284,13 +130,13 @@ public class Cards {
         return false;
     }
 
-    private long numOfSuit(int suit) {
+    public long numOfSuit(Card.Suit suit) {
         return cards.stream()
-                .filter(c -> c.getSuit().getValue() == suit)
+                .filter(c -> c.getSuit() == suit)
                 .count();
     }
 
-    private Cards filterBySuit(Card.Suit suit) {
+    public Cards filterBySuit(Card.Suit suit) {
         List<Card> bySuit = this.cards.stream()
                 .filter(c -> c.getSuit() == suit)
                 .collect(Collectors.toList());
@@ -313,5 +159,10 @@ public class Cards {
 
     public void add(Card doubleCard) {
         cards.add(doubleCard);
+    }
+
+    //returns a copy of cards
+    public List<Card> getCards() {
+        return new ArrayList<>(this.cards);
     }
 }

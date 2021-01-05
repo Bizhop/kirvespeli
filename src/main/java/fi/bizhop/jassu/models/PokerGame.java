@@ -2,6 +2,7 @@ package fi.bizhop.jassu.models;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.service.UserService;
+import fi.bizhop.jassu.util.PokerHandEvaluator;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -66,7 +67,7 @@ public class PokerGame {
 
     public PokerGame deal() throws CardException {
         this.hand = this.deck.give(5);
-        this.evaluation = this.hand.evaluate();
+        this.evaluation = PokerHandEvaluator.evaluate(hand);
         return this;
     }
 
@@ -120,7 +121,7 @@ public class PokerGame {
 
     public void hold(List<Integer> parameters) throws CardException {
         this.hand.hold(parameters, this.getDeck());
-        this.evaluation = hand.evaluate();
+        this.evaluation = PokerHandEvaluator.evaluate(hand);
         this.money = this.money.multiply(multipliers.get(this.evaluation.type));
         this.availableActions = this.money.equals(BigDecimal.valueOf(0)) ? new ArrayList<>() : Arrays.asList(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
     }

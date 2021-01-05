@@ -78,4 +78,8 @@ public class PokerService {
         }
         return game;
     }
+
+    public void dummy() {
+        System.out.println("Dummy");
+    }
 }
