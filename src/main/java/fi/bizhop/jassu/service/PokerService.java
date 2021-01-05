@@ -34,9 +34,9 @@ public class PokerService {
     public PokerGame newGameForPlayer(String email) throws CardException {
         BigDecimal wager = BigDecimal.valueOf(1);
         this.userService.modifyMoney(wager.negate(), email);
-        PokerGame game = new PokerGame(sequence++, wager);
+        PokerGame game = new PokerGame(wager);
         game.setPlayer(email);
-        games.put(game.getGameId(), game);
+        games.put(sequence++, game);
         return game;
     }
 

@@ -9,7 +9,6 @@ import static fi.bizhop.jassu.models.PokerGame.Action;
 public class PokerGameOut {
     private List<String> hand;
     private String handValue;
-    private Long gameId;
     private BigDecimal money;
     private String message;
     private BigDecimal userMoney;
@@ -30,7 +29,6 @@ public class PokerGameOut {
     private void setInitialValues(PokerGame game, BigDecimal userMoney) {
         this.handValue = game.getEvaluation().toString();
         this.hand = game.getHand().getCardsOut();
-        this.gameId = game.getGameId();
         this.availableActions = game.getAvailableActions();
         this.money = game.getMoney();
         this.userMoney = userMoney;
@@ -47,14 +45,6 @@ public class PokerGameOut {
 
     public void setHand(List<String> hand) {
         this.hand = hand;
-    }
-
-    public Long getGameId() {
-        return gameId;
-    }
-
-    public void setGameId(Long gameId) {
-        this.gameId = gameId;
     }
 
     public List<Action> getAvailableActions() {

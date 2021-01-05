@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.security;
 
+import fi.bizhop.jassu.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,8 +11,16 @@ import java.util.Date;
 public class JWTAuth {
     private static final Logger LOG = LogManager.getLogger(JWTAuth.class);
     private static final long EXPIRATION_TIME = 1209600000l; //14 days
-    private static final String JWT_SECRET = System.getenv("JASSU_JWT_SECRET");
+    private static final String JWT_SECRET;
     public static final String JWT_TOKEN_PREFIX = "JWT ";
+
+    static {
+        JWT_SECRET = System.getenv("JASSU_JWT_SECRET");
+        if(JWT_SECRET == null) {
+            LOG.error("Env JASSU_JWT_SECRET must be set!");
+            Application.exit();
+        }
+    }
 
     public static String getJwt(String email) {
         Claims claims = Jwts.claims();

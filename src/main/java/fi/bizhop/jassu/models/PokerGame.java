@@ -14,7 +14,6 @@ public class PokerGame {
 
     private Cards deck;
     private Cards hand;
-    private Long gameId;
     private BigDecimal money;
     private List<Action> availableActions = Arrays.asList(Action.HOLD);
     private String player;
@@ -37,14 +36,9 @@ public class PokerGame {
         multipliers.put(Type.STRAIGHT_FLUSH, BigDecimal.valueOf(50L));
     }
 
-    public PokerGame(Long gameId, BigDecimal wager) throws CardException {
+    public PokerGame(BigDecimal wager) throws CardException {
         this.deck = new StandardDeck().shuffle();
         this.money = wager;
-        this.gameId = gameId;
-    }
-
-    public Long getGameId() {
-        return this.gameId;
     }
 
     public Cards getHand() {
