@@ -1,6 +1,5 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.models.User;
 import fi.bizhop.jassu.security.GoogleAuth;
 import fi.bizhop.jassu.security.JWTAuth;

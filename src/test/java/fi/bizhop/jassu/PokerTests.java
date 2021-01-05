@@ -1,10 +1,10 @@
-package fi.bizhop.jassu.util;
+package fi.bizhop.jassu;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.models.*;
 import fi.bizhop.jassu.service.PokerService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -19,13 +19,12 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PokerServiceTest {
-    @Autowired
-    PokerService poker;
+public class PokerTests {
+    PokerService service;
 
     //don't run this with builds
     //@Test
-    public void testHand() {
+    public void testHand() throws CardException {
         getHand(HIGH);
         getHand(PAIR);
         getHand(TWO_PAIRS);
@@ -37,13 +36,13 @@ public class PokerServiceTest {
         getHand(STRAIGHT_FLUSH);
     }
 
-    private void getHand(PokerHand.Type type) {
+    private void getHand(PokerHand.Type type) throws CardException {
         long time = System.currentTimeMillis();
         int reps = 0;
         boolean run = true;
         while(run) {
             reps++;
-            PokerGame game = poker.newGame().deal();
+            PokerGame game = service.newGame().deal();
             Cards hand = game.getHand();
             PokerHand ev = hand.evaluate();
             if(ev.type == type) {
@@ -56,7 +55,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testPair() {
+    public void testPair() throws CardException {
         List<Card> pair = new ArrayList<>();
         pair.add(new Card(SPADES, ACE));
         pair.add(new Card(HEARTS, ACE));
@@ -74,7 +73,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testThree() {
+    public void testThree() throws CardException {
         List<Card> three = new ArrayList<>();
         three.add(new Card(SPADES, ACE));
         three.add(new Card(HEARTS, ACE));
@@ -94,7 +93,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testTwoPair() {
+    public void testTwoPair() throws CardException {
         List<Card> twoPair = new ArrayList<>();
         twoPair.add(new Card(SPADES, ACE));
         twoPair.add(new Card(HEARTS, ACE));
@@ -116,7 +115,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testStraight() {
+    public void testStraight() throws CardException {
         List<Card> straight = new ArrayList<>();
         straight.add(new Card(HEARTS, KING));
         straight.add(new Card(SPADES, QUEEN));
@@ -149,7 +148,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testFullHouse() {
+    public void testFullHouse() throws CardException {
         List<Card> fullHouse = new ArrayList<>();
         fullHouse.add(new Card(SPADES, ACE));
         fullHouse.add(new Card(HEARTS, ACE));
@@ -173,7 +172,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testFour() {
+    public void testFour() throws CardException {
         List<Card> four = new ArrayList<>();
         four.add(new Card(SPADES, ACE));
         four.add(new Card(HEARTS, ACE));
@@ -194,7 +193,7 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void testStraightFlush() {
+    public void testStraightFlush() throws CardException {
         List<Card> straightFlush = new ArrayList<>();
         straightFlush.add(new Card(SPADES, ACE));
         straightFlush.add(new Card(SPADES, KING));

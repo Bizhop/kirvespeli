@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.models;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
 
 import java.util.*;
@@ -32,9 +33,9 @@ public class Cards {
         return this;
     }
 
-    public Cards give(int quantity) {
+    public Cards give(int quantity) throws CardException {
         if(quantity > cards.size()) {
-            quantity = cards.size();
+            throw new CardException(String.format("Not enough cards: wanted %d, has %d", quantity, cards.size()));
         }
         List<Card> given = new ArrayList<>();
         for(int i=0; i < quantity; i++) {
@@ -214,7 +215,7 @@ public class Cards {
         return PokerHandEvaluator.evaluate(this);
     }
 
-    public void hold(List<Integer> params, Cards deck) {
+    public void hold(List<Integer> params, Cards deck) throws CardException {
         //sanity check
         if(params == null || params.size() > cards.size()) {
             return;

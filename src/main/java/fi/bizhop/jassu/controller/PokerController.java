@@ -1,10 +1,10 @@
 package fi.bizhop.jassu.controller;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.PokerGameException;
 import fi.bizhop.jassu.models.PokerGame;
 import fi.bizhop.jassu.models.PokerGameIn;
 import fi.bizhop.jassu.models.PokerGameOut;
-import fi.bizhop.jassu.models.User;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.PokerService;
 import fi.bizhop.jassu.service.UserService;
@@ -30,13 +30,18 @@ public class PokerController {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            return new PokerGameOut("Unauthorized");
         }
         else {
-            response.setStatus(HttpServletResponse.SC_OK);
-            PokerGame game = this.pokerService.newGameForPlayer(email);
-            game.deal();
-            return new PokerGameOut(game, this.userService.getUserMoney(email));
+            try {
+                response.setStatus(HttpServletResponse.SC_OK);
+                PokerGame game = this.pokerService.newGameForPlayer(email);
+                game.deal();
+                return new PokerGameOut(game, this.userService.getUserMoney(email));
+            } catch (CardException e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return new PokerGameOut(e.getMessage());
+            }
         }
     }
 
@@ -45,7 +50,7 @@ public class PokerController {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            return new PokerGameOut("Unauthorized");
         }
         else {
             try {
@@ -76,13 +81,16 @@ public class PokerController {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            return new PokerGameOut("Unauthorized");
         }
         else {
             try {
                 return new PokerGameOut(this.pokerService.action(id, in, email), this.userService.getUserMoney(email));
             } catch (PokerGameException e) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return new PokerGameOut(e.getMessage());
+            } catch (CardException e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 return new PokerGameOut(e.getMessage());
             }
         }

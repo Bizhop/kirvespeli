@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+
 @Service
 public class UserService {
     private static final Logger LOG = LogManager.getLogger(UserService.class);
@@ -24,6 +25,7 @@ public class UserService {
             return new User(user.get());
         }
         else {
+            LOG.warn(String.format("User email: %s not found", email));
             return null;
         }
     }

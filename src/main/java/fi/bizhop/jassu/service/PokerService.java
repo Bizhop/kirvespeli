@@ -1,8 +1,11 @@
 package fi.bizhop.jassu.service;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.PokerGameException;
 import fi.bizhop.jassu.models.PokerGame;
 import fi.bizhop.jassu.models.PokerGameIn;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +19,19 @@ import static fi.bizhop.jassu.models.PokerGame.Action.*;
 
 @Service
 public class PokerService {
+    private static final Logger LOG = LogManager.getLogger(PokerService.class);
+
     @Autowired
     UserService userService;
 
     private Map<Long, PokerGame> games = new HashMap<>();
     private Long sequence = 0L;
 
-    public PokerGame newGame() {
+    public PokerGame newGame() throws CardException {
         return newGameForPlayer("test@example.com");
     }
 
-    public PokerGame newGameForPlayer(String email) {
+    public PokerGame newGameForPlayer(String email) throws CardException {
         BigDecimal wager = BigDecimal.valueOf(1);
         this.userService.modifyMoney(wager.negate(), email);
         PokerGame game = new PokerGame(sequence++, wager);
@@ -55,7 +60,7 @@ public class PokerService {
                 .collect(Collectors.toList());
     }
 
-    public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException {
+    public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException, CardException {
         PokerGame game = games.get(id);
         if(!email.equals(game.getPlayer())) {
             throw new PokerGameException("Not your game");

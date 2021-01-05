@@ -1,5 +1,7 @@
 package fi.bizhop.jassu.models;
 
+import fi.bizhop.jassu.exception.CardException;
+
 public class Card implements Comparable<Card> {
     private final Suit suit;
     private final Rank rank;
@@ -12,7 +14,10 @@ public class Card implements Comparable<Card> {
         return rank;
     }
 
-    public Card(Suit suit, Rank rank) {
+    public Card(Suit suit, Rank rank) throws CardException {
+        if(suit == Suit.JOKER && rank.value < 15) {
+            throw new CardException("Joker must be rank 15 or 16");
+        }
         this.suit = suit;
         this.rank = rank;
     }
@@ -32,7 +37,8 @@ public class Card implements Comparable<Card> {
         CLUBS(1, "C"),
         DIAMONDS(2, "D"),
         HEARTS(3, "H"),
-        SPADES(4, "S");
+        SPADES(4, "S"),
+        JOKER(5, "J");
 
         private final int value;
         private final String abbr;
@@ -61,7 +67,11 @@ public class Card implements Comparable<Card> {
         JACK(11, "J"),
         QUEEN(12, "Q"),
         KING(13, "K"),
-        ACE(14, "A");
+        ACE(14, "A"),
+
+        //joker only
+        BLACK(15, "B"),
+        RED(16, "R");
 
         private final int value;
         private final String abbr;

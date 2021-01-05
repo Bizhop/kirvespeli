@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.models;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.service.UserService;
 
 import java.math.BigDecimal;
@@ -10,7 +11,7 @@ import static fi.bizhop.jassu.models.PokerHand.Type;
 
 public class PokerGame {
 
-    private Cards deck = new StandardDeck().shuffle();
+    private Cards deck;
     private Cards hand;
     private Long gameId;
     private BigDecimal money;
@@ -35,7 +36,8 @@ public class PokerGame {
         multipliers.put(Type.STRAIGHT_FLUSH, BigDecimal.valueOf(50L));
     }
 
-    public PokerGame(Long gameId, BigDecimal wager) {
+    public PokerGame(Long gameId, BigDecimal wager) throws CardException {
+        this.deck = new StandardDeck().shuffle();
         this.money = wager;
         this.gameId = gameId;
     }
@@ -62,7 +64,7 @@ public class PokerGame {
         this.player = player;
     }
 
-    public PokerGame deal() {
+    public PokerGame deal() throws CardException {
         this.hand = this.deck.give(5);
         this.evaluation = this.hand.evaluate();
         return this;
@@ -88,7 +90,7 @@ public class PokerGame {
                 .collect(Collectors.toList());
     }
 
-    public void tryDouble(Action action, UserService userService) {
+    public void tryDouble(Action action, UserService userService) throws CardException {
         if(doubles < 5) {
             if(doubles == 0) {
                 this.hand.clear();
@@ -116,7 +118,7 @@ public class PokerGame {
         }
     }
 
-    public void hold(List<Integer> parameters) {
+    public void hold(List<Integer> parameters) throws CardException {
         this.hand.hold(parameters, this.getDeck());
         this.evaluation = hand.evaluate();
         this.money = this.money.multiply(multipliers.get(this.evaluation.type));
