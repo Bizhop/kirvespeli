@@ -6,11 +6,16 @@ public class KirvesPlayer {
 
     public KirvesPlayer(User player) {
         this.player = player;
+        this.hand = new Cards();
     }
 
     public String getUserEmail() {
         return player == null
                 ? ""
                 : player.getEmail();
+    }
+
+    public int cardsInHand() {
+        return this.hand.size();
     }
 }

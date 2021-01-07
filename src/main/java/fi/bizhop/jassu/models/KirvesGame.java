@@ -16,22 +16,23 @@ public class KirvesGame {
         this.admin = admin;
         this.deck = new KirvesDeck();
         this.active = true;
+        this.players.add(new KirvesPlayer(admin));
     }
 
-    public void addPlayer(User player) {
-        players.add(new KirvesPlayer(player));
+    public KirvesGameOut out() {
+        return new KirvesGameOut(
+                this.getAdmin(),
+                this.players.stream().map(KirvesPlayerOut::new).collect(Collectors.toList()),
+                this.deck.size()
+        );
     }
 
-    public List<String> getPlayers() {
-        return players.stream()
-                .map(KirvesPlayer::getUserEmail)
-                .collect(Collectors.toList());
-    }
-
-    public String getAdmin() {
-        return admin == null
-                ? ""
-                : admin.getEmail();
+    public void addPlayer(User newPlayer) {
+        if(this.players.stream()
+                .filter(player -> newPlayer.getEmail().equals(player.getUserEmail()))
+                .count() == 0) {
+            this.players.add(new KirvesPlayer(newPlayer));
+        }
     }
 
     public void inactivate() {
@@ -40,5 +41,11 @@ public class KirvesGame {
 
     public boolean isActive() {
         return this.active;
+    }
+
+    public String getAdmin() {
+        return this.admin == null
+                ? ""
+                : this.admin.getEmail();
     }
 }

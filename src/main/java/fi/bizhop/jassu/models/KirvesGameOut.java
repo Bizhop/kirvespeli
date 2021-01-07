@@ -4,17 +4,14 @@ import java.util.List;
 
 public class KirvesGameOut {
     private String admin;
-    private List<String> players;
+    private List<KirvesPlayerOut> players;
     private String message;
+    private int cardsInDeck;
 
-    public KirvesGameOut(KirvesGame game) {
-        if(game != null) {
-            this.admin = game.getAdmin();
-            this.players = game.getPlayers();
-        }
-        else {
-            this.message = "Game is null";
-        }
+    public KirvesGameOut(String admin, List<KirvesPlayerOut> players, int cardsInDeck) {
+        this.admin = admin;
+        this.players = players;
+        this.cardsInDeck = cardsInDeck;
     }
 
     public KirvesGameOut(String message) {
@@ -25,11 +22,13 @@ public class KirvesGameOut {
         return admin;
     }
 
-    public List<String> getPlayers() {
+    public List<KirvesPlayerOut> getPlayers() {
         return players;
     }
 
     public String getMessage() {
         return message;
     }
+
+    public int getCardsInDeck() { return cardsInDeck; }
 }
