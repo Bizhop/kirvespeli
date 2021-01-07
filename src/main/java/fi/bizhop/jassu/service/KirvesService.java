@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class KirvesService {
@@ -25,5 +26,11 @@ public class KirvesService {
         KirvesGame game = new KirvesGame(admin);
         games.put(sequence++, game);
         return game;
+    }
+
+    public Map<Long, KirvesGame> getActiveGames(String email) {
+        return games.entrySet().stream()
+                .filter(entry -> entry.getValue().isActive() && email.equals(entry.getValue().getAdmin()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

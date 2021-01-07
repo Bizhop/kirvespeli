@@ -10,10 +10,12 @@ public class KirvesGame {
     private User admin;
     private Cards deck;
     private List<KirvesPlayer> players = new ArrayList<>();
+    private boolean active;
 
     public KirvesGame(User admin) throws CardException {
         this.admin = admin;
         this.deck = new KirvesDeck();
+        this.active = true;
     }
 
     public void addPlayer(User player) {
@@ -30,5 +32,13 @@ public class KirvesGame {
         return admin == null
                 ? ""
                 : admin.getEmail();
+    }
+
+    public void inactivate() {
+        this.active = false;
+    }
+
+    public boolean isActive() {
+        return this.active;
     }
 }
