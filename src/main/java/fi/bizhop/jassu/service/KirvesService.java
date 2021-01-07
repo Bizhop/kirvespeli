@@ -3,6 +3,7 @@ package fi.bizhop.jassu.service;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.models.KirvesGame;
+import fi.bizhop.jassu.models.KirvesGameIn;
 import fi.bizhop.jassu.models.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static fi.bizhop.jassu.models.KirvesGame.Action.*;
 
 @Service
 public class KirvesService {
@@ -59,5 +62,29 @@ public class KirvesService {
         } else {
             return game;
         }
+    }
+
+    public KirvesGame action(Long id, KirvesGameIn in, User user) throws KirvesGameException{
+        KirvesGame game = this.getGame(id);
+        if(in.action == DEAL) {
+            if(game.userCanDeal(user)) {
+                try {
+                    game.deal(user);
+                } catch (CardException e) {
+                    throw new KirvesGameException(String.format("Unable to deal cards: %s", e.getMessage()));
+                }
+            } else {
+                game.setMessage("You can't deal now");
+            }
+        }
+        if(in.action == PLAY_CARD) {
+            if(game.isMyTurn(user)) {
+                game.playCard(user, in.index);
+            }
+            else {
+                game.setMessage("It's not your turn");
+            }
+        }
+        return game;
     }
 }

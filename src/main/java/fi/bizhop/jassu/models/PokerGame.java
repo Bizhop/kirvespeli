@@ -60,7 +60,7 @@ public class PokerGame {
     }
 
     public PokerGame deal() throws CardException {
-        this.hand = this.deck.give(5);
+        this.hand = this.deck.deal(5);
         this.evaluation = PokerHandEvaluator.evaluate(hand);
         return this;
     }
@@ -90,7 +90,7 @@ public class PokerGame {
             if(doubles == 0) {
                 this.hand.clear();
             }
-            Card doubleCard = this.deck.give(1).first();
+            Card doubleCard = this.deck.deal(1).first();
             this.hand.add(doubleCard);
             int doubleValue = doubleCard.getRank().getValue();
             if(doubleValue == 14) {

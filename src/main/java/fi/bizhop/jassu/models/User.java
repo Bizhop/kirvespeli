@@ -44,4 +44,13 @@ public class User {
     public void setMoney(BigDecimal money) {
         this.money = money;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if(other instanceof User) {
+            return this.email.equals(((User) other).email);
+        } else {
+            return false;
+        }
+    }
 }

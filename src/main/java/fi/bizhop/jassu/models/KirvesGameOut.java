@@ -7,11 +7,18 @@ public class KirvesGameOut {
     private List<KirvesPlayerOut> players;
     private String message;
     private int cardsInDeck;
+    private String turn;
+    private String dealer;
+    private List<String> myCardsInHand;
 
-    public KirvesGameOut(String admin, List<KirvesPlayerOut> players, int cardsInDeck) {
+    public KirvesGameOut(String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String message) {
         this.admin = admin;
         this.players = players;
         this.cardsInDeck = cardsInDeck;
+        this.dealer = dealer;
+        this.turn = turn;
+        this.myCardsInHand = myCardsInHand;
+        this.message = message;
     }
 
     public KirvesGameOut(String message) {
@@ -31,4 +38,16 @@ public class KirvesGameOut {
     }
 
     public int getCardsInDeck() { return cardsInDeck; }
+
+    public String getTurn() {
+        return turn;
+    }
+
+    public String getDealer() {
+        return dealer;
+    }
+
+    public List<String> getMyCardsInHand() {
+        return myCardsInHand;
+    }
 }

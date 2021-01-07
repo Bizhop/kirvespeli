@@ -65,15 +65,15 @@ public class PokerService {
         if(!email.equals(game.getPlayer())) {
             throw new PokerGameException("Not your game");
         }
-        if(game.getAvailableActions().contains(in.getAction())) {
-            if(in.getAction() == STAY) {
+        if(game.getAvailableActions().contains(in.action)) {
+            if(in.action == STAY) {
                 game.stay(userService);
             }
-            else if(in.getAction() == HOLD) {
-                game.hold(in.getParameters());
+            else if(in.action == HOLD) {
+                game.hold(in.parameters);
             }
-            else if(in.getAction() == DOUBLE_HIGH || in.getAction() == DOUBLE_LOW) {
-                game.tryDouble(in.getAction(), userService);
+            else if(in.action == DOUBLE_HIGH || in.action == DOUBLE_LOW) {
+                game.tryDouble(in.action, userService);
             }
         }
         return game;

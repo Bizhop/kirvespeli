@@ -33,7 +33,7 @@ public class Cards {
         return this;
     }
 
-    public Cards give(int quantity) throws CardException {
+    public Cards deal(int quantity) throws CardException {
         if(quantity > cards.size()) {
             throw new CardException(String.format("Not enough cards: wanted %d, has %d", quantity, cards.size()));
         }
@@ -42,6 +42,13 @@ public class Cards {
             given.add(this.cards.remove(0));
         }
         return new Cards(given);
+    }
+
+    public Card get(int index) throws CardException {
+        if(index < 0 || index > cards.size() - 1) {
+            throw new CardException("Invalid card index");
+        }
+        return this.cards.remove(index);
     }
 
     @Override
@@ -70,7 +77,7 @@ public class Cards {
         if(params == null || params.size() > cards.size()) {
             return;
         } else if (params.isEmpty()) {
-            this.cards = deck.give(5).cards;
+            this.cards = deck.deal(5).cards;
             return;
         }
         params.sort(Integer::compareTo);
@@ -80,7 +87,7 @@ public class Cards {
 
         for(int i=0; i < cards.size(); i++) {
             if(!params.contains(i)) {
-                this.cards.set(i, deck.give(1).cards.get(0));
+                this.cards.set(i, deck.deal(1).cards.get(0));
             }
         }
     }
@@ -150,15 +157,19 @@ public class Cards {
     }
 
     public void clear() {
-        cards = new ArrayList<>();
+        this.cards = new ArrayList<>();
     }
 
     public Card first() {
-        return cards.get(0);
+        return this.cards.get(0);
     }
 
-    public void add(Card doubleCard) {
-        cards.add(doubleCard);
+    public void add(Card newCard) {
+        this.cards.add(newCard);
+    }
+
+    public void add(Cards newCards) {
+        this.cards.addAll(newCards.cards);
     }
 
     //returns a copy of cards
