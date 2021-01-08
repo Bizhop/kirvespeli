@@ -2,8 +2,6 @@ package fi.bizhop.jassu.models;
 
 import fi.bizhop.jassu.exception.CardException;
 
-import java.util.ArrayList;
-
 public class KirvesPlayer {
     private User player;
     private Cards hand;
@@ -30,7 +28,7 @@ public class KirvesPlayer {
     }
 
     public void playCard(int index) throws CardException {
-        playedCards.add(this.hand.get(index));
+        playedCards.add(this.hand.remove(index));
     }
 
     public Cards getPlayedCards() {
