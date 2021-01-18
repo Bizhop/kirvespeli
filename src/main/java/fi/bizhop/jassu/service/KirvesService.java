@@ -79,7 +79,11 @@ public class KirvesService {
         }
         if(in.action == PLAY_CARD) {
             if(game.isMyTurn(user)) {
-                game.playCard(user, in.index);
+                try {
+                    game.playCard(user, in.index);
+                } catch (CardException e) {
+                    game.setMessage(String.format("Can't play card with index %d", in.index));
+                }
             }
             else {
                 game.setMessage("It's not your turn");

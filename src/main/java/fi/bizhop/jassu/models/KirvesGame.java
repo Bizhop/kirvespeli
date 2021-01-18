@@ -95,35 +95,32 @@ public class KirvesGame {
         this.firstPlayerOfRound = findIndex(this.turn);
     }
 
-    public void playCard(User user, int index) throws KirvesGameException {
+    public void playCard(User user, int index) throws KirvesGameException, CardException {
         Optional<KirvesPlayer> me = getPlayer(user);
         if(me.isPresent()) {
             KirvesPlayer player = me.get();
-            try {
-                player.playCard(index);
-                this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
-                if(findIndex(this.turn) == this.firstPlayerOfRound) {
-                    int round = player.getPlayedCards().size() - 1;
-                    List<Card> playedCards = new ArrayList<>();
-                    int offset = this.firstPlayerOfRound;
-                    for(int i = 0; i < this.players.size(); i++) {
-                        int cardPlayerIndex = (offset + i) % this.players.size();
-                        KirvesPlayer cardPlayer = this.players.get(cardPlayerIndex);
-                        playedCards.add(cardPlayer.getPlayedCards().get(round));
-                    }
-                    int winningCard = winningCard(playedCards);
-                    KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
-                    this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
-                    if(round < NUM_OF_CARD_TO_DEAL - 1) {
-                        this.turn = roundWinner.getUser();
-                    }
-                    else {
-                        this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
-                        this.canDeal = true;
-                    }
+            player.playCard(index);
+            this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
+            if(findIndex(this.turn) == this.firstPlayerOfRound) {
+                int round = player.getPlayedCards().size() - 1;
+                List<Card> playedCards = new ArrayList<>();
+                int offset = this.firstPlayerOfRound;
+                for(int i = 0; i < this.players.size(); i++) {
+                    int cardPlayerIndex = (offset + i) % this.players.size();
+                    KirvesPlayer cardPlayer = this.players.get(cardPlayerIndex);
+                    playedCards.add(cardPlayer.getPlayedCards().get(round));
                 }
-            } catch (CardException e) {
-                this.message = String.format("Can't play card with index: %d", index);
+                int winningCard = winningCard(playedCards);
+                KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
+                this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
+                if(round < NUM_OF_CARD_TO_DEAL - 1) {
+                    this.turn = roundWinner.getUser();
+                    this.firstPlayerOfRound = findIndex(this.turn);
+                }
+                else {
+                    this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
+                    this.canDeal = true;
+                }
             }
         } else {
             throw new KirvesGameException("Not a player in this game");
