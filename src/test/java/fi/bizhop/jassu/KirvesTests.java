@@ -2,13 +2,15 @@ package fi.bizhop.jassu;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.models.*;
+import fi.bizhop.jassu.models.Cards;
+import fi.bizhop.jassu.models.KirvesDeck;
+import fi.bizhop.jassu.models.KirvesGame;
+import fi.bizhop.jassu.models.User;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
@@ -70,33 +72,24 @@ public class KirvesTests {
     }
 
     @Test
-    public void testPlayingThroughHand() throws CardException, KirvesGameException {
+    public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(testUsers);
 
-        game.deal(testUsers.get(0));
-
-        //round 1
-        playRound(game);
-        System.out.println(game.getMessage());
-
-        //round 2
-        playRound(game);
-        System.out.println(game.getMessage());
-
-        //round 3
-        playRound(game);
-        System.out.println(game.getMessage());
-
-        //round 4
-        playRound(game);
-        System.out.println(game.getMessage());
-
-        //round 5
-        playRound(game);
-        System.out.println(game.getMessage());
+        for(int i = 0; i < testUsers.size(); i++) {
+            User dealer = testUsers.get(i);
+            assertTrue(game.userCanDeal(dealer));
+            game.deal(dealer);
+            playThroughHand(game, 5);
+        }
     }
 
-    private void playRound(KirvesGame game) throws KirvesGameException, CardException {
+    private void playThroughHand(KirvesGame game, int cardsInHand) throws CardException, KirvesGameException {
+        for(int i=0; i < cardsInHand; i++) {
+            playRound(game, true);
+        }
+    }
+
+    private void playRound(KirvesGame game, boolean printMessage) throws KirvesGameException, CardException {
         User turn = testUsers.stream().filter(game::isMyTurn).findFirst().orElseThrow(KirvesGameException::new);
         int index = testUsers.indexOf(turn);
         List<User> nextRoundUsers = new ArrayList<>(testUsers.subList(index, testUsers.size()));
@@ -112,6 +105,9 @@ public class KirvesTests {
                 throw new KirvesGameException(String.format("TEST: user %s is not in turn", player.getEmail()));
             }
             game.playCard(player, 0);
+        }
+        if(printMessage) {
+            System.out.println(game.getMessage());
         }
     }
 

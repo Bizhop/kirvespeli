@@ -119,6 +119,7 @@ public class KirvesGame {
                 }
                 else {
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
+                    this.turn = this.dealer;
                     this.canDeal = true;
                 }
             }
