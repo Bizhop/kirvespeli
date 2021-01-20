@@ -90,8 +90,8 @@ public class KirvesGame {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
-        this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
         this.canDeal = false;
+        this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
         this.firstPlayerOfRound = findIndex(this.turn);
     }
 
@@ -152,7 +152,7 @@ public class KirvesGame {
                 return Optional.of(players.get(newIndex).getUser());
             }
         }
-        return Optional.empty();
+        return Optional.of(user);
     }
 
     private int findIndex(User user) {
