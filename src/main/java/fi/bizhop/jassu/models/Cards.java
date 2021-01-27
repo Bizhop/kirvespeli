@@ -44,11 +44,18 @@ public class Cards {
         return new Cards(given);
     }
 
-    public Card get(int index) throws CardException {
+    public Card remove(int index) throws CardException {
         if(index < 0 || index > cards.size() - 1) {
             throw new CardException("Invalid card index");
         }
         return this.cards.remove(index);
+    }
+
+    public Card get(int index) throws CardException{
+        if(index < 0 || index > cards.size() - 1) {
+            throw new CardException("Invalid card index");
+        }
+        return this.cards.get(index);
     }
 
     @Override
