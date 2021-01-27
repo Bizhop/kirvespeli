@@ -40,7 +40,7 @@ public class KirvesController {
             }
             try {
                 response.setStatus(HttpServletResponse.SC_OK);
-                return this.kirvesService.newGameForAdmin(admin).out(null);
+                return this.kirvesService.newGameForAdmin(admin).out(admin);
             } catch (CardException e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 return new KirvesGameOut(e.getMessage());

@@ -115,7 +115,7 @@ public class KirvesTests {
         if(players == null || players.isEmpty()) {
             throw new KirvesGameException("TEST: you must define at least one player");
         }
-        KirvesGame game = new KirvesGame(players.get(0));
+        KirvesGame game = new KirvesGame(players.get(0), 0L);
         if(players.size() > 1) {
             for(int i = 1; i < players.size(); i++) {
                 game.addPlayer(players.get(i));

@@ -27,10 +27,11 @@ public class KirvesService {
     private Long sequence = 0L;
 
     public KirvesGame newGameForAdmin(User admin) throws CardException {
-        KirvesGame game = new KirvesGame(admin);
-        Long id = this.sequence++;
+        Long id = this.sequence;
+        KirvesGame game = new KirvesGame(admin, id);
         this.games.put(id, game);
         LOG.info(String.format("Created new game, id=%d", id));
+        this.sequence++;
         return game;
     }
 

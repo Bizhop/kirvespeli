@@ -11,17 +11,20 @@ import java.util.stream.Collectors;
 public class KirvesGame {
     private static final int NUM_OF_CARD_TO_DEAL = 5;
 
+    private Long id;
     private final User admin;
     private Cards deck;
     private final List<KirvesPlayer> players = new ArrayList<>();
     private boolean active;
+    private boolean canJoin;
     private User turn;
     private User dealer;
     private boolean canDeal;
     private String message;
     private int firstPlayerOfRound;
 
-    public KirvesGame(User admin) throws CardException {
+    public KirvesGame(User admin, Long id) throws CardException {
+        this.id = id;
         this.admin = admin;
         this.deck = new KirvesDeck().shuffle();
         this.active = true;
@@ -40,6 +43,7 @@ public class KirvesGame {
             }
         }
         return new KirvesGameOut(
+                this.id,
                 this.getAdmin(),
                 this.players.stream().map(KirvesPlayerOut::new).collect(Collectors.toList()),
                 this.deck.size(),
@@ -54,11 +58,15 @@ public class KirvesGame {
         return this.players.stream().filter(player -> player.getUser().equals(user)).findFirst();
     }
 
-    public void addPlayer(User newPlayer) {
-        if(this.players.stream()
-                .filter(player -> newPlayer.getEmail().equals(player.getUserEmail()))
-                .count() == 0) {
-            this.players.add(new KirvesPlayer(newPlayer));
+    public void addPlayer(User newPlayer) throws KirvesGameException {
+        if(this.canJoin) {
+            if (this.players.stream()
+                    .filter(player -> newPlayer.getEmail().equals(player.getUserEmail()))
+                    .count() == 0) {
+                this.players.add(new KirvesPlayer(newPlayer));
+            }
+        } else {
+            throw new KirvesGameException("Can't join this game now");
         }
     }
 
@@ -91,6 +99,7 @@ public class KirvesGame {
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
         this.canDeal = false;
+        this.canJoin = false;
         this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
         this.firstPlayerOfRound = findIndex(this.turn);
     }
