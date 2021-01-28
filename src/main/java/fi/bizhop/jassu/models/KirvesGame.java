@@ -32,6 +32,7 @@ public class KirvesGame {
         this.turn = admin;
         this.dealer = admin;
         this.canDeal = true;
+        this.canJoin = true;
     }
 
     public KirvesGameOut out(User user) {
@@ -50,7 +51,8 @@ public class KirvesGame {
                 this.dealer.getEmail(),
                 this.turn.getEmail(),
                 myCards,
-                this.message
+                this.message,
+                this.canJoin
         );
     }
 
