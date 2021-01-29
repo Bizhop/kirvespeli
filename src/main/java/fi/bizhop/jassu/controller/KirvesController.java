@@ -98,7 +98,7 @@ public class KirvesController {
                 if(game.hasPlayer(me)) {
                     return game.out(me);
                 } else {
-                    return new KirvesGameOut("You are not in this game");
+                    return game.out(null);
                 }
             } catch (KirvesGameException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
