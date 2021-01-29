@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 @RestController
 public class KirvesController {
@@ -49,18 +52,17 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody Map<Long, KirvesGameOut> getGames(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody
+    List<KirvesGameOut> getGames(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            Map<Long, KirvesGameOut> responseMap = new HashMap<>();
-            for(Map.Entry<Long, KirvesGame> entry : this.kirvesService.getActiveGames(email).entrySet()) {
-                responseMap.put(entry.getKey(), entry.getValue().out(null));
-            }
-            return responseMap;
+            return this.kirvesService.getActiveGames(email).stream()
+                    .map(KirvesGame::out)
+                    .collect(toList());
         }
     }
 

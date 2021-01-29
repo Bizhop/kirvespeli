@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.models.KirvesGame.Action.*;
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class KirvesService {
@@ -35,10 +37,10 @@ public class KirvesService {
         return game;
     }
 
-    public Map<Long, KirvesGame> getActiveGames(String email) {
-        return this.games.entrySet().stream()
-                .filter(entry -> entry.getValue().isActive() && email.equals(entry.getValue().getAdmin()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    public List<KirvesGame> getActiveGames(String email) {
+        return this.games.values().stream()
+                .filter(KirvesGame::isActive)
+                .collect(toList());
     }
 
     public void joinGame(Long id, String email) throws KirvesGameException {

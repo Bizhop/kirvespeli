@@ -35,6 +35,10 @@ public class KirvesGame {
         this.canJoin = true;
     }
 
+    public KirvesGameOut out() {
+        return this.out(null);
+    }
+
     public KirvesGameOut out(User user) {
         List<String> myCards = new ArrayList<>();
         if(user != null) {
@@ -52,7 +56,8 @@ public class KirvesGame {
                 this.turn.getEmail(),
                 myCards,
                 this.message,
-                this.canJoin
+                this.canJoin,
+                userCanDeal(user)
         );
     }
 
@@ -87,7 +92,7 @@ public class KirvesGame {
     }
 
     public boolean userCanDeal(User user) {
-        return user.equals(this.turn) && user.equals(this.dealer) && this.canDeal;
+        return user != null && user.equals(this.turn) && user.equals(this.dealer) && this.canDeal;
     }
 
     public boolean isMyTurn(User user) {
