@@ -2,19 +2,20 @@ package fi.bizhop.jassu;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.models.Cards;
-import fi.bizhop.jassu.models.KirvesDeck;
-import fi.bizhop.jassu.models.KirvesGame;
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.models.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import static fi.bizhop.jassu.models.Card.Suit.*;
+import static fi.bizhop.jassu.models.Card.Rank.*;
 
 public class KirvesTests {
     static final List<User> testUsers;
@@ -75,12 +76,38 @@ public class KirvesTests {
     public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(testUsers);
 
-        for(int i = 0; i < testUsers.size(); i++) {
-            User dealer = testUsers.get(i);
+        for (User dealer : testUsers) {
             assertTrue(game.userCanDeal(dealer));
             game.deal(dealer);
             playThroughHand(game, 5);
         }
+    }
+
+    @Test
+    public void testWinningCards() throws CardException {
+        //samaa maata, isompi voittaa
+        List<Card> cards = Arrays.asList(new Card(SPADES, SEVEN), new Card(SPADES, TEN));
+        assertEquals(1, KirvesGame.winningCard(cards, DIAMONDS));
+
+        //eri maata, ajokortti voittaa
+        cards = Arrays.asList(new Card(SPADES, SEVEN), new Card(CLUBS, TEN));
+        assertEquals(0, KirvesGame.winningCard(cards, DIAMONDS));
+
+        //valtti voittaa, vaikkaa on pienempi
+        cards = Arrays.asList(new Card(SPADES, SEVEN), new Card(CLUBS, TWO));
+        assertEquals(1, KirvesGame.winningCard(cards, CLUBS));
+
+        //pamppu voittaa valttipampun
+        cards = Arrays.asList(new Card(SPADES, ACE), new Card(SPADES, JACK));
+        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+
+        //punainen jokeri voittaa mustan
+        cards = Arrays.asList(new Card(JOKER, BLACK), new Card(JOKER, RED));
+        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+
+        //jokeri voittaa pampun
+        cards = cards = Arrays.asList(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
+        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
     }
 
     private void playThroughHand(KirvesGame game, int cardsInHand) throws CardException, KirvesGameException {

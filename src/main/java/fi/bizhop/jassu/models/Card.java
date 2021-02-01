@@ -69,9 +69,11 @@ public class Card implements Comparable<Card> {
         KING(13, "K"),
         ACE(14, "A"),
 
+        //space 15-18 for Jacks in comparison
+
         //joker only
-        BLACK(15, "B"),
-        RED(16, "R");
+        BLACK(19, "B"),
+        RED(20, "R");
 
         private final int value;
         private final String abbr;
