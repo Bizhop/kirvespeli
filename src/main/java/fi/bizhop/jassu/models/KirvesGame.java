@@ -6,7 +6,10 @@ import fi.bizhop.jassu.exception.KirvesGameException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static fi.bizhop.jassu.models.Card.Rank.JACK;
+import static fi.bizhop.jassu.models.Card.Suit.JOKER;
+import static java.util.stream.Collectors.toList;
 
 public class KirvesGame {
     private static final int NUM_OF_CARD_TO_DEAL = 5;
@@ -22,6 +25,7 @@ public class KirvesGame {
     private boolean canDeal;
     private String message;
     private int firstPlayerOfRound;
+    private Card valtti = null;
 
     public KirvesGame(User admin, Long id) throws CardException {
         this.id = id;
@@ -50,14 +54,15 @@ public class KirvesGame {
         return new KirvesGameOut(
                 this.id,
                 this.getAdmin(),
-                this.players.stream().map(KirvesPlayerOut::new).collect(Collectors.toList()),
+                this.players.stream().map(KirvesPlayerOut::new).collect(toList()),
                 this.deck.size(),
                 this.dealer.getEmail(),
                 this.turn.getEmail(),
                 myCards,
                 this.message,
                 this.canJoin,
-                userCanDeal(user)
+                userCanDeal(user),
+                this.valtti == null ? "" : this.valtti.toString()
         );
     }
 
@@ -105,6 +110,7 @@ public class KirvesGame {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
+        this.valtti = this.deck.remove(0);
         this.canDeal = false;
         this.canJoin = false;
         this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
@@ -126,7 +132,7 @@ public class KirvesGame {
                     KirvesPlayer cardPlayer = this.players.get(cardPlayerIndex);
                     playedCards.add(cardPlayer.getPlayedCards().get(round));
                 }
-                int winningCard = winningCard(playedCards);
+                int winningCard = winningCard(playedCards, this.valtti.getSuit());
                 KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
                 this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
                 if(round < NUM_OF_CARD_TO_DEAL - 1) {
@@ -137,6 +143,7 @@ public class KirvesGame {
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
                     this.turn = this.dealer;
                     this.canDeal = true;
+                    this.valtti = null;
                 }
             }
         } else {
@@ -144,18 +151,45 @@ public class KirvesGame {
         }
     }
 
-    public static int winningCard(List<Card> playedCards) {
+    public static int winningCard(List<Card> playedCards, Card.Suit valtti) {
         int leader = 0;
         for(int i = 1; i < playedCards.size(); i++) {
             Card leaderCard = playedCards.get(leader);
             Card candidate = playedCards.get(i);
-            if(     candidate.getSuit() == leaderCard.getSuit() &&
-                    candidate.getRank().getValue() > leaderCard.getRank().getValue()
-            ) {
+            if(candidateWins(leaderCard, candidate, valtti)) {
                 leader = i;
             }
         }
         return leader;
+    }
+
+    private static boolean candidateWins(Card leader, Card candidate, Card.Suit valtti) {
+        int leaderRank = getConvertedRank(leader, valtti);
+        int candidateRank = getConvertedRank(candidate, valtti);
+        Card.Suit leaderSuit = leader.getSuit().equals(JOKER) ? valtti : leader.getSuit();
+        Card.Suit candidateSuit = candidate.getSuit().equals(JOKER) ? valtti : candidate.getSuit();
+
+        if(candidateSuit.equals(valtti) && !leaderSuit.equals(valtti)) {
+            return true;
+        }
+        else return candidateSuit.equals(leaderSuit) &&
+                candidateRank > leaderRank;
+    }
+
+    private static int getConvertedRank(Card card, Card.Suit valtti) {
+        if(card.getRank().equals(JACK)) {
+            switch (card.getSuit()) {
+                case DIAMONDS:
+                    return 15;
+                case HEARTS:
+                    return 16;
+                case SPADES:
+                    return 17;
+                case CLUBS:
+                    return 18;
+            }
+        }
+        return card.getRank().getValue();
     }
 
     private Optional<User> nextPlayer(User user) throws KirvesGameException {

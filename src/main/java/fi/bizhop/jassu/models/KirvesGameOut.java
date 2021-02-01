@@ -13,8 +13,9 @@ public class KirvesGameOut {
     private List<String> myCardsInHand;
     private boolean canJoin;
     private boolean canDeal;
+    private String valtti;
 
-    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String message, boolean canJoin, boolean canDeal) {
+    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String message, boolean canJoin, boolean canDeal, String valtti) {
         this.id = id;
         this.admin = admin;
         this.players = players;
@@ -25,6 +26,7 @@ public class KirvesGameOut {
         this.message = message;
         this.canJoin = canJoin;
         this.canDeal = canDeal;
+        this.valtti = valtti;
     }
 
     public KirvesGameOut(String message) {
@@ -68,4 +70,6 @@ public class KirvesGameOut {
     public boolean getCanDeal() {
         return canDeal;
     }
+
+    public String getValtti() { return valtti; }
 }
