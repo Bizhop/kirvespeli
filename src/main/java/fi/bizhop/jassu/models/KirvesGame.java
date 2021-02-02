@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static fi.bizhop.jassu.models.Card.Rank.BLACK;
 import static fi.bizhop.jassu.models.Card.Rank.JACK;
 import static fi.bizhop.jassu.models.Card.Suit.JOKER;
 import static java.util.stream.Collectors.toList;
@@ -25,7 +26,8 @@ public class KirvesGame {
     private boolean canDeal;
     private String message;
     private int firstPlayerOfRound;
-    private Card valtti = null;
+    private Card valttiCard = null;
+    private Card.Suit valtti = null;
 
     public KirvesGame(User admin, Long id) throws CardException {
         this.id = id;
@@ -62,6 +64,7 @@ public class KirvesGame {
                 this.message,
                 this.canJoin,
                 userCanDeal(user),
+                this.valttiCard == null ? "" : this.valttiCard.toString(),
                 this.valtti == null ? "" : this.valtti.toString()
         );
     }
@@ -110,7 +113,12 @@ public class KirvesGame {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
-        this.valtti = this.deck.remove(0);
+        this.valttiCard = this.deck.remove(0);
+        if(this.valttiCard.getSuit() == JOKER) {
+            this.valtti = this.valttiCard.getRank() == BLACK ? Card.Suit.SPADES : Card.Suit.HEARTS;
+        } else {
+            this.valtti = this.valttiCard.getSuit();
+        }
         this.canDeal = false;
         this.canJoin = false;
         this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
@@ -132,7 +140,7 @@ public class KirvesGame {
                     KirvesPlayer cardPlayer = this.players.get(cardPlayerIndex);
                     playedCards.add(cardPlayer.getPlayedCards().get(round));
                 }
-                int winningCard = winningCard(playedCards, this.valtti.getSuit());
+                int winningCard = winningCard(playedCards, this.valtti);
                 KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
                 this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
                 if(round < NUM_OF_CARD_TO_DEAL - 1) {
@@ -143,7 +151,7 @@ public class KirvesGame {
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
                     this.turn = this.dealer;
                     this.canDeal = true;
-                    this.valtti = null;
+                    this.valttiCard = null;
                 }
             }
         } else {

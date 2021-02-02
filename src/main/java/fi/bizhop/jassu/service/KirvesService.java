@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static fi.bizhop.jassu.models.KirvesGame.Action.*;
+import static fi.bizhop.jassu.models.KirvesGame.Action.DEAL;
+import static fi.bizhop.jassu.models.KirvesGame.Action.PLAY_CARD;
 import static java.util.stream.Collectors.toList;
 
 @Service
