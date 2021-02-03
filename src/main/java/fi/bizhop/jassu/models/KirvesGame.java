@@ -181,8 +181,8 @@ public class KirvesGame {
     private static boolean candidateWins(Card leader, Card candidate, Card.Suit valtti) {
         int leaderRank = getConvertedRank(leader, valtti);
         int candidateRank = getConvertedRank(candidate, valtti);
-        Card.Suit leaderSuit = leader.getSuit().equals(JOKER) ? valtti : leader.getSuit();
-        Card.Suit candidateSuit = candidate.getSuit().equals(JOKER) ? valtti : candidate.getSuit();
+        Card.Suit leaderSuit = leader.getSuit().equals(JOKER) || leader.getRank().equals(JACK) ? valtti : leader.getSuit();
+        Card.Suit candidateSuit = candidate.getSuit().equals(JOKER) || candidate.getRank().equals(JACK) ? valtti : candidate.getSuit();
 
         if(candidateSuit.equals(valtti) && !leaderSuit.equals(valtti)) {
             return true;

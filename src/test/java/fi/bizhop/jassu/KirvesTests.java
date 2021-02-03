@@ -101,9 +101,13 @@ public class KirvesTests {
         cards = Arrays.asList(new Card(SPADES, SEVEN), new Card(CLUBS, TWO));
         assertEquals(1, KirvesGame.winningCard(cards, CLUBS));
 
-        //pamppu voittaa valttipampun
+        //pamppu voittaa valttiässän
         cards = Arrays.asList(new Card(SPADES, ACE), new Card(SPADES, JACK));
         assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+
+        //pamppu voittaa hantin (lasketaan valtiksi)
+        cards = Arrays.asList(new Card(CLUBS, ACE), new Card(SPADES, JACK));
+        assertEquals(1, KirvesGame.winningCard(cards, HEARTS));
 
         //punainen jokeri voittaa mustan
         cards = Arrays.asList(new Card(JOKER, BLACK), new Card(JOKER, RED));
