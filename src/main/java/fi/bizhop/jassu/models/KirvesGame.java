@@ -73,6 +73,10 @@ public class KirvesGame {
         return this.players.stream().filter(player -> player.getUser().equals(user)).findFirst();
     }
 
+    public Optional<KirvesPlayer> getRoundWinner(int round) {
+        return this.players.stream().filter(player -> player.getRoundsWon().contains(round)).findFirst();
+    }
+
     public void addPlayer(User newPlayer) throws KirvesGameException {
         if(this.canJoin) {
             if (this.players.stream()
@@ -154,7 +158,10 @@ public class KirvesGame {
                     this.firstPlayerOfRound = findIndex(this.turn);
                 }
                 else {
-                    //TODO: determine hand winner here
+                    KirvesPlayer handWinner = determineHandWinner();
+                    this.message = String.format("%s\nHand winner is %s", this.message, handWinner.getUserEmail());
+                    this.players.forEach(KirvesPlayer::resetWonRounds);
+
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
                     this.turn = this.dealer;
                     this.canDeal = true;
@@ -163,6 +170,46 @@ public class KirvesGame {
             }
         } else {
             throw new KirvesGameException("Not a player in this game");
+        }
+    }
+
+    public KirvesPlayer determineHandWinner() throws KirvesGameException {
+        //three or more rounds is clear winner
+        Optional<KirvesPlayer> threeOrMore = this.players.stream()
+                .filter(player -> player.getRoundsWon().size() >= 3)
+                .findFirst();
+        if(threeOrMore.isPresent()) {
+            return threeOrMore.get();
+        }
+
+        //two rounds
+        List<KirvesPlayer> two = this.players.stream()
+                .filter(player -> player.getRoundsWon().size() == 2)
+                .collect(toList());
+
+        if(two.size() == 1) {
+            //only one player with two rounds is winner
+            return two.get(0);
+        } else if(two.size() == 2) {
+            //two players with two rounds, first two wins
+            KirvesPlayer first = two.get(0);
+            KirvesPlayer second = two.get(1);
+
+            return first.getRoundsWon().get(1) > second.getRoundsWon().get(1) ? second : first;
+        }
+
+        //if these cases don't return anything, there should be five single round winners
+        List<KirvesPlayer> one = this.players.stream()
+                .filter(player -> player.getRoundsWon().size() == 1)
+                .collect(toList());
+
+        if(one.size() == 5) {
+            //last round wins
+            return this.players.stream()
+                    .filter(player -> player.getRoundsWon().get(0) == 4)
+                    .findFirst().orElseThrow(KirvesGameException::new);
+        } else {
+            throw new KirvesGameException("Unable to determine hand winner");
         }
     }
 

@@ -9,13 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
+import static fi.bizhop.jassu.models.Card.Rank.*;
+import static fi.bizhop.jassu.models.Card.Suit.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import static fi.bizhop.jassu.models.Card.Suit.*;
-import static fi.bizhop.jassu.models.Card.Rank.*;
 
 public class KirvesTests {
     static final List<User> testUsers;
@@ -69,11 +67,13 @@ public class KirvesTests {
         assertTrue(game.isMyTurn(testUsers.get(0)));
         game.playCard(testUsers.get(0), 0);
 
-        String winnerEmail = game.getMessage().split(Pattern.quote(" "))[4];
-        int winnerIndex = Integer.parseInt(winnerEmail.substring(4,5)) - 1;
-        User winnerUser = testUsers.get(winnerIndex);
+        KirvesGameOut out = game.out(null);
+        System.out.println(out.getValtti());
+        System.out.println(getRoundCards(out, 1, 0));
 
-        assertTrue(game.isMyTurn(winnerUser));
+        KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
+        System.out.printf("Round winner is %s%n", winner.getUserEmail());
+        assertTrue(game.isMyTurn(winner.getUser()));
     }
 
     @Test
@@ -157,5 +157,23 @@ public class KirvesTests {
             }
         }
         return game;
+    }
+
+    private String getRoundCards(KirvesGameOut out, int offset, int round) {
+        List<KirvesPlayerOut> players = out.getPlayers();
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < players.size(); i++) {
+            KirvesPlayerOut player = players.get((i + offset) % players.size());
+            sb.append(player.getEmail());
+            sb.append(": ");
+            sb.append(player.getPlayedCards().get(round));
+            if(player.getRoundsWon().contains(round)) {
+                sb.append(" X");
+            }
+            if(i < players.size() - 1) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 }
