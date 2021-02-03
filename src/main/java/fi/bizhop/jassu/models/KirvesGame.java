@@ -159,7 +159,7 @@ public class KirvesGame {
                 }
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
-                    this.message = String.format("%s\nHand winner is %s", this.message, handWinner.getUserEmail());
+                    this.message = String.format("%s, hand winner is %s", this.message, handWinner.getUserEmail());
                     this.players.forEach(KirvesPlayer::resetWonRounds);
 
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
