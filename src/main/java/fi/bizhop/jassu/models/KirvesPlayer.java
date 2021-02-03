@@ -2,25 +2,31 @@ package fi.bizhop.jassu.models;
 
 import fi.bizhop.jassu.exception.CardException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class KirvesPlayer {
     private User player;
     private Cards hand;
     private Cards playedCards;
+    private List<Integer> roundsWon;
 
     public KirvesPlayer(User player) {
         this.player = player;
         this.hand = new Cards();
         this.playedCards = new Cards();
+        this.roundsWon = new ArrayList<>();
     }
 
     public String getUserEmail() {
-        return player == null
+        return this.player == null
                 ? ""
-                : player.getEmail();
+                : this.player.getEmail();
     }
 
     public User getUser() {
-        return player;
+        return this.player;
     }
 
     public int cardsInHand() {
@@ -28,7 +34,7 @@ public class KirvesPlayer {
     }
 
     public void playCard(int index) throws CardException {
-        playedCards.add(this.hand.remove(index));
+        this.playedCards.add(this.hand.remove(index));
     }
 
     public Cards getPlayedCards() {
@@ -41,5 +47,17 @@ public class KirvesPlayer {
 
     public Cards getHand() {
         return this.hand;
+    }
+
+    public void addRoundWon() {
+        this.roundsWon.add(this.playedCards.size() - 1);
+    }
+
+    public void resetWonRounds() {
+        this.roundsWon = new ArrayList<>();
+    }
+
+    public List<Integer> getRoundsWon() {
+        return Collections.unmodifiableList(this.roundsWon);
     }
 }

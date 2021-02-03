@@ -36,8 +36,11 @@ public class AuthService {
         }
     }
 
-    private String getEmail(HttpServletRequest request) throws Exception {
+    private String getEmail(HttpServletRequest request) {
         String token = request.getHeader(HEADER_STRING);
+        if(token == null || token.equals("null")) {
+            return null;
+        }
         String userEmail = null;
         if(token.startsWith(JWTAuth.JWT_TOKEN_PREFIX)) {
             userEmail = JWTAuth.getUserEmail(token);

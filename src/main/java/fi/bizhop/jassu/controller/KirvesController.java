@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -52,8 +50,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    List<KirvesGameOut> getGames(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody List<KirvesGameOut> getGames(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -73,10 +70,15 @@ public class KirvesController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } else {
+            User user = userService.get(email);
+            if(user == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return new KirvesGameOut(String.format("Email not found: %s", email));
+            }
             response.setStatus(HttpServletResponse.SC_OK);
             try {
                 this.kirvesService.joinGame(id, email);
-                return this.kirvesService.getGame(id).out(null);
+                return this.kirvesService.getGame(id).out(user);
             } catch (KirvesGameException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return new KirvesGameOut(e.getMessage());

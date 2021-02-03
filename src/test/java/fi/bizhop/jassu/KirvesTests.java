@@ -42,8 +42,12 @@ public class KirvesTests {
 
         assertEquals(4, game.out(testUsers.get(0)).getPlayers().size());
 
-        //adding same player shouldn't increase number of players
-        game.addPlayer(testUsers.get(3));
+        //adding same player should produce exception, but shouldn't increase number of players
+        try {
+            game.addPlayer(testUsers.get(3));
+        } catch (KirvesGameException e) {
+            assertEquals("Player test4@example.com already joined game id=0", e.getMessage());
+        }
         assertEquals(4, game.out(testUsers.get(0)).getPlayers().size());
     }
 

@@ -33,7 +33,7 @@ public class JWTAuth {
                 .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
                 .compact();
 
-        LOG.debug("Added jwt for " + email);
+        LOG.debug("Generated jwt for " + email);
         return JWT_TOKEN_PREFIX + jwt;
     }
 

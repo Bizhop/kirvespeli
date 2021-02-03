@@ -79,9 +79,11 @@ public class KirvesGame {
                     .filter(player -> newPlayer.getEmail().equals(player.getUserEmail()))
                     .count() == 0) {
                 this.players.add(new KirvesPlayer(newPlayer));
+            } else {
+                throw new KirvesGameException(String.format("Player %s already joined game id=%d", newPlayer.getEmail(), this.id));
             }
         } else {
-            throw new KirvesGameException("Can't join this game now");
+            throw new KirvesGameException(String.format("Can't join this game (id=%d) now", this.id));
         }
     }
 
@@ -109,7 +111,7 @@ public class KirvesGame {
 
     public void deal(User user) throws CardException, KirvesGameException {
         this.deck = new KirvesDeck().shuffle();
-        for(KirvesPlayer player : players) {
+        for(KirvesPlayer player : this.players) {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
@@ -142,12 +144,17 @@ public class KirvesGame {
                 }
                 int winningCard = winningCard(playedCards, this.valtti);
                 KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
+                roundWinner.addRoundWon();
+
+                //TODO: remove this message when winning logic is complete and tested
                 this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
+
                 if(round < NUM_OF_CARD_TO_DEAL - 1) {
                     this.turn = roundWinner.getUser();
                     this.firstPlayerOfRound = findIndex(this.turn);
                 }
                 else {
+                    //TODO: determine hand winner here
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
                     this.turn = this.dealer;
                     this.canDeal = true;
@@ -201,7 +208,7 @@ public class KirvesGame {
     }
 
     private Optional<User> nextPlayer(User user) throws KirvesGameException {
-        if(players.size() > 1) {
+        if(this.players.size() > 1) {
             int myIndex = findIndex(user);
             if (myIndex < 0) {
                 throw new KirvesGameException("Not a player in this game");
@@ -215,7 +222,7 @@ public class KirvesGame {
 
     private int findIndex(User user) {
         for(int i=0; i < this.players.size(); i++) {
-            KirvesPlayer player = players.get(i);
+            KirvesPlayer player = this.players.get(i);
             if(player.getUser().equals(user)) {
                 return i;
             }
@@ -228,7 +235,7 @@ public class KirvesGame {
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     public void setMessage(String message) {
