@@ -129,6 +129,7 @@ public class KirvesGame {
         this.canJoin = false;
         this.turn = nextPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
         this.firstPlayerOfRound = findIndex(this.turn);
+        this.players.forEach(KirvesPlayer::resetWonRounds);
     }
 
     public void playCard(User user, int index) throws KirvesGameException, CardException {
@@ -160,7 +161,6 @@ public class KirvesGame {
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
                     this.message = String.format("%s, hand winner is %s", this.message, handWinner.getUserEmail());
-                    this.players.forEach(KirvesPlayer::resetWonRounds);
 
                     this.dealer = nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer"));
                     this.turn = this.dealer;

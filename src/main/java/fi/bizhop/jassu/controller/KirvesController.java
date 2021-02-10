@@ -8,6 +8,7 @@ import fi.bizhop.jassu.models.KirvesGameOut;
 import fi.bizhop.jassu.models.User;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
+import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,8 @@ public class KirvesController {
     AuthService authService;
     @Autowired
     UserService userService;
+    @Autowired
+    MessageService messageService;
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody KirvesGameOut init(HttpServletRequest request, HttpServletResponse response) {
@@ -78,7 +81,9 @@ public class KirvesController {
             response.setStatus(HttpServletResponse.SC_OK);
             try {
                 this.kirvesService.joinGame(id, email);
-                return this.kirvesService.getGame(id).out(user);
+                KirvesGameOut out = this.kirvesService.getGame(id).out(user);
+                this.refresh(id);
+                return out;
             } catch (KirvesGameException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return new KirvesGameOut(e.getMessage());
@@ -120,11 +125,17 @@ public class KirvesController {
             User me = this.userService.get(email);
             response.setStatus(HttpServletResponse.SC_OK);
             try {
-                return this.kirvesService.action(id, in, me).out(me);
+                KirvesGameOut out = this.kirvesService.action(id, in, me).out(me);
+                refresh(id);
+                return out;
             } catch (KirvesGameException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return new KirvesGameOut(e.getMessage());
             }
         }
+    }
+
+    private void refresh(Long id) {
+        this.messageService.send("/topic/refresh", id.toString());
     }
 }
