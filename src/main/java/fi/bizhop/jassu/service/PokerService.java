@@ -21,11 +21,15 @@ import static fi.bizhop.jassu.models.PokerGame.Action.*;
 public class PokerService {
     private static final Logger LOG = LogManager.getLogger(PokerService.class);
 
-    @Autowired
+    final
     UserService userService;
 
     private Map<Long, PokerGame> games = new HashMap<>();
     private Long sequence = 0L;
+
+    public PokerService(UserService userService) {
+        this.userService = userService;
+    }
 
     public PokerGame newGame() throws CardException {
         return newGameForPlayer("test@example.com");

@@ -10,11 +10,15 @@ import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
-    @Autowired
+    final
     UserService userService;
 
     private static final String HEADER_STRING = "Authorization";
-    
+
+    public AuthService(UserService userService) {
+        this.userService = userService;
+    }
+
     public User login(HttpServletRequest request) throws Exception {
         String userEmail = getEmail(request);
         if(userEmail == null) {

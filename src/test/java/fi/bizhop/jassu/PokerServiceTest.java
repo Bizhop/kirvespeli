@@ -1,26 +1,29 @@
-package fi.bizhop.jassu.util;
+package fi.bizhop.jassu;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.models.Cards;
 import fi.bizhop.jassu.models.PokerGame;
 import fi.bizhop.jassu.models.PokerHand;
 import fi.bizhop.jassu.service.PokerService;
+import fi.bizhop.jassu.service.UserService;
+import fi.bizhop.jassu.util.PokerHandEvaluator;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static fi.bizhop.jassu.models.PokerHand.Type.*;
+import static org.mockito.Mockito.mock;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class PokerServiceTests {
-    @Autowired
-    PokerService service;
+public class PokerServiceTest {
+    static UserService userService;
+
+    @BeforeClass
+    public static void setup() {
+        userService = mock(UserService.class);
+    }
 
     @Test
     public void dummy() {
+        PokerService service = new PokerService(userService);
         service.dummy();
     }
 
@@ -39,6 +42,7 @@ public class PokerServiceTests {
     }
 
     private void getHand(PokerHand.Type type) throws CardException {
+        PokerService service = new PokerService(userService);
         long time = System.currentTimeMillis();
         int reps = 0;
         boolean run = true;
