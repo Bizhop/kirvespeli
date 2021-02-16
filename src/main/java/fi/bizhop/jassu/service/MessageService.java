@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MessageService {
-    @Autowired
+    final
     SimpMessagingTemplate simpMessagingTemplate;
+
+    public MessageService(SimpMessagingTemplate simpMessagingTemplate) {
+        this.simpMessagingTemplate = simpMessagingTemplate;
+    }
 
     public void send(String topic, String message) {
         simpMessagingTemplate.convertAndSend(topic, message);

@@ -16,8 +16,12 @@ import java.util.Optional;
 public class UserService {
     private static final Logger LOG = LogManager.getLogger(UserService.class);
 
-    @Autowired
+    final
     UserRepo userRepo;
+
+    public UserService(UserRepo userRepo) {
+        this.userRepo = userRepo;
+    }
 
     public User get(String email) {
         Optional<UserDB> user = userRepo.findByEmail(email);

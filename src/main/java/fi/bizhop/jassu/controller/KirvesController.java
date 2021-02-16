@@ -10,7 +10,6 @@ import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,14 +20,21 @@ import static java.util.stream.Collectors.toList;
 
 @RestController
 public class KirvesController {
-    @Autowired
+    final
     KirvesService kirvesService;
-    @Autowired
+    final
     AuthService authService;
-    @Autowired
+    final
     UserService userService;
-    @Autowired
+    final
     MessageService messageService;
+
+    public KirvesController(KirvesService kirvesService, AuthService authService, UserService userService, MessageService messageService) {
+        this.kirvesService = kirvesService;
+        this.authService = authService;
+        this.userService = userService;
+        this.messageService = messageService;
+    }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody KirvesGameOut init(HttpServletRequest request, HttpServletResponse response) {

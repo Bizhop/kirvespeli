@@ -78,4 +78,9 @@ public class KirvesGameOut {
     public String getValttiKortti() {
         return valttiKortti;
     }
+
+    public int getNumOfPlayedRounds() {
+        int playedCards = players.stream().map(player -> player.getPlayedCards().size()).reduce(0, Integer::sum);
+        return playedCards / players.size();
+    }
 }

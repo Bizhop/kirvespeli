@@ -15,7 +15,7 @@ import static fi.bizhop.jassu.models.Card.Suit.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class PokerTests {
+public class PokerTest {
     @Test
     public void testPair() throws CardException {
         List<Card> pair = new ArrayList<>();

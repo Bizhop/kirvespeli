@@ -15,7 +15,7 @@ import static fi.bizhop.jassu.models.Card.Suit.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class KirvesTests {
+public class KirvesTest {
     static final List<User> testUsers;
 
     static {
@@ -57,17 +57,22 @@ public class KirvesTests {
 
         assertTrue(game.isMyTurn(testUsers.get(1)));
         game.playCard(testUsers.get(1), 0);
+        assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(2)));
         game.playCard(testUsers.get(2), 0);
+        assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(3)));
         game.playCard(testUsers.get(3), 0);
+        assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(0)));
         game.playCard(testUsers.get(0), 0);
+        assertEquals(1, game.out(null).getNumOfPlayedRounds());
 
         KirvesGameOut out = game.out(null);
+
         System.out.println(out.getValtti());
         System.out.println(getRoundCards(out, 1, 0));
 
