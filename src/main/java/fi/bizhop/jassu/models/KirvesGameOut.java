@@ -80,6 +80,9 @@ public class KirvesGameOut {
     }
 
     public int getNumOfPlayedRounds() {
+        if(players == null) {
+            return 0;
+        }
         int playedCards = players.stream().map(player -> player.getPlayedCards().size()).reduce(0, Integer::sum);
         return playedCards / players.size();
     }
