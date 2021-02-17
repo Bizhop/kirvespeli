@@ -1,4 +1,4 @@
-package fi.bizhop.jassu;
+package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.db.UserRepo;

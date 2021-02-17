@@ -1,6 +1,7 @@
 package fi.bizhop.jassu.models;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class KirvesGameOut {
     private Long id;
@@ -83,7 +84,7 @@ public class KirvesGameOut {
         if(players == null) {
             return 0;
         }
-        int playedCards = players.stream().map(player -> player.getPlayedCards().size()).reduce(0, Integer::sum);
-        return playedCards / players.size();
+
+        return players.stream().map(player -> player.getPlayedCards().size()).mapToInt(value -> value).min().orElse(0);
     }
 }

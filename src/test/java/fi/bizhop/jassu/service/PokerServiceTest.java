@@ -1,4 +1,4 @@
-package fi.bizhop.jassu;
+package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.models.Cards;

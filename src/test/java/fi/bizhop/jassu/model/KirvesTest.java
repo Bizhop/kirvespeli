@@ -1,4 +1,4 @@
-package fi.bizhop.jassu;
+package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
