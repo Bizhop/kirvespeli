@@ -1,7 +1,6 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class KirvesGameOut {
     private Long id;
@@ -16,6 +15,8 @@ public class KirvesGameOut {
     private boolean canDeal;
     private String valttiKortti;
     private String valtti;
+
+    public KirvesGameOut() {}
 
     public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String message, boolean canJoin, boolean canDeal, String valttiKortti, String valtti) {
         this.id = id;

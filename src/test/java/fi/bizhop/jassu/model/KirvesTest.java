@@ -2,7 +2,6 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.models.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -10,8 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static fi.bizhop.jassu.models.Card.Rank.*;
-import static fi.bizhop.jassu.models.Card.Suit.*;
+import static fi.bizhop.jassu.model.Card.Rank.*;
+import static fi.bizhop.jassu.model.Card.Suit.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

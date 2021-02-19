@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static fi.bizhop.jassu.models.Card.Suit.*;
-import static fi.bizhop.jassu.models.Card.Rank.*;
+import static fi.bizhop.jassu.model.Card.Suit.*;
+import static fi.bizhop.jassu.model.Card.Rank.*;
 
 public class StandardDeck extends Cards {
     public StandardDeck() throws CardException {

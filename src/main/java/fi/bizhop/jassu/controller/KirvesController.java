@@ -2,10 +2,10 @@ package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.models.KirvesGame;
-import fi.bizhop.jassu.models.KirvesGameIn;
-import fi.bizhop.jassu.models.KirvesGameOut;
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.KirvesGame;
+import fi.bizhop.jassu.model.KirvesGameIn;
+import fi.bizhop.jassu.model.KirvesGameOut;
+import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;

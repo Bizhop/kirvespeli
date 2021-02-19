@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static fi.bizhop.jassu.models.Card.Rank.BLACK;
-import static fi.bizhop.jassu.models.Card.Rank.JACK;
-import static fi.bizhop.jassu.models.Card.Suit.JOKER;
+import static fi.bizhop.jassu.model.Card.Rank.BLACK;
+import static fi.bizhop.jassu.model.Card.Rank.JACK;
+import static fi.bizhop.jassu.model.Card.Suit.JOKER;
 import static java.util.stream.Collectors.toList;
 
 public class KirvesGame {
