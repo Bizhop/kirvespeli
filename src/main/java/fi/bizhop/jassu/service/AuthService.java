@@ -1,9 +1,8 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.security.GoogleAuth;
 import fi.bizhop.jassu.security.JWTAuth;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;

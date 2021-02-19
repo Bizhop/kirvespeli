@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import java.math.BigDecimal;
 

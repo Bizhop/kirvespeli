@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 public class KirvesGameIn {
     public KirvesGame.Action action;

@@ -1,6 +1,6 @@
 package fi.bizhop.jassu.db;
 
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.User;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

@@ -1,16 +1,14 @@
 package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.exception.CardException;
-import fi.bizhop.jassu.models.Cards;
-import fi.bizhop.jassu.models.PokerGame;
-import fi.bizhop.jassu.models.PokerHand;
-import fi.bizhop.jassu.service.PokerService;
-import fi.bizhop.jassu.service.UserService;
+import fi.bizhop.jassu.model.Cards;
+import fi.bizhop.jassu.model.PokerGame;
+import fi.bizhop.jassu.model.PokerHand;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static fi.bizhop.jassu.models.PokerHand.Type.*;
+import static fi.bizhop.jassu.model.PokerHand.Type.*;
 import static org.mockito.Mockito.mock;
 
 public class PokerServiceTest {

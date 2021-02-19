@@ -2,10 +2,9 @@ package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.db.UserRepo;
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

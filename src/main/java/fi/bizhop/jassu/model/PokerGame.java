@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.service.UserService;
@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fi.bizhop.jassu.models.PokerHand.Type;
+import static fi.bizhop.jassu.model.PokerHand.Type;
 
 public class PokerGame {
 

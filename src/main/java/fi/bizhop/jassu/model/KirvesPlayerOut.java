@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import java.util.List;
 
@@ -7,6 +7,8 @@ public class KirvesPlayerOut {
     private int cardsInHand;
     private List<String> playedCards;
     private List<Integer> roundsWon;
+
+    public KirvesPlayerOut() {}
 
     public KirvesPlayerOut(KirvesPlayer player) {
         this.email = player.getUserEmail();

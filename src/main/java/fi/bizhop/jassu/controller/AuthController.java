@@ -1,6 +1,6 @@
 package fi.bizhop.jassu.controller;
 
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

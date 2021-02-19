@@ -1,10 +1,10 @@
-package fi.bizhop.jassu.models;
+package fi.bizhop.jassu.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.bizhop.jassu.models.PokerGame.Action;
+import static fi.bizhop.jassu.model.PokerGame.Action;
 
 public class PokerGameOut {
     private List<String> hand;

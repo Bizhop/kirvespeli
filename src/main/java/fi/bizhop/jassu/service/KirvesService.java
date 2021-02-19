@@ -2,20 +2,19 @@ package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.models.KirvesGame;
-import fi.bizhop.jassu.models.KirvesGameIn;
-import fi.bizhop.jassu.models.User;
+import fi.bizhop.jassu.model.KirvesGame;
+import fi.bizhop.jassu.model.KirvesGameIn;
+import fi.bizhop.jassu.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static fi.bizhop.jassu.models.KirvesGame.Action.DEAL;
-import static fi.bizhop.jassu.models.KirvesGame.Action.PLAY_CARD;
+import static fi.bizhop.jassu.model.KirvesGame.Action.DEAL;
+import static fi.bizhop.jassu.model.KirvesGame.Action.PLAY_CARD;
 import static java.util.stream.Collectors.toList;
 
 @Service

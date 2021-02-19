@@ -2,9 +2,9 @@ package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.PokerGameException;
-import fi.bizhop.jassu.models.PokerGame;
-import fi.bizhop.jassu.models.PokerGameIn;
-import fi.bizhop.jassu.models.PokerGameOut;
+import fi.bizhop.jassu.model.PokerGame;
+import fi.bizhop.jassu.model.PokerGameIn;
+import fi.bizhop.jassu.model.PokerGameOut;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.PokerService;
 import fi.bizhop.jassu.service.UserService;
