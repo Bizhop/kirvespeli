@@ -4,13 +4,13 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
+import static java.util.stream.Collectors.groupingBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -18,12 +18,11 @@ public class KirvesTest {
     static final List<User> testUsers;
 
     static {
-        List<User> temp = new ArrayList<>();
-        temp.add(new User("test1@example.com", ""));
-        temp.add(new User("test2@example.com", ""));
-        temp.add(new User("test3@example.com", ""));
-        temp.add(new User("test4@example.com", ""));
-        testUsers = Collections.unmodifiableList(temp);
+        testUsers = List.of(
+                new User("test1@example.com", ""),
+                new User("test2@example.com", ""),
+                new User("test3@example.com", ""),
+                new User("test4@example.com", ""));
     }
 
     @Test
@@ -49,24 +48,29 @@ public class KirvesTest {
     }
 
     @Test
-    public void testTurnOrder() throws CardException, KirvesGameException {
+    public void testTurnOrderAndAvailableActions() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(testUsers);
 
+        assertEquals(List.of("DEAL"), getActionMap(game.out()).get(testUsers.get(0).getEmail()));
         game.deal(testUsers.get(0));
 
         assertTrue(game.isMyTurn(testUsers.get(1)));
+        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(1).getEmail()));
         game.playCard(testUsers.get(1), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(2)));
+        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(2).getEmail()));
         game.playCard(testUsers.get(2), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(3)));
+        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(3).getEmail()));
         game.playCard(testUsers.get(3), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.isMyTurn(testUsers.get(0)));
+        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(0).getEmail()));
         game.playCard(testUsers.get(0), 0);
         assertEquals(1, game.out(null).getNumOfPlayedRounds());
 
@@ -78,6 +82,14 @@ public class KirvesTest {
         KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
         System.out.printf("Round winner is %s%n", winner.getUserEmail());
         assertTrue(game.isMyTurn(winner.getUser()));
+    }
+
+    private Map<String, List<String>> getActionMap(KirvesGameOut out) {
+        Map<String, List<String>> response = new HashMap<>();
+        out.getPlayers().forEach(player -> {
+            response.put(player.getEmail(), player.getAvailableActions());
+        });
+        return response;
     }
 
     @Test
@@ -124,7 +136,7 @@ public class KirvesTest {
 
     private void playThroughHand(KirvesGame game, int cardsInHand) throws CardException, KirvesGameException {
         for(int i=0; i < cardsInHand; i++) {
-            playRound(game, true);
+            playRound(game, false);
         }
     }
 

@@ -11,12 +11,14 @@ public class KirvesPlayer {
     private Cards hand;
     private Cards playedCards;
     private List<Integer> roundsWon;
+    private List<KirvesGame.Action> availableActions;
 
     public KirvesPlayer(User player) {
         this.player = player;
         this.hand = new Cards();
         this.playedCards = new Cards();
         this.roundsWon = new ArrayList<>();
+        this.availableActions = new ArrayList<>();
     }
 
     public String getUserEmail() {
@@ -57,7 +59,19 @@ public class KirvesPlayer {
         this.roundsWon = new ArrayList<>();
     }
 
+    public void resetAvailableActions() {
+        this.availableActions = new ArrayList<>();
+    }
+
     public List<Integer> getRoundsWon() {
         return Collections.unmodifiableList(this.roundsWon);
+    }
+
+    public List<KirvesGame.Action> getAvailableActions() {
+        return availableActions;
+    }
+
+    public void setAvailableActions(List<KirvesGame.Action> availableActions) {
+        this.availableActions = availableActions;
     }
 }
