@@ -1,12 +1,16 @@
 package fi.bizhop.jassu.model;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class KirvesPlayerOut {
     private String email;
     private int cardsInHand;
     private List<String> playedCards;
     private List<Integer> roundsWon;
+    private List<String> availableActions;
 
     public KirvesPlayerOut() {}
 
@@ -15,6 +19,9 @@ public class KirvesPlayerOut {
         this.cardsInHand = player.cardsInHand();
         this.playedCards = player.getPlayedCards().getCardsOut();
         this.roundsWon = player.getRoundsWon();
+        this.availableActions = player.getAvailableActions().stream()
+                .map(Enum::name)
+                .collect(toList());
     }
 
     public String getEmail() {
@@ -31,5 +38,9 @@ public class KirvesPlayerOut {
 
     public List<Integer> getRoundsWon() {
         return this.roundsWon;
+    }
+
+    public List<String> getAvailableActions() {
+        return this.availableActions;
     }
 }

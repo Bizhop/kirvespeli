@@ -12,6 +12,8 @@ public class KirvesGameOut {
     private String dealer;
     private List<String> myCardsInHand;
     private boolean canJoin;
+    @Deprecated
+    //@TODO: remove this, functionality is replaced by player available actions
     private boolean canDeal;
     private String valttiKortti;
     private String valtti;
@@ -71,6 +73,8 @@ public class KirvesGameOut {
         return canJoin;
     }
 
+    @Deprecated
+    //@TODO: remove this, functionality is replaced by player available actions
     public boolean getCanDeal() {
         return canDeal;
     }
