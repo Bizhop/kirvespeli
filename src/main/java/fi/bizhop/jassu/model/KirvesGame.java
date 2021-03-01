@@ -9,7 +9,9 @@ import java.util.Optional;
 
 import static fi.bizhop.jassu.model.Card.Rank.BLACK;
 import static fi.bizhop.jassu.model.Card.Rank.JACK;
-import static fi.bizhop.jassu.model.Card.Suit.JOKER;
+import static fi.bizhop.jassu.model.Card.Suit.*;
+import static fi.bizhop.jassu.model.KirvesGame.Action.DEAL;
+import static fi.bizhop.jassu.model.KirvesGame.Action.PLAY_CARD;
 import static java.util.stream.Collectors.toList;
 
 public class KirvesGame {
@@ -121,7 +123,7 @@ public class KirvesGame {
         }
         this.valttiCard = this.deck.remove(0);
         if(this.valttiCard.getSuit() == JOKER) {
-            this.valtti = this.valttiCard.getRank() == BLACK ? Card.Suit.SPADES : Card.Suit.HEARTS;
+            this.valtti = this.valttiCard.getRank() == BLACK ? SPADES : HEARTS;
         } else {
             this.valtti = this.valttiCard.getSuit();
         }
@@ -171,7 +173,7 @@ public class KirvesGame {
     private void setCardPlayer(KirvesPlayer player) {
         this.turn = player;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
-        this.turn.setAvailableActions(List.of(Action.PLAY_CARD));
+        this.turn.setAvailableActions(List.of(PLAY_CARD));
     }
 
     private void setDealer(KirvesPlayer player) {
@@ -180,7 +182,7 @@ public class KirvesGame {
         this.canDeal = true;
         this.valttiCard = null;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
-        this.dealer.setAvailableActions(List.of(Action.DEAL));
+        this.dealer.setAvailableActions(List.of(DEAL));
     }
 
     public KirvesPlayer determineHandWinner() throws KirvesGameException {
@@ -242,8 +244,8 @@ public class KirvesGame {
     }
 
     private static boolean candidateWins(Card leader, Card candidate, Card.Suit valtti) {
-        int leaderRank = getConvertedRank(leader, valtti);
-        int candidateRank = getConvertedRank(candidate, valtti);
+        int leaderRank = getConvertedRank(leader);
+        int candidateRank = getConvertedRank(candidate);
         Card.Suit leaderSuit = leader.getSuit().equals(JOKER) || leader.getRank().equals(JACK) ? valtti : leader.getSuit();
         Card.Suit candidateSuit = candidate.getSuit().equals(JOKER) || candidate.getRank().equals(JACK) ? valtti : candidate.getSuit();
 
@@ -254,7 +256,7 @@ public class KirvesGame {
                 candidateRank > leaderRank;
     }
 
-    private static int getConvertedRank(Card card, Card.Suit valtti) {
+    private static int getConvertedRank(Card card) {
         if(card.getRank().equals(JACK)) {
             switch (card.getSuit()) {
                 case DIAMONDS:
