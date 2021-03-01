@@ -66,7 +66,7 @@ public class KirvesController {
             return null;
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            return this.kirvesService.getActiveGames(email).stream()
+            return this.kirvesService.getActiveGames().stream()
                     .map(KirvesGame::out)
                     .collect(toList());
         }

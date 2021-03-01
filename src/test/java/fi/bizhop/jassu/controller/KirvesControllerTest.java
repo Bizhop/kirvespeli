@@ -59,7 +59,7 @@ public class KirvesControllerTest extends TestBase {
         RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
 
         when(authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
-        when(kirvesService.getActiveGames(eq(TEST_USER_EMAIL))).thenReturn(getTestGame());
+        when(kirvesService.getActiveGames()).thenReturn(getTestGame());
 
         MvcResult result = mockMvc.perform(builder).andReturn();
 

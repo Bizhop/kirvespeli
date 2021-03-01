@@ -4,13 +4,14 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import org.junit.Test;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
-import static java.util.stream.Collectors.groupingBy;
+import static fi.bizhop.jassu.model.KirvesGame.Action.DEAL;
+import static fi.bizhop.jassu.model.KirvesGame.Action.PLAY_CARD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -51,26 +52,22 @@ public class KirvesTest {
     public void testTurnOrderAndAvailableActions() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(testUsers);
 
-        assertEquals(List.of("DEAL"), getActionMap(game.out()).get(testUsers.get(0).getEmail()));
+        assertTrue(game.userHasActionAvailable(testUsers.get(0), DEAL));
         game.deal(testUsers.get(0));
 
-        assertTrue(game.isMyTurn(testUsers.get(1)));
-        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(1).getEmail()));
+        assertTrue(game.userHasActionAvailable(testUsers.get(1), PLAY_CARD));
         game.playCard(testUsers.get(1), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
-        assertTrue(game.isMyTurn(testUsers.get(2)));
-        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(2).getEmail()));
+        assertTrue(game.userHasActionAvailable(testUsers.get(2), PLAY_CARD));
         game.playCard(testUsers.get(2), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
-        assertTrue(game.isMyTurn(testUsers.get(3)));
-        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(3).getEmail()));
+        assertTrue(game.userHasActionAvailable(testUsers.get(3), PLAY_CARD));
         game.playCard(testUsers.get(3), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
-        assertTrue(game.isMyTurn(testUsers.get(0)));
-        assertEquals(List.of("PLAY_CARD"), getActionMap(game.out()).get(testUsers.get(0).getEmail()));
+        assertTrue(game.userHasActionAvailable(testUsers.get(0), PLAY_CARD));
         game.playCard(testUsers.get(0), 0);
         assertEquals(1, game.out(null).getNumOfPlayedRounds());
 
@@ -81,15 +78,7 @@ public class KirvesTest {
 
         KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
         System.out.printf("Round winner is %s%n", winner.getUserEmail());
-        assertTrue(game.isMyTurn(winner.getUser()));
-    }
-
-    private Map<String, List<String>> getActionMap(KirvesGameOut out) {
-        Map<String, List<String>> response = new HashMap<>();
-        out.getPlayers().forEach(player -> {
-            response.put(player.getEmail(), player.getAvailableActions());
-        });
-        return response;
+        assertTrue(game.userHasActionAvailable(winner.getUser(), PLAY_CARD));
     }
 
     @Test
@@ -141,7 +130,10 @@ public class KirvesTest {
     }
 
     private void playRound(KirvesGame game, boolean printMessage) throws KirvesGameException, CardException {
-        User turn = testUsers.stream().filter(game::isMyTurn).findFirst().orElseThrow(KirvesGameException::new);
+        User turn = testUsers.stream()
+                .filter(user -> game.userHasActionAvailable(user, PLAY_CARD))
+                .findFirst()
+                .orElseThrow(KirvesGameException::new);
         int index = testUsers.indexOf(turn);
         List<User> nextRoundUsers = new ArrayList<>(testUsers.subList(index, testUsers.size()));
         if(index > 0) {
@@ -152,7 +144,7 @@ public class KirvesTest {
             if (!game.hasPlayer(player)) {
                 throw new KirvesGameException(String.format("TEST: user %s is not in this game", player.getEmail()));
             }
-            if(!game.isMyTurn(player)) {
+            if(!game.userHasActionAvailable(player, PLAY_CARD)) {
                 throw new KirvesGameException(String.format("TEST: user %s is not in turn", player.getEmail()));
             }
             game.playCard(player, 0);

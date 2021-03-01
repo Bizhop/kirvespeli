@@ -13,15 +13,12 @@ public class KirvesGameOut {
     private List<String> myCardsInHand;
     private List<String> myAvailableActions;
     private boolean canJoin;
-    @Deprecated
-    //@TODO: remove this, functionality is replaced by player available actions
-    private boolean canDeal;
     private String valttiKortti;
     private String valtti;
 
     public KirvesGameOut() {}
 
-    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, List<String> myAvailableActions, String message, boolean canJoin, boolean canDeal, String valttiKortti, String valtti) {
+    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, List<String> myAvailableActions, String message, boolean canJoin, String valttiKortti, String valtti) {
         this.id = id;
         this.admin = admin;
         this.players = players;
@@ -32,7 +29,6 @@ public class KirvesGameOut {
         this.myAvailableActions = myAvailableActions;
         this.message = message;
         this.canJoin = canJoin;
-        this.canDeal = canDeal;
         this.valttiKortti = valttiKortti;
         this.valtti = valtti;
     }
@@ -73,12 +69,6 @@ public class KirvesGameOut {
 
     public boolean getCanJoin() {
         return canJoin;
-    }
-
-    @Deprecated
-    //@TODO: remove this, functionality is replaced by player available actions
-    public boolean getCanDeal() {
-        return canDeal;
     }
 
     public String getValtti() { return valtti; }

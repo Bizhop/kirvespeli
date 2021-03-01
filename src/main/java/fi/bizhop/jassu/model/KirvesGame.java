@@ -67,7 +67,6 @@ public class KirvesGame {
                 myActions,
                 this.message,
                 this.canJoin,
-                userCanDeal(user),
                 this.valttiCard == null ? "" : this.valttiCard.toString(),
                 this.valtti == null ? "" : this.valtti.toString()
         );
@@ -84,8 +83,7 @@ public class KirvesGame {
     public void addPlayer(User newPlayer) throws KirvesGameException {
         if(this.canJoin) {
             if (this.players.stream()
-                    .filter(player -> newPlayer.getEmail().equals(player.getUserEmail()))
-                    .count() == 0) {
+                    .noneMatch(player -> newPlayer.getEmail().equals(player.getUserEmail()))) {
                 this.players.add(new KirvesPlayer(newPlayer));
             } else {
                 throw new KirvesGameException(String.format("Player %s already joined game id=%d", newPlayer.getEmail(), this.id));
@@ -112,12 +110,6 @@ public class KirvesGame {
     public boolean userCanDeal(User user) {
         return getPlayer(user)
                 .filter(player -> player.equals(this.turn) && player.equals(this.dealer) && this.canDeal)
-                .isPresent();
-    }
-
-    public boolean isMyTurn(User user) {
-        return getPlayer(user)
-                .filter(player -> this.turn.equals(player))
                 .isPresent();
     }
 
@@ -159,9 +151,6 @@ public class KirvesGame {
                 int winningCard = winningCard(playedCards, this.valtti);
                 KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
                 roundWinner.addRoundWon();
-
-                //TODO: remove this message when winning logic is complete and tested
-                this.message = String.format("Round %d winner is %s", round + 1, roundWinner.getUserEmail());
 
                 if(round < NUM_OF_CARD_TO_DEAL - 1) {
                     setCardPlayer(roundWinner);
@@ -244,6 +233,12 @@ public class KirvesGame {
             }
         }
         return leader;
+    }
+
+    public boolean userHasActionAvailable(User user, KirvesGame.Action action) {
+        return this.getPlayer(user)
+                .map(player -> player.getAvailableActions().contains(action))
+                .orElse(false);
     }
 
     private static boolean candidateWins(Card leader, Card candidate, Card.Suit valtti) {

@@ -40,7 +40,7 @@ public class KirvesService {
         return game;
     }
 
-    public List<KirvesGame> getActiveGames(String email) {
+    public List<KirvesGame> getActiveGames() {
         return this.games.values().stream()
                 .filter(KirvesGame::isActive)
                 .collect(toList());
@@ -73,7 +73,7 @@ public class KirvesService {
     public KirvesGame action(Long id, KirvesGameIn in, User user) throws KirvesGameException{
         KirvesGame game = this.getGame(id);
         if(in.action == DEAL) {
-            if(game.userCanDeal(user)) {
+            if(game.userHasActionAvailable(user, DEAL)) {
                 try {
                     game.deal(user);
                 } catch (CardException e) {
@@ -84,15 +84,15 @@ public class KirvesService {
             }
         }
         if(in.action == PLAY_CARD) {
-            if(game.isMyTurn(user)) {
+            if(game.userHasActionAvailable(user, PLAY_CARD)) {
                 try {
                     game.playCard(user, in.index);
                 } catch (CardException e) {
-                    game.setMessage(String.format("Can't play card with index %d", in.index));
+                    game.setMessage(String.format("Unable to PLAY_CARD with index %d", in.index));
                 }
             }
             else {
-                game.setMessage("It's not your turn");
+                game.setMessage("It's not your turn to PLAY_CARD");
             }
         }
         return game;
