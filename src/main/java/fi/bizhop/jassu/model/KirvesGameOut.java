@@ -11,6 +11,7 @@ public class KirvesGameOut {
     private String turn;
     private String dealer;
     private List<String> myCardsInHand;
+    private List<String> myAvailableActions;
     private boolean canJoin;
     @Deprecated
     //@TODO: remove this, functionality is replaced by player available actions
@@ -20,7 +21,7 @@ public class KirvesGameOut {
 
     public KirvesGameOut() {}
 
-    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String message, boolean canJoin, boolean canDeal, String valttiKortti, String valtti) {
+    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, List<String> myAvailableActions, String message, boolean canJoin, boolean canDeal, String valttiKortti, String valtti) {
         this.id = id;
         this.admin = admin;
         this.players = players;
@@ -28,6 +29,7 @@ public class KirvesGameOut {
         this.dealer = dealer;
         this.turn = turn;
         this.myCardsInHand = myCardsInHand;
+        this.myAvailableActions = myAvailableActions;
         this.message = message;
         this.canJoin = canJoin;
         this.canDeal = canDeal;
@@ -91,5 +93,9 @@ public class KirvesGameOut {
         }
 
         return players.stream().map(player -> player.getPlayedCards().size()).mapToInt(value -> value).min().orElse(0);
+    }
+
+    public List<String> getMyAvailableActions() {
+        return myAvailableActions;
     }
 }

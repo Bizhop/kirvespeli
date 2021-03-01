@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.toList;
 public class KirvesGame {
     private static final int NUM_OF_CARD_TO_DEAL = 5;
 
-    private Long id;
+    private final Long id;
     private final User admin;
     private Cards deck;
     private final List<KirvesPlayer> players = new ArrayList<>();
@@ -46,10 +46,14 @@ public class KirvesGame {
 
     public KirvesGameOut out(User user) {
         List<String> myCards = new ArrayList<>();
+        List<String> myActions = new ArrayList<>();
         if(user != null) {
             Optional<KirvesPlayer> me = getPlayer(user);
             if(me.isPresent()) {
                 myCards = me.get().getHand().getCardsOut();
+                myActions = me.get().getAvailableActions().stream()
+                        .map(Enum::name)
+                        .collect(toList());
             }
         }
         return new KirvesGameOut(
@@ -60,6 +64,7 @@ public class KirvesGame {
                 this.dealer.getUserEmail(),
                 this.turn.getUserEmail(),
                 myCards,
+                myActions,
                 this.message,
                 this.canJoin,
                 userCanDeal(user),
