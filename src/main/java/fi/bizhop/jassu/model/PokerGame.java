@@ -5,7 +5,10 @@ import fi.bizhop.jassu.service.UserService;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.PokerHand.Type;
@@ -15,7 +18,7 @@ public class PokerGame {
     private Cards deck;
     private Cards hand;
     private BigDecimal money;
-    private List<Action> availableActions = Arrays.asList(Action.HOLD);
+    private List<Action> availableActions = List.of(Action.HOLD);
     private String player;
     private int doubles = 0;
     private PokerHand evaluation;
@@ -117,7 +120,7 @@ public class PokerGame {
         this.hand.hold(parameters, this.getDeck());
         this.evaluation = PokerHandEvaluator.evaluate(hand);
         this.money = this.money.multiply(multipliers.get(this.evaluation.type));
-        this.availableActions = this.money.equals(BigDecimal.valueOf(0)) ? new ArrayList<>() : Arrays.asList(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
+        this.availableActions = this.money.equals(BigDecimal.valueOf(0)) ? new ArrayList<>() : List.of(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
     }
 
     public PokerHand getEvaluation() {

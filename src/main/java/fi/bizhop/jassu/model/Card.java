@@ -23,6 +23,16 @@ public class Card implements Comparable<Card> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if(o == null) return false;
+        if(o instanceof Card) {
+            Card card = (Card) o;
+            return this.suit == card.suit && this.rank == card.rank;
+        }
+        return false;
+    }
+
+    @Override
     //default sort is by rank desc
     public int compareTo(Card card) {
         return card.rank.getValue() - this.rank.getValue();

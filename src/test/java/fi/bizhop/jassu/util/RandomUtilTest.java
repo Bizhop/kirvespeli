@@ -35,4 +35,17 @@ public class RandomUtilTest {
             fail("100 should not be fair probability");
         } catch (ProbabilityException e) {}
     }
+
+    @Test
+    public void massTestGetInt() {
+        final int REPETITIONS = 1000000;
+        final int MAX = 10;
+
+        long begin = System.currentTimeMillis();
+        for(int i = 0; i < REPETITIONS; i++) {
+            int number = RandomUtil.getInt(MAX);
+            assertTrue(number >= 0 && number < MAX);
+        }
+        System.out.printf("Testing time: %d ms", System.currentTimeMillis() - begin);
+    }
 }

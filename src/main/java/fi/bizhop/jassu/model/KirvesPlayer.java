@@ -1,6 +1,7 @@
 package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
+import fi.bizhop.jassu.exception.KirvesGameException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 public class KirvesPlayer {
     private User player;
     private Cards hand;
+    private Card extraCard;
     private Cards playedCards;
     private List<Integer> roundsWon;
     private List<KirvesGame.Action> availableActions;
@@ -73,5 +75,22 @@ public class KirvesPlayer {
 
     public void setAvailableActions(List<KirvesGame.Action> availableActions) {
         this.availableActions = availableActions;
+    }
+
+    public Card getExtraCard() {
+        return extraCard;
+    }
+
+    public void setExtraCard(Card extraCard) {
+        this.extraCard = extraCard;
+    }
+
+    public void discard(int index) throws KirvesGameException, CardException {
+        if(extraCard == null) {
+            throw new KirvesGameException("Cannot discard without extra card");
+        }
+        this.hand.remove(index);
+        this.hand.add(this.extraCard);
+        this.extraCard = null;
     }
 }

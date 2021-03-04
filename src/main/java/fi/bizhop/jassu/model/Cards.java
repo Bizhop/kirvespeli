@@ -183,4 +183,12 @@ public class Cards {
     public List<Card> getCards() {
         return new ArrayList<>(this.cards);
     }
+
+    //get specific card from deck
+    public Card getCard(Card card) throws CardException {
+        return this.cards.stream()
+                .filter(c -> c.equals(card))
+                .findFirst()
+                .orElseThrow(() -> new CardException(String.format("Card %s not found in deck", card)));
+    }
 }
