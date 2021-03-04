@@ -146,7 +146,7 @@ public class KirvesGame {
     public void cut(User cutter, Card cutCard) throws CardException, KirvesGameException {
         this.deck = new KirvesDeck().shuffle();
         int index = RandomUtil.getInt(this.deck.size());
-        this.cutCard = cutCard != null ? this.deck.getCard(cutCard) : this.deck.remove(index);
+        this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
         if(this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
             KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
             cutterPlayer.setExtraCard(this.cutCard);

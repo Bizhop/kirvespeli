@@ -184,11 +184,11 @@ public class Cards {
         return new ArrayList<>(this.cards);
     }
 
-    //get specific card from deck
-    public Card getCard(Card card) throws CardException {
-        return this.cards.stream()
-                .filter(c -> c.equals(card))
-                .findFirst()
-                .orElseThrow(() -> new CardException(String.format("Card %s not found in deck", card)));
+    //remove specific card from deck
+    public Card removeCard(Card card) throws CardException {
+        if(this.cards.remove(card)) {
+            return card;
+        }
+        else throw new CardException(String.format("Card %s not found in deck", card));
     }
 }
