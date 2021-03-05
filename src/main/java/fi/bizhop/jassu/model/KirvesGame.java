@@ -147,6 +147,7 @@ public class KirvesGame {
         this.deck = new KirvesDeck().shuffle();
         int index = RandomUtil.getInt(this.deck.size());
         this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
+        this.message = String.format("Cut card is %s %s", this.cutCard.getSuit().name(), this.cutCard.getRank().name());
         if(this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
             KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
             cutterPlayer.setExtraCard(this.cutCard);
@@ -198,7 +199,7 @@ public class KirvesGame {
                 }
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
-                    this.message = String.format("%s, hand winner is %s", this.message, handWinner.getUserEmail());
+                    this.message = String.format("Hand winner is %s", handWinner.getUserEmail());
 
                     setDealer(
                             nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer")),

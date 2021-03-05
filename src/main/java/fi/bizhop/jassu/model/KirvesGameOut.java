@@ -90,4 +90,8 @@ public class KirvesGameOut {
     public List<String> getMyAvailableActions() {
         return myAvailableActions;
     }
+
+    public String getMyExtraCard() {
+        return myExtraCard;
+    }
 }
