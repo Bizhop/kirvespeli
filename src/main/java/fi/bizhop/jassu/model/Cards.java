@@ -183,4 +183,12 @@ public class Cards {
     public List<Card> getCards() {
         return new ArrayList<>(this.cards);
     }
+
+    //remove specific card from deck
+    public Card removeCard(Card card) throws CardException {
+        if(this.cards.remove(card)) {
+            return card;
+        }
+        else throw new CardException(String.format("Card %s not found in deck", card));
+    }
 }

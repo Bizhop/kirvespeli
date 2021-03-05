@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class GoogleAuth {
     private static final Logger LOG = LogManager.getLogger(GoogleAuth.class);
@@ -16,7 +17,7 @@ public class GoogleAuth {
 
     static {
         VERIFIER = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Arrays.asList(System.getenv("CLIENT_ID")))
+                .setAudience(List.of(System.getenv("CLIENT_ID")))
                 .build();
     }
 

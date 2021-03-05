@@ -17,4 +17,8 @@ public class RandomUtil {
 
         return ThreadLocalRandom.current().nextInt(100) < probability;
     }
+
+    public static int getInt(int bound) {
+        return ThreadLocalRandom.current().nextInt(bound);
+    }
 }

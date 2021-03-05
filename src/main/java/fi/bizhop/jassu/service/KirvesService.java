@@ -13,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static fi.bizhop.jassu.model.KirvesGame.Action.DEAL;
-import static fi.bizhop.jassu.model.KirvesGame.Action.PLAY_CARD;
+import static fi.bizhop.jassu.model.KirvesGame.Action.*;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -83,16 +82,37 @@ public class KirvesService {
                 game.setMessage("You can't deal now");
             }
         }
-        if(in.action == PLAY_CARD) {
+        else if(in.action == PLAY_CARD) {
             if(game.userHasActionAvailable(user, PLAY_CARD)) {
                 try {
                     game.playCard(user, in.index);
                 } catch (CardException e) {
                     game.setMessage(String.format("Unable to PLAY_CARD with index %d", in.index));
                 }
-            }
-            else {
+            } else {
                 game.setMessage("It's not your turn to PLAY_CARD");
+            }
+        }
+        else if(in.action == CUT) {
+            if(game.userHasActionAvailable(user, CUT)) {
+                try {
+                    game.cut(user);
+                } catch (CardException e) {
+                    game.setMessage("Unable to CUT");
+                }
+            } else {
+                game.setMessage("It's not your turn to CUT");
+            }
+        }
+        else if(in.action == DISCARD) {
+            if(game.userHasActionAvailable(user, DISCARD)) {
+                try {
+                    game.discard(user, in.index);
+                } catch (CardException e) {
+                    game.setMessage(String.format("Unable to DISCARD with index %d", in.index));
+                }
+            } else {
+                game.setMessage("It's not your turn to DISCARD");
             }
         }
         return game;
