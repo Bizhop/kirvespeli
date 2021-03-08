@@ -82,11 +82,11 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, JACKS_AND_JOKERS.get(RandomUtil.getInt(JACKS_AND_JOKERS.size())));
+        game.cut(cutter, getRandomCard(JACKS_AND_JOKERS));
         assertNotNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
-        game.deal(TEST_USERS.get(0));
+        game.deal(TEST_USERS.get(0), getRandomCard(OTHER_CARDS));
         assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
@@ -124,16 +124,30 @@ public class KirvesTest {
     }
 
     @Test
+    public void testVakyri() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        assertNotNull(game.getCutCard());
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
+        game.deal(TEST_USERS.get(0), getRandomCard(JACKS_AND_JOKERS));
+        assertNull(game.getCutCard());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+    }
+
+    @Test
     public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(TEST_USERS);
 
         for (User dealer : TEST_USERS) {
             User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-            game.cut(cutter, OTHER_CARDS.get(RandomUtil.getInt(OTHER_CARDS.size())));
+            game.cut(cutter, getRandomCard(OTHER_CARDS));
             assertNotNull(game.getCutCard());
 
             assertTrue(game.userHasActionAvailable(dealer, DEAL));
-            game.deal(dealer);
+            game.deal(dealer, getRandomCard(OTHER_CARDS));
             playThroughHand(game, 5);
         }
     }
@@ -167,6 +181,10 @@ public class KirvesTest {
         //jokeri voittaa pampun
         cards = cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
         assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+    }
+
+    private Card getRandomCard(List<Card> cards) {
+        return cards.get(RandomUtil.getInt(cards.size()));
     }
 
     private void playThroughHand(KirvesGame game, int cardsInHand) throws CardException, KirvesGameException {

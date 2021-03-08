@@ -122,20 +122,28 @@ public class KirvesGame {
     }
 
     public void deal(User user) throws CardException, KirvesGameException {
+        deal(user, null);
+    }
+
+    //use this method directly only when testing!
+    public void deal(User user, Card valttiCard) throws CardException, KirvesGameException {
         if(!this.canDeal) throw new KirvesGameException("Trying to deal but can't deal");
         for(KirvesPlayer player : this.players) {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
-        this.valttiCard = this.deck.remove(0);
-        //yhteinen
-        if(this.players.stream().anyMatch(player -> player.getExtraCard() != null)) {
-            this.dealer.setExtraCard(this.valttiCard);
-        }
+        this.valttiCard = valttiCard == null ? this.deck.remove(0) : valttiCard;
         if(this.valttiCard.getSuit() == JOKER) {
             this.valtti = this.valttiCard.getRank() == BLACK ? SPADES : HEARTS;
         } else {
             this.valtti = this.valttiCard.getSuit();
+        }
+        //yhteinen tai väkyri
+        if(     this.players.stream().anyMatch(player -> player.getExtraCard() != null) ||
+                this.valttiCard.getSuit() == JOKER || this.valttiCard.getRank() == JACK
+        ) {
+            this.dealer.setExtraCard(this.valttiCard);
+            this.valttiCard = null;
         }
         this.canDeal = false;
         this.cutCard = null;
