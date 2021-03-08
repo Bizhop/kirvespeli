@@ -10,6 +10,7 @@ public class KirvesPlayerOut {
     private List<String> playedCards;
     private List<Integer> roundsWon;
     private List<String> availableActions;
+    private String extraCard;
 
     public KirvesPlayerOut() {}
 
@@ -21,6 +22,7 @@ public class KirvesPlayerOut {
         this.availableActions = player.getAvailableActions().stream()
                 .map(Enum::name)
                 .collect(toList());
+        this.extraCard = player.getExtraCard() != null ? player.getExtraCard().toString() : null;
     }
 
     public String getEmail() {
@@ -41,5 +43,9 @@ public class KirvesPlayerOut {
 
     public List<String> getAvailableActions() {
         return this.availableActions;
+    }
+
+    public String getExtraCard() {
+        return extraCard;
     }
 }

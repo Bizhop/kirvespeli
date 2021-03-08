@@ -89,6 +89,10 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0));
         assertNull(game.getCutCard());
 
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        game.discard(TEST_USERS.get(0), 0);
+        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
         game.discard(TEST_USERS.get(3), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
@@ -111,7 +115,7 @@ public class KirvesTest {
 
         KirvesGameOut out = game.out(null);
 
-        System.out.println(out.getValtti());
+        System.out.printf("Valtti: %s%n", out.getValtti());
         System.out.println(getRoundCards(out, 1, 0));
 
         KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
