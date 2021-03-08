@@ -128,6 +128,10 @@ public class KirvesGame {
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
         this.valttiCard = this.deck.remove(0);
+        //yhteinen
+        if(this.players.stream().anyMatch(player -> player.getExtraCard() != null)) {
+            this.dealer.setExtraCard(this.valttiCard);
+        }
         if(this.valttiCard.getSuit() == JOKER) {
             this.valtti = this.valttiCard.getRank() == BLACK ? SPADES : HEARTS;
         } else {
@@ -214,6 +218,7 @@ public class KirvesGame {
 
     private void setCardPlayer(KirvesPlayer player) {
         this.players.forEach(KirvesPlayer::resetAvailableActions);
+        //TODO: possibly buggy: this way of finding the player in need of discard doesn't always provide the same order
         Optional<KirvesPlayer> needsToDiscard = this.players.stream()
                 .filter(item -> item.getExtraCard() != null)
                 .findFirst();
