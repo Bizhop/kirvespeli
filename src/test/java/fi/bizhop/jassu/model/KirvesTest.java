@@ -102,20 +102,12 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(JACKS_AND_JOKERS));
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
         assertNotNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
         assertNull(game.getCutCard());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
-        game.discard(TEST_USERS.get(0), 0);
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
-        game.discard(TEST_USERS.get(3), 0);
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         game.playCard(TEST_USERS.get(1), 0);
@@ -154,7 +146,26 @@ public class KirvesTest {
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
         game.deal(TEST_USERS.get(0), JACKS_AND_JOKERS);
         assertNull(game.getCutCard());
+
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+    }
+
+    @Test
+    public void testYhteinen() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(JACKS_AND_JOKERS));
+        assertNotNull(game.getCutCard());
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
+        game.deal(TEST_USERS.get(0));
+        assertNull(game.getCutCard());
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        game.discard(TEST_USERS.get(0), 0);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
     }
 
     @Test
