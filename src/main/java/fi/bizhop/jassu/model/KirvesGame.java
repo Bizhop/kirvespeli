@@ -126,13 +126,26 @@ public class KirvesGame {
     }
 
     //use this method directly only when testing!
-    public void deal(User user, Card valttiCard) throws CardException, KirvesGameException {
+    public void deal(User user, List<Card> possibleValttiCards) throws CardException, KirvesGameException {
         if(!this.canDeal) throw new KirvesGameException("Trying to deal but can't deal");
         for(KirvesPlayer player : this.players) {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
-        this.valttiCard = valttiCard == null ? this.deck.remove(0) : valttiCard;
+        if(possibleValttiCards == null) {
+            //normal flow
+            this.valttiCard = this.deck.remove(0);
+        }
+        else {
+            //test flow
+            while(true) {
+                Card candidate = this.deck.get(RandomUtil.getInt(this.deck.size()));
+                if(possibleValttiCards.contains(candidate)) {
+                    this.valttiCard = this.deck.removeCard(candidate);
+                    break;
+                }
+            }
+        }
         if(this.valttiCard.getSuit() == JOKER) {
             this.valtti = this.valttiCard.getRank() == BLACK ? SPADES : HEARTS;
         } else {

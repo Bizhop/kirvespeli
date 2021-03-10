@@ -2,10 +2,10 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
-import fi.bizhop.jassu.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
@@ -16,8 +16,9 @@ import static org.junit.Assert.*;
 public class KirvesTest {
     static final List<User> TEST_USERS;
 
-    static final List<Card> JACKS_AND_JOKERS = new ArrayList<>();
-    static final List<Card> OTHER_CARDS = new ArrayList<>();
+    static List<Card> JACKS_AND_JOKERS;
+    static List<Card> OTHER_CARDS;
+    static List<Card> TWOS_AND_ACES;
 
     static {
         TEST_USERS = List.of(
@@ -27,28 +28,47 @@ public class KirvesTest {
                 new User("test4@example.com", ""));
 
         try {
-            JACKS_AND_JOKERS.addAll(List.of(
+            JACKS_AND_JOKERS = List.of(
                     new Card(HEARTS, JACK),
-                    new Card(HEARTS, JACK),
-                    new Card(HEARTS, JACK),
-                    new Card(HEARTS, JACK),
+                    new Card(SPADES, JACK),
+                    new Card(CLUBS, JACK),
+                    new Card(DIAMONDS, JACK),
                     new Card(JOKER, BLACK),
-                    new Card(JOKER, RED)));
+                    new Card(JOKER, RED));
         } catch (CardException e) {
             System.out.println("Unable to initialize card list");
             System.exit(1);
         }
 
         try {
+            List<Card> temp = new ArrayList<>();
             for(Card.Suit suit : Card.Suit.values()) {
                 if(suit != JOKER) {
                     for(Card.Rank rank : Card.Rank.values()) {
-                        if(!List.of(JACK, BLACK, RED).contains(rank)) {
-                            OTHER_CARDS.add(new Card(suit, rank));
+                        if(List.of(TWO, ACE).contains(rank)) {
+                            temp.add(new Card(suit, rank));
                         }
                     }
                 }
             }
+            TWOS_AND_ACES = Collections.unmodifiableList(temp);
+        } catch (CardException e) {
+            System.out.println("Unable to initialize card list");
+            System.exit(1);
+        }
+
+        try {
+            List<Card> temp = new ArrayList<>();
+            for(Card.Suit suit : Card.Suit.values()) {
+                if(suit != JOKER) {
+                    for(Card.Rank rank : Card.Rank.values()) {
+                        if(!List.of(JACK, BLACK, RED, TWO, ACE).contains(rank)) {
+                            temp.add(new Card(suit, rank));
+                        }
+                    }
+                }
+            }
+            OTHER_CARDS = Collections.unmodifiableList(temp);
         } catch (CardException e) {
             System.out.println("Unable to initialize card list");
             System.exit(1);
@@ -86,7 +106,7 @@ public class KirvesTest {
         assertNotNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
-        game.deal(TEST_USERS.get(0), getRandomCard(OTHER_CARDS));
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
         assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
@@ -132,7 +152,7 @@ public class KirvesTest {
         assertNotNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
-        game.deal(TEST_USERS.get(0), getRandomCard(JACKS_AND_JOKERS));
+        game.deal(TEST_USERS.get(0), JACKS_AND_JOKERS);
         assertNull(game.getCutCard());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
     }
@@ -142,13 +162,16 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         for (User dealer : TEST_USERS) {
+            Card cutCard = getRandomCard(OTHER_CARDS);
             User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-            game.cut(cutter, getRandomCard(OTHER_CARDS));
+            game.cut(cutter, cutCard);
             assertNotNull(game.getCutCard());
 
+            List<Card> possibleValttiCards = new ArrayList<>(OTHER_CARDS);
+            possibleValttiCards.remove(cutCard);
             assertTrue(game.userHasActionAvailable(dealer, DEAL));
-            game.deal(dealer, getRandomCard(OTHER_CARDS));
-            playThroughHand(game, 5);
+            game.deal(dealer, possibleValttiCards);
+            playThroughHand(game);
         }
     }
 
@@ -183,12 +206,39 @@ public class KirvesTest {
         assertEquals(1, KirvesGame.winningCard(cards, SPADES));
     }
 
-    private Card getRandomCard(List<Card> cards) {
-        return cards.get(RandomUtil.getInt(cards.size()));
+    @Test
+    public void testGetRandomCards() throws CardException {
+        assertEquals(6, JACKS_AND_JOKERS.size());
+        assertEquals(8, TWOS_AND_ACES.size());
+        assertEquals(40, OTHER_CARDS.size());
+
+        Card jackOrJoker = getRandomCard(JACKS_AND_JOKERS);
+        assertTrue(JACKS_AND_JOKERS.contains(jackOrJoker));
+
+        Card twoOrAce = getRandomCard(TWOS_AND_ACES);
+        assertTrue(TWOS_AND_ACES.contains(twoOrAce));
+
+        Card otherCard = getRandomCard(OTHER_CARDS);
+        assertTrue(OTHER_CARDS.contains(otherCard));
+
+        List<Card> list = getRandomCards(OTHER_CARDS, 2);
+        assertEquals(2, list.size());
+        assertTrue(OTHER_CARDS.contains(list.get(0)));
+        assertTrue(OTHER_CARDS.contains(list.get(1)));
     }
 
-    private void playThroughHand(KirvesGame game, int cardsInHand) throws CardException, KirvesGameException {
-        for(int i=0; i < cardsInHand; i++) {
+    private Card getRandomCard(List<Card> cards) throws CardException {
+        return getRandomCards(cards, 1).get(0);
+    }
+
+    private List<Card> getRandomCards(List<Card> cards, int count) throws CardException {
+        List<Card> mutableList = new ArrayList<>(cards);
+        Collections.shuffle(mutableList);
+        return mutableList.subList(0, count);
+    }
+
+    private void playThroughHand(KirvesGame game) throws CardException, KirvesGameException {
+        for(int i = 0; i < 5; i++) {
             playRound(game, false);
         }
     }
