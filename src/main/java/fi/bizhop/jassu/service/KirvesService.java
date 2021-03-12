@@ -115,6 +115,13 @@ public class KirvesService {
                 game.setMessage("It's not your turn to DISCARD");
             }
         }
+        else if(in.action == ACE_OR_TWO_DECISION) {
+            if(game.userHasActionAvailable(user, ACE_OR_TWO_DECISION)) {
+                game.aceOrTwoDecision(user, in.keepExtraCard);
+            } else {
+                game.setMessage("It's not your turn to ACE_OR_TWO_DECISION");
+            }
+        }
         return game;
     }
 }

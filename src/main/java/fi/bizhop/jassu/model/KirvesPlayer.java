@@ -10,6 +10,7 @@ import java.util.List;
 public class KirvesPlayer {
     private User player;
     private Cards hand;
+    private Cards invisibleCards;
     private Card extraCard;
     private Cards playedCards;
     private List<Integer> roundsWon;
@@ -18,6 +19,7 @@ public class KirvesPlayer {
     public KirvesPlayer(User player) {
         this.player = player;
         this.hand = new Cards();
+        this.invisibleCards = new Cards();
         this.playedCards = new Cards();
         this.roundsWon = new ArrayList<>();
         this.availableActions = new ArrayList<>();
@@ -79,6 +81,19 @@ public class KirvesPlayer {
 
     public Card getExtraCard() {
         return extraCard;
+    }
+
+    public boolean hasInvisibleCards() {
+        return this.invisibleCards.size() > 0;
+    }
+
+    public void hideCards(int numberOfCards) throws CardException {
+        this.invisibleCards.add(this.hand.deal(numberOfCards));
+    }
+
+    public void moveInvisibleCardsToHand() {
+        this.hand.add(this.invisibleCards);
+        this.invisibleCards.clear();
     }
 
     public void setExtraCard(Card extraCard) {
