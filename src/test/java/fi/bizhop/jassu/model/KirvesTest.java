@@ -141,11 +141,7 @@ public class KirvesTest {
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, getRandomCard(OTHER_CARDS));
-        assertNotNull(game.getCutCard());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
         game.deal(TEST_USERS.get(0), JACKS_AND_JOKERS);
-        assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
     }
@@ -156,16 +152,37 @@ public class KirvesTest {
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, getRandomCard(JACKS_AND_JOKERS));
-        assertNotNull(game.getCutCard());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
         game.deal(TEST_USERS.get(0));
-        assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
         game.discard(TEST_USERS.get(0), 0);
-
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
+    }
+
+    @Test
+    public void testHakki() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.deal(TEST_USERS.get(0), TWOS_AND_ACES);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
+        game.aceOrTwoDecision(TEST_USERS.get(0), true);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+    }
+
+    @Test
+    public void testHakkiDontKeepCard() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.deal(TEST_USERS.get(0), TWOS_AND_ACES);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
+        game.aceOrTwoDecision(TEST_USERS.get(0), false);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
     @Test

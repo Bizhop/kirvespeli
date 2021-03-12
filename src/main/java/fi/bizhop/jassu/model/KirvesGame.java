@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static fi.bizhop.jassu.model.Card.Rank.BLACK;
-import static fi.bizhop.jassu.model.Card.Rank.JACK;
+import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.KirvesGame.Action.*;
 import static java.util.stream.Collectors.toList;
@@ -157,6 +156,10 @@ public class KirvesGame {
         ) {
             this.dealer.setExtraCard(this.valttiCard);
             this.valttiCard = null;
+        } else if (this.valttiCard.getRank() == TWO || this.valttiCard.getRank() == ACE) {
+            this.dealer.hideCards(this.valttiCard.getRank() == TWO ? 2 : 3);
+            this.dealer.setExtraCard(this.valttiCard);
+            this.valttiCard = null;
         }
         this.canDeal = false;
         this.cutCard = null;
@@ -186,6 +189,19 @@ public class KirvesGame {
 
     public void cut(User cutter) throws CardException, KirvesGameException {
         cut(cutter, null);
+    }
+
+    public void aceOrTwoDecision(User user, boolean keepExtraCard) throws KirvesGameException {
+        Optional<KirvesPlayer> me = getPlayer(user);
+        if(me.isPresent()) {
+            KirvesPlayer player = me.get();
+            if(!keepExtraCard) {
+                this.valttiCard = player.getExtraCard();
+                player.setExtraCard(null);
+            }
+            player.moveInvisibleCardsToHand();
+            setCardPlayer(nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine player after discard")));
+        }
     }
 
     public void discard(User user, int index) throws KirvesGameException, CardException {
@@ -243,7 +259,11 @@ public class KirvesGame {
         Optional<KirvesPlayer> needsToDiscard = this.players.stream()
                 .filter(item -> item.getExtraCard() != null)
                 .findFirst();
-        if(needsToDiscard.isPresent()) {
+        if(this.dealer.hasInvisibleCards()) {
+            this.turn = this.dealer;
+            this.turn.setAvailableActions(List.of(ACE_OR_TWO_DECISION));
+        }
+        else if(needsToDiscard.isPresent()) {
             needsToDiscard.get().setAvailableActions(List.of(DISCARD));
             this.turn = needsToDiscard.get();
         }
