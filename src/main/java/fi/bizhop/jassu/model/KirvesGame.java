@@ -31,6 +31,8 @@ public class KirvesGame {
     private Card valttiCard = null;
     private Card.Suit valtti = null;
     private Card cutCard = null;
+    private boolean canSetValtti;
+    private boolean forcedGame;
 
     public KirvesGame(User admin, Long id) throws CardException {
         this.id = id;
@@ -41,6 +43,8 @@ public class KirvesGame {
         players.add(player);
         setDealer(player, player);
         this.canJoin = true;
+        this.canSetValtti = false;
+        this.forcedGame = false;
     }
 
     public KirvesGameOut out() {
@@ -156,6 +160,7 @@ public class KirvesGame {
         ) {
             this.dealer.setExtraCard(this.valttiCard);
             this.valttiCard = null;
+            this.forcedGame = true;
         } else if (this.valttiCard.getRank() == TWO || this.valttiCard.getRank() == ACE) {
             this.dealer.hideCards(this.valttiCard.getRank() == TWO ? 2 : 3);
             this.dealer.setExtraCard(this.valttiCard);
@@ -163,6 +168,7 @@ public class KirvesGame {
         }
         this.canDeal = false;
         this.cutCard = null;
+        this.canSetValtti = true;
         KirvesPlayer player = getPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to find user from players"));
         KirvesPlayer nextPlayer = nextPlayer(player).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
         setCardPlayer(nextPlayer);
@@ -179,6 +185,7 @@ public class KirvesGame {
         if(this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
             KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
             cutterPlayer.setExtraCard(this.cutCard);
+            this.forcedGame = true;
         }
         this.players.forEach(KirvesPlayer::resetAvailableActions);
         this.dealer.setAvailableActions(List.of(DEAL));
@@ -199,6 +206,9 @@ public class KirvesGame {
                 this.valttiCard = player.getExtraCard();
                 player.setExtraCard(null);
             }
+            else {
+                this.canSetValtti = false;
+            }
             player.moveInvisibleCardsToHand();
             setCardPlayer(nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine player after discard")));
         }
@@ -212,6 +222,25 @@ public class KirvesGame {
             setCardPlayer(nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine player after discard")));
         } else {
             throw new KirvesGameException("Not a player in this game");
+        }
+    }
+
+    /**
+     * Set valtti
+     *
+     * @param user User
+     * @param suit If not null, remove valttiCard and set valtti to this suit. If null, keep current valttiCard.
+     */
+    public void setValtti(User user, Card.Suit suit) {
+        Optional<KirvesPlayer> me = getPlayer(user);
+        if(me.isPresent()) {
+            KirvesPlayer player = me.get();
+            if(suit != null) {
+                this.valttiCard = null;
+                this.valtti = suit;
+            }
+            this.canSetValtti = false;
+            setCardPlayer(player);
         }
     }
 
@@ -269,7 +298,7 @@ public class KirvesGame {
         }
         else {
             this.turn = player;
-            this.turn.setAvailableActions(List.of(PLAY_CARD));
+            this.turn.setAvailableActions(this.canSetValtti && !this.forcedGame ? List.of(SET_VALTTI) : List.of(PLAY_CARD));
         }
     }
 
@@ -278,6 +307,8 @@ public class KirvesGame {
         this.turn = cutter;
         this.canDeal = false;
         this.valttiCard = null;
+        this.canSetValtti = false;
+        this.forcedGame = false;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
         cutter.setAvailableActions(List.of(CUT));
     }
@@ -415,7 +446,11 @@ public class KirvesGame {
         return this.cutCard;
     }
 
+    public Card.Suit getValtti() {
+        return this.valtti;
+    }
+
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI
     }
 }
