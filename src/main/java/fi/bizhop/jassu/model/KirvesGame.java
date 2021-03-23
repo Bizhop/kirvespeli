@@ -450,6 +450,15 @@ public class KirvesGame {
         return this.valtti;
     }
 
+    public Card getExtraCard(User user) {
+        Optional<KirvesPlayer> player = getPlayer(user);
+        if(player.isPresent()) {
+            return player.get().getExtraCard();
+        } else {
+            return null;
+        }
+    }
+
     public enum Action {
         DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI
     }
