@@ -2,11 +2,10 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
+import fi.bizhop.jassu.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
@@ -109,6 +108,10 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
         assertNull(game.getCutCard());
 
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+        game.setValtti(TEST_USERS.get(1), null);
+        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         game.playCard(TEST_USERS.get(1), 0);
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
@@ -144,6 +147,12 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0), JACKS_AND_JOKERS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
+        game.discard(TEST_USERS.get(0), 0);
+
+        assertEquals(valtti, game.getValtti());
+        //check to ensure valtti can not be changed
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
     @Test
@@ -155,8 +164,14 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0));
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
         game.discard(TEST_USERS.get(0), 0);
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
+        game.discard(TEST_USERS.get(3), 0);
+
+        assertEquals(valtti, game.getValtti());
+        //check to ensure valtti can not be changed
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
     @Test
@@ -169,7 +184,13 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
         game.aceOrTwoDecision(TEST_USERS.get(0), true);
+        Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        game.discard(TEST_USERS.get(0), 0);
+
+        assertEquals(valtti, game.getValtti());
+        //check to ensure valtti can not be changed
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
     @Test
@@ -182,6 +203,40 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
         game.aceOrTwoDecision(TEST_USERS.get(0), false);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+    }
+
+    @Test
+    public void testSetValtti() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+        List<Card.Suit> suits = new ArrayList<>(Set.of(HEARTS, CLUBS, SPADES, DIAMONDS));
+        suits.remove(game.getValtti());
+        Card.Suit newValtti = suits.get(RandomUtil.getInt(suits.size()));
+        game.setValtti(TEST_USERS.get(1), newValtti);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+        assertEquals(newValtti, game.getValtti());
+    }
+
+    @Test
+    public void testKeepValtti() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+        Card.Suit valtti = game.getValtti();
+        game.setValtti(TEST_USERS.get(1), null);
+
+        assertEquals(valtti, game.getValtti());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
@@ -199,6 +254,10 @@ public class KirvesTest {
             possibleValttiCards.remove(cutCard);
             assertTrue(game.userHasActionAvailable(dealer, DEAL));
             game.deal(dealer, possibleValttiCards);
+            game.getUserWithAction(SET_VALTTI).ifPresent(player -> {
+                assertTrue(game.userHasActionAvailable(player, SET_VALTTI));
+                game.setValtti(player, null);
+            });
             playThroughHand(game);
         }
     }
