@@ -109,7 +109,7 @@ public class KirvesTest {
         assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        game.setValtti(TEST_USERS.get(1), null);
+        game.setValtti(TEST_USERS.get(1), game.getValtti());
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
@@ -234,8 +234,9 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
         Card.Suit valtti = game.getValtti();
-        game.setValtti(TEST_USERS.get(1), null);
+        game.setValtti(TEST_USERS.get(1), valtti);
 
+        assertNotNull(game.getValttiCard());
         assertEquals(valtti, game.getValtti());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
@@ -256,7 +257,11 @@ public class KirvesTest {
             game.deal(dealer, possibleValttiCards);
             game.getUserWithAction(SET_VALTTI).ifPresent(player -> {
                 assertTrue(game.userHasActionAvailable(player, SET_VALTTI));
-                game.setValtti(player, null);
+                try {
+                    game.setValtti(player, game.getValtti());
+                } catch (KirvesGameException e) {
+                    fail("Failed to set valtti");
+                }
             });
             playThroughHand(game);
         }

@@ -122,6 +122,13 @@ public class KirvesService {
                 game.setMessage("It's not your turn to ACE_OR_TWO_DECISION");
             }
         }
+        else if(in.action == SET_VALTTI) {
+            if(game.userHasActionAvailable(user, SET_VALTTI)) {
+                game.setValtti(user, in.valtti);
+            } else {
+                game.setMessage("It's not your turn to SET_VALTTI");
+            }
+        }
         return game;
     }
 }

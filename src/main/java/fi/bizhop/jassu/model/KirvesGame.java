@@ -229,13 +229,14 @@ public class KirvesGame {
      * Set valtti
      *
      * @param user User
-     * @param suit If not null, remove valttiCard and set valtti to this suit. If null, keep current valttiCard.
+     * @param suit Set valtti to this suit. If same as turned valttiCard, keep current valttiCard.
      */
-    public void setValtti(User user, Card.Suit suit) {
+    public void setValtti(User user, Card.Suit suit) throws KirvesGameException {
+        if(suit == null) throw new KirvesGameException("Valtti can not be null");
         Optional<KirvesPlayer> me = getPlayer(user);
         if(me.isPresent()) {
             KirvesPlayer player = me.get();
-            if(suit != null) {
+            if(suit != this.valtti) {
                 this.valttiCard = null;
                 this.valtti = suit;
             }
@@ -457,6 +458,10 @@ public class KirvesGame {
         } else {
             return null;
         }
+    }
+
+    public Card getValttiCard() {
+        return this.valttiCard;
     }
 
     public enum Action {
