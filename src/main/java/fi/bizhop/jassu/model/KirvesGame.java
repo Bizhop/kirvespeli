@@ -84,7 +84,8 @@ public class KirvesGame {
                 this.message,
                 this.canJoin,
                 this.valttiCard == null ? "" : this.valttiCard.toString(),
-                this.valtti == null ? "" : this.valtti.toString()
+                this.valtti == null ? "" : this.valtti.toString(),
+                this.canDeclineCut
         );
     }
 
