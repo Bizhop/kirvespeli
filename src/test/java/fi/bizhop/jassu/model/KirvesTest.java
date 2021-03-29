@@ -101,7 +101,7 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         assertNotNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
@@ -143,11 +143,11 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), JACKS_AND_JOKERS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
-        Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
+        Card.Suit valtti = getValtti(game.getExtraCard(TEST_USERS.get(0)));
         game.discard(TEST_USERS.get(0), 0);
 
         assertEquals(valtti, game.getValtti());
@@ -155,12 +155,20 @@ public class KirvesTest {
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }
 
+    private Card.Suit getValtti(Card card) {
+        if(card.getSuit() == JOKER) {
+            return card.getRank() == BLACK ? SPADES : HEARTS;
+        } else {
+            return card.getSuit();
+        }
+    }
+
     @Test
     public void testYhteinen() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(JACKS_AND_JOKERS));
+        game.cut(cutter, false, getRandomCard(JACKS_AND_JOKERS), getRandomCard(OTHER_CARDS));
         game.deal(TEST_USERS.get(0));
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
@@ -175,11 +183,41 @@ public class KirvesTest {
     }
 
     @Test
+    public void testDoubleCutAcceptingSecondCut() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        List<Card> cutCards = getRandomCards(JACKS_AND_JOKERS, 2);
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, cutCards.get(0), cutCards.get(1));
+
+        assertTrue(game.userHasActionAvailable(cutter, CUT));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
+    }
+
+    @Test
+    public void testDoubleCutDecliningSecondCut() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        List<Card> cutCards = getRandomCards(JACKS_AND_JOKERS, 2);
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, cutCards.get(0), cutCards.get(1));
+
+        assertTrue(game.userHasActionAvailable(cutter, CUT));
+        //selecting jack or joker as cut card shouldn't matter, because player is declining cut
+        game.cut(cutter, true, getRandomCard(JACKS_AND_JOKERS), null);
+
+        assertNull(game.getExtraCard(cutter));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
+    }
+
+    @Test
     public void testHakki() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), TWOS_AND_ACES);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
@@ -198,7 +236,7 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), TWOS_AND_ACES);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
@@ -211,7 +249,7 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
@@ -229,7 +267,7 @@ public class KirvesTest {
         KirvesGame game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, getRandomCard(OTHER_CARDS));
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
@@ -248,7 +286,7 @@ public class KirvesTest {
         for (User dealer : TEST_USERS) {
             Card cutCard = getRandomCard(OTHER_CARDS);
             User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-            game.cut(cutter, cutCard);
+            game.cut(cutter, false, cutCard, null);
             assertNotNull(game.getCutCard());
 
             List<Card> possibleValttiCards = new ArrayList<>(OTHER_CARDS);
@@ -324,6 +362,9 @@ public class KirvesTest {
     }
 
     private List<Card> getRandomCards(List<Card> cards, int count) throws CardException {
+        if(count > cards.size()) {
+            throw new CardException("Can't get more cards than list has");
+        }
         List<Card> mutableList = new ArrayList<>(cards);
         Collections.shuffle(mutableList);
         return mutableList.subList(0, count);

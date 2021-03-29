@@ -5,4 +5,5 @@ public class KirvesGameIn {
     public int index;
     public boolean keepExtraCard;
     public Card.Suit valtti;
+    public boolean declineCut;
 }

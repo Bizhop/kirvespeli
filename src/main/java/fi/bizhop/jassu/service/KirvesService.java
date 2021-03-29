@@ -96,7 +96,7 @@ public class KirvesService {
         else if(in.action == CUT) {
             if(game.userHasActionAvailable(user, CUT)) {
                 try {
-                    game.cut(user);
+                    game.cut(user, in.declineCut);
                 } catch (CardException e) {
                     game.setMessage("Unable to CUT");
                 }
