@@ -33,6 +33,7 @@ public class KirvesGame {
     private Card cutCard = null;
     private boolean canSetValtti;
     private boolean forcedGame;
+    private boolean canDeclineCut;
 
     public KirvesGame(User admin, Long id) throws CardException {
         this.id = id;
@@ -45,6 +46,7 @@ public class KirvesGame {
         this.canJoin = true;
         this.canSetValtti = false;
         this.forcedGame = false;
+        this.canDeclineCut = false;
     }
 
     public KirvesGameOut out() {
@@ -177,15 +179,30 @@ public class KirvesGame {
     }
 
     //use this method directly only when testing!
-    public void cut(User cutter, Card cutCard) throws CardException, KirvesGameException {
+    public void cut(User cutter, boolean decline, Card cutCard, Card second) throws CardException, KirvesGameException {
+        if(decline && !this.canDeclineCut) {
+            throw new KirvesGameException("Can't decline cut");
+        }
         this.deck = new KirvesDeck().shuffle();
-        int index = RandomUtil.getInt(this.deck.size());
-        this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
-        this.message = String.format("Cut card is %s %s", this.cutCard.getSuit().name(), this.cutCard.getRank().name());
-        if(this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
-            KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
-            cutterPlayer.setExtraCard(this.cutCard);
-            this.forcedGame = true;
+        if(!decline) {
+            int index = RandomUtil.getInt(this.deck.size());
+            this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
+            this.message = String.format("Cut card is %s %s", this.cutCard.getSuit().name(), this.cutCard.getRank().name());
+            if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
+                index = RandomUtil.getInt(this.deck.size());
+                Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(index);
+                this.message += String.format("\nSecond card is %s %s", secondAfterCut.getSuit().name(), secondAfterCut.getRank().name());
+                if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
+                    this.message += String.format("\nCut again, %s can decline cutting", cutter.getEmail());
+                    this.canDeclineCut = true;
+                    return;
+                }
+                KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
+                cutterPlayer.setExtraCard(this.cutCard);
+                this.forcedGame = true;
+            }
+        } else {
+            this.message = String.format("%s declined cutting again", cutter.getEmail());
         }
         this.players.forEach(KirvesPlayer::resetAvailableActions);
         this.dealer.setAvailableActions(List.of(DEAL));
@@ -194,8 +211,8 @@ public class KirvesGame {
         this.canJoin = false;
     }
 
-    public void cut(User cutter) throws CardException, KirvesGameException {
-        cut(cutter, null);
+    public void cut(User cutter, boolean decline) throws CardException, KirvesGameException {
+        cut(cutter, decline, null, null);
     }
 
     public void aceOrTwoDecision(User user, boolean keepExtraCard) throws KirvesGameException {
@@ -272,6 +289,7 @@ public class KirvesGame {
                     KirvesPlayer handWinner = determineHandWinner();
                     this.message = String.format("Hand winner is %s", handWinner.getUserEmail());
 
+
                     setDealer(
                             nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer")),
                             this.dealer
@@ -310,6 +328,7 @@ public class KirvesGame {
         this.valttiCard = null;
         this.canSetValtti = false;
         this.forcedGame = false;
+        this.canDeclineCut = false;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
         cutter.setAvailableActions(List.of(CUT));
     }
