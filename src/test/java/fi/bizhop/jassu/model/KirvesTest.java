@@ -205,8 +205,10 @@ public class KirvesTest {
         game.cut(cutter, false, cutCards.get(0), cutCards.get(1));
 
         assertTrue(game.userHasActionAvailable(cutter, CUT));
-        game.cut(cutter, true, null, null);
+        //selecting jack or joker as cut card shouldn't matter, because player is declining cut
+        game.cut(cutter, true, getRandomCard(JACKS_AND_JOKERS), null);
 
+        assertNull(game.getExtraCard(cutter));
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
     }
 
