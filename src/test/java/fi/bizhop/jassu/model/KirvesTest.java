@@ -357,6 +357,22 @@ public class KirvesTest {
         assertTrue(OTHER_CARDS.contains(list.get(1)));
     }
 
+    @Test
+    public void testOutputByUser() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        KirvesGameOut output1 = game.out(TEST_USERS.get(0));
+        assertEquals(4, output1.getPlayers().size());
+        assertEquals(TEST_USERS.get(0).getEmail(), output1.getPlayers().get(0).getEmail());
+
+        KirvesGameOut output2 = game.out(TEST_USERS.get(2));
+        assertEquals(4, output2.getPlayers().size());
+        assertEquals(TEST_USERS.get(2).getEmail(), output2.getPlayers().get(0).getEmail());
+
+        KirvesGameOut output3 = game.out(null);
+        assertEquals(4, output3.getPlayers().size());
+    }
+
     private Card getRandomCard(List<Card> cards) throws CardException {
         return getRandomCards(cards, 1).get(0);
     }
