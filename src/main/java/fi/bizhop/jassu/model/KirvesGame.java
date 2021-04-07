@@ -38,13 +38,10 @@ public class KirvesGame {
         this.deck = new KirvesDeck().shuffle();
         this.active = true;
         this.canJoin = true;
-        this.canSetValtti = false;
-        this.forcedGame = false;
-        this.canDeclineCut = false;
 
         KirvesPlayer player = new KirvesPlayer(admin);
         addPlayer(player);
-        setDealer(player, player);
+        setDealer(player);
     }
 
     public KirvesGameOut out() {
@@ -83,7 +80,8 @@ public class KirvesGame {
                 this.canJoin,
                 this.valttiCard == null ? "" : this.valttiCard.toString(),
                 this.valtti == null ? "" : this.valtti.toString(),
-                this.canDeclineCut
+                this.canDeclineCut,
+                this.cutCard == null ? "" : this.cutCard.toString()
         );
     }
 
@@ -199,13 +197,10 @@ public class KirvesGame {
         }
         this.deck = new KirvesDeck().shuffle();
         if(!decline) {
-            int index = RandomUtil.getInt(this.deck.size());
-            this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
-            this.message = String.format("Cut card is %s %s", this.cutCard.getSuit().name(), this.cutCard.getRank().name());
+            this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
             if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
-                index = RandomUtil.getInt(this.deck.size());
-                Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(index);
-                this.message += String.format("\nSecond card is %s %s", secondAfterCut.getSuit().name(), secondAfterCut.getRank().name());
+                Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
+                this.message = String.format("Second card is %s", secondAfterCut);
                 if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
                     this.message += String.format("\nCut again, %s can decline cutting", cutter.getEmail());
                     this.canDeclineCut = true;
@@ -300,7 +295,7 @@ public class KirvesGame {
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
                     this.message = String.format("Hand winner is %s", handWinner.getUserEmail());
-                    setDealer(this.dealer.getNext(), this.dealer);
+                    setDealer(this.dealer.getNext());
                 }
             }
         } else {
@@ -343,9 +338,8 @@ public class KirvesGame {
         }
     }
 
-    private void setDealer(KirvesPlayer dealer, KirvesPlayer cutter) {
+    private void setDealer(KirvesPlayer dealer) {
         this.dealer = dealer;
-        this.turn = cutter;
         this.canDeal = false;
         this.valttiCard = null;
         this.valtti = null;
@@ -353,7 +347,8 @@ public class KirvesGame {
         this.forcedGame = false;
         this.canDeclineCut = false;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
-        cutter.setAvailableActions(List.of(CUT));
+        this.turn = dealer.getPrevious();
+        this.turn.setAvailableActions(List.of(CUT));
     }
 
     public KirvesPlayer determineHandWinner() throws KirvesGameException {

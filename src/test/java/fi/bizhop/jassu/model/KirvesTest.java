@@ -371,6 +371,11 @@ public class KirvesTest {
 
         KirvesGameOut output3 = game.out(null);
         assertEquals(4, output3.getPlayers().size());
+
+        Card cutCard = getRandomCard(OTHER_CARDS);
+        game.cut(TEST_USERS.get(3), false, cutCard, null);
+        KirvesGameOut output4 = game.out(null);
+        assertEquals(cutCard.toString(), output4.getCutCard());
     }
 
     private Card getRandomCard(List<Card> cards) throws CardException {
