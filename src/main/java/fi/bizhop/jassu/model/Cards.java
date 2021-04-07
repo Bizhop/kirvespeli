@@ -168,7 +168,11 @@ public class Cards {
     }
 
     public Card first() {
-        return this.cards.get(0);
+        return this.cards.isEmpty() ? null : this.cards.get(0);
+    }
+
+    public Card last() {
+        return this.cards.isEmpty() ? null : this.cards.get(this.cards.size() - 1);
     }
 
     public void add(Card newCard) {

@@ -4,10 +4,7 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.util.RandomUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
@@ -27,7 +24,7 @@ public class KirvesGame {
     private KirvesPlayer dealer;
     private boolean canDeal;
     private String message;
-    private int firstPlayerOfRound;
+    private KirvesPlayer firstPlayerOfRound;
     private Card valttiCard = null;
     private Card.Suit valtti = null;
     private Card cutCard = null;
@@ -40,13 +37,11 @@ public class KirvesGame {
         this.admin = admin;
         this.deck = new KirvesDeck().shuffle();
         this.active = true;
-        KirvesPlayer player = new KirvesPlayer(admin);
-        players.add(player);
-        setDealer(player, player);
         this.canJoin = true;
-        this.canSetValtti = false;
-        this.forcedGame = false;
-        this.canDeclineCut = false;
+
+        KirvesPlayer player = new KirvesPlayer(admin);
+        addPlayer(player);
+        setDealer(player);
     }
 
     public KirvesGameOut out() {
@@ -74,7 +69,7 @@ public class KirvesGame {
         return new KirvesGameOut(
                 this.id,
                 this.getAdmin(),
-                this.players.stream().map(KirvesPlayerOut::new).collect(toList()),
+                getPlayersStartingFrom(user).stream().map(KirvesPlayerOut::new).collect(toList()),
                 this.deck.size(),
                 this.dealer.getUserEmail(),
                 this.turn.getUserEmail(),
@@ -85,7 +80,8 @@ public class KirvesGame {
                 this.canJoin,
                 this.valttiCard == null ? "" : this.valttiCard.toString(),
                 this.valtti == null ? "" : this.valtti.toString(),
-                this.canDeclineCut
+                this.canDeclineCut,
+                this.cutCard == null ? "" : this.cutCard.toString()
         );
     }
 
@@ -102,7 +98,7 @@ public class KirvesGame {
             if (this.players.stream()
                     .noneMatch(player -> newPlayer.getEmail().equals(player.getUserEmail()))) {
                 KirvesPlayer player = new KirvesPlayer(newPlayer);
-                this.players.add(player);
+                addPlayer(player);
                 this.players.forEach(KirvesPlayer::resetAvailableActions);
                 player.setAvailableActions(List.of(CUT));
             } else {
@@ -110,6 +106,21 @@ public class KirvesGame {
             }
         } else {
             throw new KirvesGameException(String.format("Can't join this game (id=%d) now", this.id));
+        }
+    }
+
+    private void addPlayer(KirvesPlayer player) {
+        if(this.players.size() > 0) {
+            KirvesPlayer last = this.players.get(this.players.size() - 1);
+            last.setNext(player);
+            this.dealer.setPrevious(player);
+            this.players.add(player);
+            player.setNext(this.dealer);
+            player.setPrevious(last);
+        } else {
+            this.players.add(player);
+            player.setNext(player);
+            player.setPrevious(player);
         }
     }
 
@@ -173,9 +184,9 @@ public class KirvesGame {
         this.cutCard = null;
         this.canSetValtti = true;
         KirvesPlayer player = getPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to find user from players"));
-        KirvesPlayer nextPlayer = nextPlayer(player).orElseThrow(() -> new KirvesGameException("Unable to determine next player"));
+        KirvesPlayer nextPlayer = player.getNext();
         setCardPlayer(nextPlayer);
-        this.firstPlayerOfRound = findIndex(nextPlayer);
+        this.firstPlayerOfRound = nextPlayer;
         this.players.forEach(KirvesPlayer::resetWonRounds);
     }
 
@@ -186,13 +197,10 @@ public class KirvesGame {
         }
         this.deck = new KirvesDeck().shuffle();
         if(!decline) {
-            int index = RandomUtil.getInt(this.deck.size());
-            this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(index);
-            this.message = String.format("Cut card is %s %s", this.cutCard.getSuit().name(), this.cutCard.getRank().name());
+            this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
             if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
-                index = RandomUtil.getInt(this.deck.size());
-                Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(index);
-                this.message += String.format("\nSecond card is %s %s", secondAfterCut.getSuit().name(), secondAfterCut.getRank().name());
+                Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
+                this.message = String.format("Second card is %s", secondAfterCut);
                 if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
                     this.message += String.format("\nCut again, %s can decline cutting", cutter.getEmail());
                     this.canDeclineCut = true;
@@ -228,7 +236,7 @@ public class KirvesGame {
                 this.canSetValtti = false;
             }
             player.moveInvisibleCardsToHand();
-            setCardPlayer(nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine player after discard")));
+            setCardPlayer(this.dealer.getNext());
         }
     }
 
@@ -237,7 +245,7 @@ public class KirvesGame {
         if(me.isPresent()) {
             KirvesPlayer player = me.get();
             player.discard(index);
-            setCardPlayer(nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine player after discard")));
+            setCardPlayer(this.dealer.getNext());
         } else {
             throw new KirvesGameException("Not a player in this game");
         }
@@ -268,37 +276,45 @@ public class KirvesGame {
         if(me.isPresent()) {
             KirvesPlayer player = me.get();
             player.playCard(index);
-            setCardPlayer(nextPlayer(player).orElseThrow(() -> new KirvesGameException("Unable to determine next player")));
-            if(findIndex(this.turn) == this.firstPlayerOfRound) {
-                int round = player.getPlayedCards().size() - 1;
-                List<Card> playedCards = new ArrayList<>();
-                int offset = this.firstPlayerOfRound;
-                for(int i = 0; i < this.players.size(); i++) {
-                    int cardPlayerIndex = (offset + i) % this.players.size();
-                    KirvesPlayer cardPlayer = this.players.get(cardPlayerIndex);
-                    playedCards.add(cardPlayer.getPlayedCards().get(round));
-                }
-                int winningCard = winningCard(playedCards, this.valtti);
-                KirvesPlayer roundWinner = this.players.get((winningCard + offset) % this.players.size());
+            setCardPlayer(player.getNext());
+            if(this.turn.equals(this.firstPlayerOfRound)) {
+                List<Card> playedCards = getPlayersStartingFrom(user).stream()
+                        .map(KirvesPlayer::getLastPlayedCard)
+                        .collect(toList());
+
+                Card winningCard = winningCard(playedCards, this.valtti);
+                KirvesPlayer roundWinner = this.players.stream()
+                        .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
+                        .findFirst().orElseThrow(() -> new KirvesGameException("Winning card not found from played cards"));
                 roundWinner.addRoundWon();
 
-                if(round < NUM_OF_CARD_TO_DEAL - 1) {
+                if(roundWinner.cardsInHand() != 0) {
                     setCardPlayer(roundWinner);
-                    this.firstPlayerOfRound = findIndex(roundWinner);
+                    this.firstPlayerOfRound = roundWinner;
                 }
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
                     this.message = String.format("Hand winner is %s", handWinner.getUserEmail());
-
-
-                    setDealer(
-                            nextPlayer(this.dealer).orElseThrow(() -> new KirvesGameException("Unable to determine next dealer")),
-                            this.dealer
-                    );
+                    setDealer(this.dealer.getNext());
                 }
             }
         } else {
             throw new KirvesGameException("Not a player in this game");
+        }
+    }
+
+    private List<KirvesPlayer> getPlayersStartingFrom(User user) {
+        Optional<KirvesPlayer> start = getPlayer(user);
+        if(start.isPresent()) {
+            List<KirvesPlayer> players = new ArrayList<>();
+            KirvesPlayer item = start.get();
+            do {
+                players.add(item);
+            } while(!(item = item.getNext()).equals(start.get()));
+
+            return players;
+        } else {
+            return this.players;
         }
     }
 
@@ -322,16 +338,17 @@ public class KirvesGame {
         }
     }
 
-    private void setDealer(KirvesPlayer dealer, KirvesPlayer cutter) {
+    private void setDealer(KirvesPlayer dealer) {
         this.dealer = dealer;
-        this.turn = cutter;
         this.canDeal = false;
         this.valttiCard = null;
+        this.valtti = null;
         this.canSetValtti = false;
         this.forcedGame = false;
         this.canDeclineCut = false;
         this.players.forEach(KirvesPlayer::resetAvailableActions);
-        cutter.setAvailableActions(List.of(CUT));
+        this.turn = dealer.getPrevious();
+        this.turn.setAvailableActions(List.of(CUT));
     }
 
     public KirvesPlayer determineHandWinner() throws KirvesGameException {
@@ -374,7 +391,7 @@ public class KirvesGame {
         }
     }
 
-    public static int winningCard(List<Card> playedCards, Card.Suit valtti) {
+    public static Card winningCard(List<Card> playedCards, Card.Suit valtti) {
         int leader = 0;
         for(int i = 1; i < playedCards.size(); i++) {
             Card leaderCard = playedCards.get(leader);
@@ -383,7 +400,7 @@ public class KirvesGame {
                 leader = i;
             }
         }
-        return leader;
+        return playedCards.get(leader);
     }
 
     public boolean userHasActionAvailable(User user, Action action) {
@@ -428,29 +445,6 @@ public class KirvesGame {
         return card.getRank().getValue();
     }
 
-    private Optional<KirvesPlayer> nextPlayer(KirvesPlayer player) throws KirvesGameException {
-        if(this.players.size() > 1) {
-            int myIndex = findIndex(player);
-            if (myIndex < 0) {
-                throw new KirvesGameException("Not a player in this game");
-            } else {
-                int newIndex = myIndex == players.size() - 1 ? 0 : myIndex + 1;
-                return Optional.of(players.get(newIndex));
-            }
-        }
-        return Optional.of(player);
-    }
-
-    private int findIndex(KirvesPlayer user) {
-        for(int i=0; i < this.players.size(); i++) {
-            KirvesPlayer player = this.players.get(i);
-            if(player.equals(user)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public boolean hasPlayer(User user) {
         return this.players.stream().anyMatch(kirvesPlayer -> user.equals(kirvesPlayer.getUser()));
     }
@@ -472,12 +466,9 @@ public class KirvesGame {
     }
 
     public Card getExtraCard(User user) {
-        Optional<KirvesPlayer> player = getPlayer(user);
-        if(player.isPresent()) {
-            return player.get().getExtraCard();
-        } else {
-            return null;
-        }
+        return getPlayer(user)
+                .map(KirvesPlayer::getExtraCard)
+                .orElse(null);
     }
 
     public Card getValttiCard() {

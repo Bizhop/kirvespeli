@@ -309,31 +309,31 @@ public class KirvesTest {
     public void testWinningCards() throws CardException {
         //samaa maata, isompi voittaa
         List<Card> cards = List.of(new Card(SPADES, SEVEN), new Card(SPADES, TEN));
-        assertEquals(1, KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, DIAMONDS));
 
         //eri maata, ajokortti voittaa
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TEN));
-        assertEquals(0, KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(0), KirvesGame.winningCard(cards, DIAMONDS));
 
         //valtti voittaa, vaikkaa on pienempi
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TWO));
-        assertEquals(1, KirvesGame.winningCard(cards, CLUBS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, CLUBS));
 
         //pamppu voittaa valttiässän
         cards = List.of(new Card(SPADES, ACE), new Card(SPADES, JACK));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
 
         //pamppu voittaa hantin (lasketaan valtiksi)
         cards = List.of(new Card(CLUBS, ACE), new Card(SPADES, JACK));
-        assertEquals(1, KirvesGame.winningCard(cards, HEARTS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, HEARTS));
 
         //punainen jokeri voittaa mustan
         cards = List.of(new Card(JOKER, BLACK), new Card(JOKER, RED));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
 
         //jokeri voittaa pampun
         cards = cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
     }
 
     @Test
@@ -355,6 +355,27 @@ public class KirvesTest {
         assertEquals(2, list.size());
         assertTrue(OTHER_CARDS.contains(list.get(0)));
         assertTrue(OTHER_CARDS.contains(list.get(1)));
+    }
+
+    @Test
+    public void testOutputByUser() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        KirvesGameOut output1 = game.out(TEST_USERS.get(0));
+        assertEquals(4, output1.getPlayers().size());
+        assertEquals(TEST_USERS.get(0).getEmail(), output1.getPlayers().get(0).getEmail());
+
+        KirvesGameOut output2 = game.out(TEST_USERS.get(2));
+        assertEquals(4, output2.getPlayers().size());
+        assertEquals(TEST_USERS.get(2).getEmail(), output2.getPlayers().get(0).getEmail());
+
+        KirvesGameOut output3 = game.out(null);
+        assertEquals(4, output3.getPlayers().size());
+
+        Card cutCard = getRandomCard(OTHER_CARDS);
+        game.cut(TEST_USERS.get(3), false, cutCard, null);
+        KirvesGameOut output4 = game.out(null);
+        assertEquals(cutCard.toString(), output4.getCutCard());
     }
 
     private Card getRandomCard(List<Card> cards) throws CardException {

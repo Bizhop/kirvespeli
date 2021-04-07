@@ -8,16 +8,18 @@ import java.util.Collections;
 import java.util.List;
 
 public class KirvesPlayer {
-    private User player;
-    private Cards hand;
-    private Cards invisibleCards;
+    private final User user;
+    private final Cards hand;
+    private final Cards invisibleCards;
     private Card extraCard;
-    private Cards playedCards;
+    private final Cards playedCards;
     private List<Integer> roundsWon;
     private List<KirvesGame.Action> availableActions;
+    private KirvesPlayer next;
+    private KirvesPlayer previous;
 
-    public KirvesPlayer(User player) {
-        this.player = player;
+    public KirvesPlayer(User user) {
+        this.user = user;
         this.hand = new Cards();
         this.invisibleCards = new Cards();
         this.playedCards = new Cards();
@@ -26,13 +28,13 @@ public class KirvesPlayer {
     }
 
     public String getUserEmail() {
-        return this.player == null
+        return this.user == null
                 ? ""
-                : this.player.getEmail();
+                : this.user.getEmail();
     }
 
     public User getUser() {
-        return this.player;
+        return this.user;
     }
 
     public int cardsInHand() {
@@ -83,6 +85,10 @@ public class KirvesPlayer {
         return extraCard;
     }
 
+    public Card getLastPlayedCard() {
+        return this.playedCards.last();
+    }
+
     public boolean hasInvisibleCards() {
         return this.invisibleCards.size() > 0;
     }
@@ -107,5 +113,35 @@ public class KirvesPlayer {
         this.hand.remove(index);
         this.hand.add(this.extraCard);
         this.extraCard = null;
+    }
+
+    public KirvesPlayer getNext() {
+        return next;
+    }
+
+    public void setNext(KirvesPlayer next) {
+        this.next = next;
+    }
+
+    public KirvesPlayer getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(KirvesPlayer previous) {
+        this.previous = previous;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if(other instanceof KirvesPlayer) {
+            return this.user.equals(((KirvesPlayer) other).user);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.getUserEmail();
     }
 }

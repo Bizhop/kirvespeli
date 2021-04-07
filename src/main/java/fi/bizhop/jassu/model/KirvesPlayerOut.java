@@ -48,4 +48,9 @@ public class KirvesPlayerOut {
     public String getExtraCard() {
         return extraCard;
     }
+
+    @Override
+    public String toString() {
+        return this.email;
+    }
 }
