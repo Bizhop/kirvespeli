@@ -309,31 +309,31 @@ public class KirvesTest {
     public void testWinningCards() throws CardException {
         //samaa maata, isompi voittaa
         List<Card> cards = List.of(new Card(SPADES, SEVEN), new Card(SPADES, TEN));
-        assertEquals(1, KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, DIAMONDS));
 
         //eri maata, ajokortti voittaa
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TEN));
-        assertEquals(0, KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(0), KirvesGame.winningCard(cards, DIAMONDS));
 
         //valtti voittaa, vaikkaa on pienempi
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TWO));
-        assertEquals(1, KirvesGame.winningCard(cards, CLUBS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, CLUBS));
 
         //pamppu voittaa valttiässän
         cards = List.of(new Card(SPADES, ACE), new Card(SPADES, JACK));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
 
         //pamppu voittaa hantin (lasketaan valtiksi)
         cards = List.of(new Card(CLUBS, ACE), new Card(SPADES, JACK));
-        assertEquals(1, KirvesGame.winningCard(cards, HEARTS));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, HEARTS));
 
         //punainen jokeri voittaa mustan
         cards = List.of(new Card(JOKER, BLACK), new Card(JOKER, RED));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
 
         //jokeri voittaa pampun
         cards = cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
-        assertEquals(1, KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
     }
 
     @Test
