@@ -33,6 +33,12 @@ public class KirvesPlayer {
                 : this.user.getEmail();
     }
 
+    public String getUserNickname() {
+        return this.user == null
+                ? ""
+                : this.user.getNickname();
+    }
+
     public User getUser() {
         return this.user;
     }

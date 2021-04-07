@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 
 public class KirvesPlayerOut {
     private String email;
+    private String nickname;
     private int cardsInHand;
     private List<String> playedCards;
     private List<Integer> roundsWon;
@@ -16,6 +17,7 @@ public class KirvesPlayerOut {
 
     public KirvesPlayerOut(KirvesPlayer player) {
         this.email = player.getUserEmail();
+        this.nickname = player.getUserNickname();
         this.cardsInHand = player.cardsInHand();
         this.playedCards = player.getPlayedCards().getCardsOut();
         this.roundsWon = player.getRoundsWon();
@@ -52,5 +54,9 @@ public class KirvesPlayerOut {
     @Override
     public String toString() {
         return this.email;
+    }
+
+    public String getNickname() {
+        return nickname;
     }
 }

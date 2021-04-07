@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 public class User {
     private String email;
     private String jwt;
+    private String nickname;
 
     private BigDecimal money;
 
@@ -19,6 +20,7 @@ public class User {
     public User(UserDB userDB) {
         this.email = userDB.email;
         this.money = userDB.money;
+        this.nickname = userDB.nickname;
     }
 
     public String getEmail() {
@@ -52,5 +54,13 @@ public class User {
         } else {
             return false;
         }
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

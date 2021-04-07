@@ -3,6 +3,7 @@ package fi.bizhop.jassu.service;
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.db.UserRepo;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.UserIn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -15,8 +16,7 @@ import java.util.Optional;
 public class UserService {
     private static final Logger LOG = LogManager.getLogger(UserService.class);
 
-    final
-    UserRepo userRepo;
+    final UserRepo userRepo;
 
     public UserService(UserRepo userRepo) {
         this.userRepo = userRepo;
@@ -51,5 +51,15 @@ public class UserService {
 
     public BigDecimal getUserMoney(String email) {
         return this.get(email).getMoney();
+    }
+
+    public User updateUser(String email, UserIn userIn) {
+        UserDB user = userRepo.findByEmail(email).orElse(null);
+        if(user == null) {
+            return null;
+        } else {
+            user.nickname = userIn.nickname;
+            return new User(this.userRepo.save(user));
+        }
     }
 }

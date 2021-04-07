@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
-import static fi.bizhop.jassu.util.UserTestUtil.*;
+import static fi.bizhop.jassu.util.TestUserUtil.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.eq;

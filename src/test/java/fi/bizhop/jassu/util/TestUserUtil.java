@@ -5,7 +5,7 @@ import fi.bizhop.jassu.model.User;
 
 import java.util.Optional;
 
-public class UserTestUtil {
+public class TestUserUtil {
     public static final String TEST_USER_EMAIL = "user@mock.com";
 
     public static UserDB getTestUserDB(String email) {

@@ -9,8 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
-    final
-    UserService userService;
+    final UserService userService;
 
     private static final String HEADER_STRING = "Authorization";
 
