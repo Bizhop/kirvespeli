@@ -20,8 +20,7 @@ import static java.util.stream.Collectors.toList;
 public class KirvesService {
     private static final Logger LOG = LogManager.getLogger(KirvesService.class);
 
-    final
-    UserService userService;
+    final UserService userService;
 
     private Map<Long, KirvesGame> games = new HashMap<>();
     private Long sequence = 0L;

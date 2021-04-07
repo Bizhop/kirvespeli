@@ -22,8 +22,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.Collections;
 import java.util.List;
 
-import static fi.bizhop.jassu.util.UserTestUtil.TEST_USER_EMAIL;
-import static fi.bizhop.jassu.util.UserTestUtil.getTestUser;
+import static fi.bizhop.jassu.util.TestUserUtil.TEST_USER_EMAIL;
+import static fi.bizhop.jassu.util.TestUserUtil.getTestUser;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

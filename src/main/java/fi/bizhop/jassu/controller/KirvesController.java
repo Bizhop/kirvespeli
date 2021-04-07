@@ -20,14 +20,10 @@ import static java.util.stream.Collectors.toList;
 
 @RestController
 public class KirvesController {
-    final
-    KirvesService kirvesService;
-    final
-    AuthService authService;
-    final
-    UserService userService;
-    final
-    MessageService messageService;
+    final KirvesService kirvesService;
+    final AuthService authService;
+    final UserService userService;
+    final MessageService messageService;
 
     public KirvesController(KirvesService kirvesService, AuthService authService, UserService userService, MessageService messageService) {
         this.kirvesService = kirvesService;

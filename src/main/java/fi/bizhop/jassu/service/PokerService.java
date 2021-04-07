@@ -20,8 +20,7 @@ import static fi.bizhop.jassu.model.PokerGame.Action.*;
 public class PokerService {
     private static final Logger LOG = LogManager.getLogger(PokerService.class);
 
-    final
-    UserService userService;
+    final UserService userService;
 
     private Map<Long, PokerGame> games = new HashMap<>();
     private Long sequence = 0L;

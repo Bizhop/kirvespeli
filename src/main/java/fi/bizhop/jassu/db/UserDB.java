@@ -13,11 +13,13 @@ public class UserDB {
     public Long id;
     public String email;
     public BigDecimal money;
+    public String nickname;
 
     public UserDB() {}
 
     public UserDB(User user) {
         this.email = user.getEmail();
         this.money = user.getMoney();
+        this.nickname = user.getNickname();
     }
 }

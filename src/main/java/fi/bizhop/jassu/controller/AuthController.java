@@ -13,10 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class AuthController {
-    @Autowired
-    AuthService authService;
+    final AuthService authService;
 
-    @RequestMapping(value = "/api/auth", method = RequestMethod.GET)
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @RequestMapping(value = "/api/auth", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody User auth(HttpServletRequest request, HttpServletResponse response) throws Exception {
         User user = authService.login(request);
         if(user == null) {

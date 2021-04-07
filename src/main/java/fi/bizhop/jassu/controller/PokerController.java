@@ -18,12 +18,15 @@ import java.util.stream.Collectors;
 
 @RestController
 public class PokerController {
-    @Autowired
-    PokerService pokerService;
-    @Autowired
-    AuthService authService;
-    @Autowired
-    UserService userService;
+    final PokerService pokerService;
+    final AuthService authService;
+    final UserService userService;
+
+    public PokerController(PokerService pokerService, AuthService authService, UserService userService) {
+        this.pokerService = pokerService;
+        this.authService = authService;
+        this.userService = userService;
+    }
 
     @RequestMapping(value = "/api/poker/deal", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody PokerGameOut deal(HttpServletRequest request, HttpServletResponse response) {
