@@ -348,6 +348,7 @@ public class KirvesGame {
         this.turn = cutter;
         this.canDeal = false;
         this.valttiCard = null;
+        this.valtti = null;
         this.canSetValtti = false;
         this.forcedGame = false;
         this.canDeclineCut = false;
