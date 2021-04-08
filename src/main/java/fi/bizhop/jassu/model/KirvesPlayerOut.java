@@ -12,6 +12,7 @@ public class KirvesPlayerOut {
     private List<Integer> roundsWon;
     private List<String> availableActions;
     private String extraCard;
+    private boolean declaredPlayer;
 
     public KirvesPlayerOut() {}
 
@@ -25,6 +26,7 @@ public class KirvesPlayerOut {
                 .map(Enum::name)
                 .collect(toList());
         this.extraCard = player.getExtraCard() != null ? player.getExtraCard().toString() : null;
+        this.declaredPlayer = player.isDeclaredPlayer();
     }
 
     public String getEmail() {
@@ -58,5 +60,9 @@ public class KirvesPlayerOut {
 
     public String getNickname() {
         return nickname;
+    }
+
+    public boolean isDeclaredPlayer() {
+        return declaredPlayer;
     }
 }

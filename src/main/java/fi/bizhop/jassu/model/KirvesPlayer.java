@@ -9,22 +9,36 @@ import java.util.List;
 
 public class KirvesPlayer {
     private final User user;
-    private final Cards hand;
-    private final Cards invisibleCards;
+    private final Cards hand = new Cards();
+    private final Cards invisibleCards  = new Cards();
     private Card extraCard;
-    private final Cards playedCards;
-    private List<Integer> roundsWon;
-    private List<KirvesGame.Action> availableActions;
+    private final Cards playedCards = new Cards();
+    private final List<Integer> roundsWon = new ArrayList<>();
+    private final List<KirvesGame.Action> availableActions = new ArrayList<>();
     private KirvesPlayer next;
     private KirvesPlayer previous;
+    private boolean declaredPlayer = false;
 
+    /**
+     * Create new player linking to previous and next players
+     * @param user
+     */
+    public KirvesPlayer(User user, KirvesPlayer next, KirvesPlayer previous) {
+        this.user = user;
+        this.next = next;
+        this.previous = previous;
+        next.previous = this;
+        previous.next = this;
+    }
+
+    /**
+     * Create new player (first) linking only to self
+     * @param user
+     */
     public KirvesPlayer(User user) {
         this.user = user;
-        this.hand = new Cards();
-        this.invisibleCards = new Cards();
-        this.playedCards = new Cards();
-        this.roundsWon = new ArrayList<>();
-        this.availableActions = new ArrayList<>();
+        this.next = this;
+        this.previous = this;
     }
 
     public String getUserEmail() {
@@ -68,11 +82,11 @@ public class KirvesPlayer {
     }
 
     public void resetWonRounds() {
-        this.roundsWon = new ArrayList<>();
+        this.roundsWon.clear();
     }
 
     public void resetAvailableActions() {
-        this.availableActions = new ArrayList<>();
+        this.availableActions.clear();
     }
 
     public List<Integer> getRoundsWon() {
@@ -80,11 +94,12 @@ public class KirvesPlayer {
     }
 
     public List<KirvesGame.Action> getAvailableActions() {
-        return availableActions;
+        return Collections.unmodifiableList(this.availableActions);
     }
 
     public void setAvailableActions(List<KirvesGame.Action> availableActions) {
-        this.availableActions = availableActions;
+        this.availableActions.clear();
+        this.availableActions.addAll(availableActions);
     }
 
     public Card getExtraCard() {
@@ -149,5 +164,13 @@ public class KirvesPlayer {
     @Override
     public String toString() {
         return this.getUserEmail();
+    }
+
+    public boolean isDeclaredPlayer() {
+        return declaredPlayer;
+    }
+
+    public void setDeclaredPlayer(boolean declaredPlayer) {
+        this.declaredPlayer = declaredPlayer;
     }
 }

@@ -6,6 +6,7 @@ import fi.bizhop.jassu.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
@@ -109,8 +110,12 @@ public class KirvesTest {
         assertNull(game.getCutCard());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        game.setValtti(TEST_USERS.get(1), game.getValtti());
+        game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
         assertEquals(0, game.out(null).getNumOfPlayedRounds());
+
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        assertEquals(1, declaredPlayers.size());
+        assertEquals(TEST_USERS.get(1).getEmail(), declaredPlayers.get(0).getEmail());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         game.playCard(TEST_USERS.get(1), 0);
@@ -153,14 +158,11 @@ public class KirvesTest {
         assertEquals(valtti, game.getValtti());
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
-    }
 
-    private Card.Suit getValtti(Card card) {
-        if(card.getSuit() == JOKER) {
-            return card.getRank() == BLACK ? SPADES : HEARTS;
-        } else {
-            return card.getSuit();
-        }
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+
+        assertEquals(1, declaredPlayers.size());
+        assertEquals(TEST_USERS.get(0).getEmail(), declaredPlayers.get(0).getEmail());
     }
 
     @Test
@@ -180,6 +182,12 @@ public class KirvesTest {
         assertEquals(valtti, game.getValtti());
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+
+        assertEquals(2, declaredPlayers.size());
+        assertTrue(declaredPlayers.stream().anyMatch(p -> p.getEmail().equals(TEST_USERS.get(0).getEmail())));
+        assertTrue(declaredPlayers.stream().anyMatch(p -> p.getEmail().equals(TEST_USERS.get(3).getEmail())));
     }
 
     @Test
@@ -229,6 +237,11 @@ public class KirvesTest {
         assertEquals(valtti, game.getValtti());
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+
+        assertEquals(1, declaredPlayers.size());
+        assertEquals(TEST_USERS.get(0).getEmail(), declaredPlayers.get(0).getEmail());
     }
 
     @Test
@@ -256,7 +269,11 @@ public class KirvesTest {
         List<Card.Suit> suits = new ArrayList<>(Set.of(HEARTS, CLUBS, SPADES, DIAMONDS));
         suits.remove(game.getValtti());
         Card.Suit newValtti = suits.get(RandomUtil.getInt(suits.size()));
-        game.setValtti(TEST_USERS.get(1), newValtti);
+        game.setValtti(TEST_USERS.get(1), newValtti, TEST_USERS.get(2));
+
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        assertEquals(1, declaredPlayers.size());
+        assertEquals(TEST_USERS.get(2).getEmail(), declaredPlayers.get(0).getEmail());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         assertEquals(newValtti, game.getValtti());
@@ -272,7 +289,11 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
         Card.Suit valtti = game.getValtti();
-        game.setValtti(TEST_USERS.get(1), valtti);
+        game.setValtti(TEST_USERS.get(1), valtti, TEST_USERS.get(3));
+
+        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        assertEquals(1, declaredPlayers.size());
+        assertEquals(TEST_USERS.get(3).getEmail(), declaredPlayers.get(0).getEmail());
 
         assertNotNull(game.getValttiCard());
         assertEquals(valtti, game.getValtti());
@@ -296,7 +317,7 @@ public class KirvesTest {
             game.getUserWithAction(SET_VALTTI).ifPresent(player -> {
                 assertTrue(game.userHasActionAvailable(player, SET_VALTTI));
                 try {
-                    game.setValtti(player, game.getValtti());
+                    game.setValtti(player, game.getValtti(), player);
                 } catch (KirvesGameException e) {
                     fail("Failed to set valtti");
                 }
@@ -376,6 +397,26 @@ public class KirvesTest {
         game.cut(TEST_USERS.get(3), false, cutCard, null);
         KirvesGameOut output4 = game.out(null);
         assertEquals(cutCard.toString(), output4.getCutCard());
+    }
+
+
+    //--------------------------
+    //PRIVATE METHODS START HERE
+    //--------------------------
+
+    private List<KirvesPlayerOut> getDeclaredPlayers(KirvesGame game) {
+        return game.out().getPlayers().stream()
+                .filter(KirvesPlayerOut::isDeclaredPlayer)
+                .collect(Collectors.toList());
+    }
+
+
+    private Card.Suit getValtti(Card card) {
+        if(card.getSuit() == JOKER) {
+            return card.getRank() == BLACK ? SPADES : HEARTS;
+        } else {
+            return card.getSuit();
+        }
     }
 
     private Card getRandomCard(List<Card> cards) throws CardException {
