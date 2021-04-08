@@ -123,7 +123,12 @@ public class KirvesService {
         }
         else if(in.action == SET_VALTTI) {
             if(game.userHasActionAvailable(user, SET_VALTTI)) {
-                game.setValtti(user, in.valtti);
+                User declareUser = this.userService.get(in.declarePlayerEmail);
+                if(declareUser == null) {
+                    game.setMessage(String.format("Declared user %s not found", in.declarePlayerEmail));
+                } else {
+                    game.setValtti(user, in.valtti, declareUser);
+                }
             } else {
                 game.setMessage("It's not your turn to SET_VALTTI");
             }
