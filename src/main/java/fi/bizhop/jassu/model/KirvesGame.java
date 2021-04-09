@@ -315,6 +315,11 @@ public class KirvesGame {
         }
     }
 
+    public void startNextRound(User user) {
+        getPlayersStartingFrom(user).forEach(KirvesPlayer::clearHand);
+        setDealer(this.dealer.getNext());
+    }
+
     private List<KirvesPlayer> getPlayersStartingFrom(User user) {
         Optional<KirvesPlayer> start = getPlayer(user);
         if(start.isPresent()) {

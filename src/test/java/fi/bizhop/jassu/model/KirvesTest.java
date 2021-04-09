@@ -280,6 +280,26 @@ public class KirvesTest {
     }
 
     @Test
+    public void testPassing() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+        game.startNextRound(TEST_USERS.get(1));
+
+        cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        assertEquals(TEST_USERS.get(0), cutter);
+
+        int cardsInHands = game.out().getPlayers().stream()
+                .mapToInt(KirvesPlayerOut::getCardsInHand)
+                .sum();
+        assertEquals(0, cardsInHands);
+    }
+
+    @Test
     public void testKeepValtti() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(TEST_USERS);
 
