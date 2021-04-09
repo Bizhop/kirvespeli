@@ -92,7 +92,7 @@ public class KirvesTest {
         try {
             game.addPlayer(TEST_USERS.get(3));
         } catch (KirvesGameException e) {
-            assertEquals("Player test4@example.com already joined game id=0", e.getMessage());
+            assertEquals("Player test4@example.com already joined game", e.getMessage());
         }
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
     }
@@ -487,7 +487,7 @@ public class KirvesTest {
         if(players == null || players.isEmpty()) {
             throw new KirvesGameException("TEST: you must define at least one player");
         }
-        KirvesGame game = new KirvesGame(players.get(0), 0L);
+        KirvesGame game = new KirvesGame(players.get(0));
         if(players.size() > 1) {
             for(int i = 1; i < players.size(); i++) {
                 game.addPlayer(players.get(i));

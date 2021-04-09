@@ -4,6 +4,7 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.util.RandomUtil;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
@@ -11,14 +12,12 @@ import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.KirvesGame.Action.*;
 import static java.util.stream.Collectors.toList;
 
-public class KirvesGame {
+public class KirvesGame implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final int NUM_OF_CARD_TO_DEAL = 5;
 
-    private final Long id;
-    private final User admin;
     private Cards deck;
     private final List<KirvesPlayer> players = new ArrayList<>();
-    private boolean active;
     private boolean canJoin;
     private KirvesPlayer turn;
     private KirvesPlayer dealer;
@@ -32,11 +31,8 @@ public class KirvesGame {
     private boolean forcedGame;
     private boolean canDeclineCut;
 
-    public KirvesGame(User admin, Long id) throws CardException {
-        this.id = id;
-        this.admin = admin;
+    public KirvesGame(User admin) throws CardException {
         this.deck = new KirvesDeck().shuffle();
-        this.active = true;
         this.canJoin = true;
 
         KirvesPlayer player = addPlayerInternal(admin);
@@ -66,8 +62,6 @@ public class KirvesGame {
             }
         }
         return new KirvesGameOut(
-                this.id,
-                this.getAdmin(),
                 getPlayersStartingFrom(user).stream().map(KirvesPlayerOut::new).collect(toList()),
                 this.deck.size(),
                 this.dealer.getUserEmail(),
@@ -88,27 +82,22 @@ public class KirvesGame {
         return this.players.stream().filter(player -> player.getUser().equals(user)).findFirst();
     }
 
-    private Optional<KirvesPlayer> getPlayer(String email) {
-        return this.players.stream().filter(player -> player.getUser().getEmail().equals(email)).findFirst();
-    }
-
     public Optional<KirvesPlayer> getRoundWinner(int round) {
         return this.players.stream().filter(player -> player.getRoundsWon().contains(round)).findFirst();
     }
 
-    public KirvesPlayer addPlayer(User user) throws KirvesGameException {
+    public void addPlayer(User user) throws KirvesGameException {
         if(this.canJoin) {
             if (this.players.stream()
                     .noneMatch(player -> user.getEmail().equals(player.getUserEmail()))) {
                 KirvesPlayer player = addPlayerInternal(user);
                 this.players.forEach(KirvesPlayer::resetAvailableActions);
                 player.setAvailableActions(List.of(CUT));
-                return player;
             } else {
-                throw new KirvesGameException(String.format("Player %s already joined game id=%d", user.getEmail(), this.id));
+                throw new KirvesGameException(String.format("Player %s already joined game", user.getEmail()));
             }
         } else {
-            throw new KirvesGameException(String.format("Can't join this game (id=%d) now", this.id));
+            throw new KirvesGameException("Can't join this game now");
         }
     }
 
@@ -123,20 +112,6 @@ public class KirvesGame {
             this.players.add(player);
             return player;
         }
-    }
-
-    public void inactivate() {
-        this.active = false;
-    }
-
-    public boolean isActive() {
-        return this.active;
-    }
-
-    public String getAdmin() {
-        return this.admin == null
-                ? ""
-                : this.admin.getEmail();
     }
 
     public void deal(User user) throws CardException, KirvesGameException {
@@ -271,7 +246,7 @@ public class KirvesGame {
             if(declarePlayer.isPresent()) {
                 declarePlayer.get().setDeclaredPlayer(true);
             } else {
-                throw new KirvesGameException(String.format("Declared player %s not found in game %d", declareUser.getEmail(), this.id));
+                throw new KirvesGameException(String.format("Declared player %s not found in game", declareUser.getEmail()));
             }
             KirvesPlayer player = me.get();
             if(suit != this.valtti) {
@@ -490,6 +465,10 @@ public class KirvesGame {
 
     public Card getValttiCard() {
         return this.valttiCard;
+    }
+
+    public int getNumberOfPlayers() {
+        return this.players.size();
     }
 
     public enum Action {

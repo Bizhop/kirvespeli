@@ -1,17 +1,22 @@
 package fi.bizhop.jassu.service;
 
+import fi.bizhop.jassu.db.KirvesGameDB;
+import fi.bizhop.jassu.db.KirvesGameRepo;
+import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.KirvesGame;
+import fi.bizhop.jassu.model.KirvesGameBrief;
 import fi.bizhop.jassu.model.KirvesGameIn;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.util.SerializationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static fi.bizhop.jassu.model.KirvesGame.Action.*;
 import static java.util.stream.Collectors.toList;
@@ -21,27 +26,36 @@ public class KirvesService {
     private static final Logger LOG = LogManager.getLogger(KirvesService.class);
 
     final UserService userService;
+    final KirvesGameRepo kirvesGameRepo;
 
-    private Map<Long, KirvesGame> games = new HashMap<>();
-    private Long sequence = 0L;
-
-    public KirvesService(UserService userService) {
+    public KirvesService(UserService userService, KirvesGameRepo kirvesGameRepo) {
         this.userService = userService;
+        this.kirvesGameRepo = kirvesGameRepo;
     }
 
-    public KirvesGame newGameForAdmin(User admin) throws CardException {
-        Long id = this.sequence;
-        KirvesGame game = new KirvesGame(admin, id);
-        this.games.put(id, game);
-        LOG.info(String.format("Created new game, id=%d", id));
-        this.sequence++;
-        return game;
+    public Long newGameForAdmin(User admin) throws CardException, KirvesGameException {
+        KirvesGame game = new KirvesGame(admin);
+        LOG.info("Created new game");
+        UserDB adminDB = userService.get(admin);
+        KirvesGameDB db = new KirvesGameDB();
+        db.admin = adminDB;
+        db.active = true;
+        db.players = game.getNumberOfPlayers();
+        db.gameData = SerializationUtil.getByteArrayObject(game)
+            .orElseThrow(() -> new KirvesGameException("Unable to convert KirvesGame to gameData"));
+
+        Long id = kirvesGameRepo.save(db).id;
+        LOG.info(String.format("New game saved with id=%d", id));
+        return id;
     }
 
-    public List<KirvesGame> getActiveGames() {
-        return this.games.values().stream()
-                .filter(KirvesGame::isActive)
-                .collect(toList());
+    public List<KirvesGameBrief> getActiveGames() {
+        List<KirvesGameDB> activeGames = kirvesGameRepo.findByActiveTrue();
+        if(activeGames != null) {
+            return activeGames.stream().map(KirvesGameBrief::new).collect(toList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     public void joinGame(Long id, String email) throws KirvesGameException {
@@ -49,22 +63,19 @@ public class KirvesService {
         if(player == null) {
             throw new KirvesGameException("Email not found");
         } else {
-            KirvesGame game = this.games.get(id);
-            if(game == null || !game.isActive()) {
-                throw new KirvesGameException("Game not found");
-            } else {
-                game.addPlayer(player);
-                LOG.info(String.format("Added player email=%s to game id=%d", player.getEmail(), id));
-            }
+            KirvesGame game = getGame(id);
+            game.addPlayer(player);
+            LOG.info(String.format("Added player email=%s to game id=%d", player.getEmail(), id));
         }
     }
 
     public KirvesGame getGame(Long id) throws KirvesGameException {
-        KirvesGame game = this.games.get(id);
-        if(game == null) {
-            throw new KirvesGameException("Game not found");
+        Optional<KirvesGameDB> game = kirvesGameRepo.findByIdAndActiveTrue(id);
+        if(game.isPresent()) {
+            return SerializationUtil.getJavaObject(game.get().gameData, KirvesGame.class)
+                        .orElseThrow(() -> new KirvesGameException("Unable to convert gameData to KirvesGame"));
         } else {
-            return game;
+            throw new KirvesGameException(String.format("Game not id=%d found", id));
         }
     }
 
@@ -138,5 +149,21 @@ public class KirvesService {
             }
         }
         return game;
+    }
+
+    public void inactivateGame(Long id, User me) throws KirvesGameException {
+        Optional<KirvesGameDB> gameOpt = kirvesGameRepo.findByIdAndActiveTrue(id);
+        if(gameOpt.isPresent()) {
+            KirvesGameDB game = gameOpt.get();
+            if(me.getEmail().equals(game.admin.email)) {
+                game.active = false;
+                kirvesGameRepo.save(game);
+                LOG.info(String.format("Inactivated game id=%d", id));
+            } else {
+                throw new KirvesGameException(String.format("Can't delete, %s is not admin of game id=%d", me.getEmail(), id));
+            }
+        } else {
+            throw new KirvesGameException(String.format("Game not id=%d found", id));
+        }
     }
 }

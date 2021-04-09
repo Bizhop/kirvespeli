@@ -62,4 +62,8 @@ public class UserService {
             return new User(this.userRepo.save(user));
         }
     }
+
+    public UserDB get(User admin) {
+        return userRepo.findByEmail(admin.getEmail()).orElseThrow();
+    }
 }
