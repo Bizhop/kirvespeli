@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Cards {
-    protected List<Card> cards = new ArrayList<>();
+    protected final List<Card> cards;
 
-    public Cards() {}
+    public Cards() {
+        this.cards = new ArrayList<>();
+    }
 
     public Cards(List<Card> cards) {
         this.cards = cards;
@@ -84,7 +86,8 @@ public class Cards {
         if(params == null || params.size() > cards.size()) {
             return;
         } else if (params.isEmpty()) {
-            this.cards = deck.deal(5).cards;
+            this.cards.clear();
+            this.cards.addAll(deck.deal(5).cards);
             return;
         }
         params.sort(Integer::compareTo);
@@ -164,7 +167,7 @@ public class Cards {
     }
 
     public void clear() {
-        this.cards = new ArrayList<>();
+        this.cards.clear();
     }
 
     public Card first() {

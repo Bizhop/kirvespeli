@@ -173,4 +173,8 @@ public class KirvesPlayer {
     public void setDeclaredPlayer(boolean declaredPlayer) {
         this.declaredPlayer = declaredPlayer;
     }
+
+    public void clearHand() {
+        this.hand.clear();
+    }
 }
