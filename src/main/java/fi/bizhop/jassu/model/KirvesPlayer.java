@@ -3,11 +3,14 @@ package fi.bizhop.jassu.model;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class KirvesPlayer {
+public class KirvesPlayer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final User user;
     private final Cards hand = new Cards();
     private final Cards invisibleCards  = new Cards();

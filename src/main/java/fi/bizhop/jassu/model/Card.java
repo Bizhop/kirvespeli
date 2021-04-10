@@ -2,7 +2,11 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 
-public class Card implements Comparable<Card> {
+import java.io.Serializable;
+
+public class Card implements Comparable<Card>, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Suit suit;
     private final Rank rank;
 

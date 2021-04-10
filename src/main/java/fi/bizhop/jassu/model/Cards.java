@@ -2,6 +2,7 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,7 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Cards {
+public class Cards implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     protected final List<Card> cards;
 
     public Cards() {

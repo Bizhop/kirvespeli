@@ -2,14 +2,19 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.db.UserDB;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String email;
     private String jwt;
     private String nickname;
 
     private BigDecimal money;
+
+    public User() {}
 
     public User(String email, String jwt) {
         this.email = email;

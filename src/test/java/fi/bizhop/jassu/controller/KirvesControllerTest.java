@@ -1,9 +1,7 @@
 package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.TestBase;
-import fi.bizhop.jassu.exception.CardException;
-import fi.bizhop.jassu.model.KirvesGame;
-import fi.bizhop.jassu.model.KirvesGameOut;
+import fi.bizhop.jassu.model.KirvesGameBrief;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
@@ -58,20 +56,23 @@ public class KirvesControllerTest extends TestBase {
         RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
 
         when(authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
-        when(kirvesService.getActiveGames()).thenReturn(getTestGame());
+        when(kirvesService.getActiveGames()).thenReturn(getTestGames());
 
         MvcResult result = mockMvc.perform(builder).andReturn();
 
-        KirvesGameOut[] response = mapper.readValue(result.getResponse().getContentAsString(), KirvesGameOut[].class);
+        KirvesGameBrief[] response = mapper.readValue(result.getResponse().getContentAsString(), KirvesGameBrief[].class);
 
         assertEquals(1, response.length);
-        KirvesGameOut out = response[0];
-        assertEquals(1, out.getPlayers().size());
-        assertEquals(TEST_USER_EMAIL, out.getAdmin());
+        KirvesGameBrief brief = response[0];
+        assertEquals(1, brief.players.longValue());
+        assertEquals(TEST_USER_EMAIL, brief.admin.getEmail());
     }
 
-    private List<KirvesGame> getTestGame() throws CardException {
-        KirvesGame testGame = new KirvesGame(getTestUser(TEST_USER_EMAIL), 0L);
-        return Collections.singletonList(testGame);
+    private List<KirvesGameBrief> getTestGames() {
+        KirvesGameBrief brief = new KirvesGameBrief();
+        brief.id = 0L;
+        brief.players = 1;
+        brief.admin = getTestUser(TEST_USER_EMAIL);
+        return Collections.singletonList(brief);
     }
 }

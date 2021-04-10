@@ -3,8 +3,6 @@ package fi.bizhop.jassu.model;
 import java.util.List;
 
 public class KirvesGameOut {
-    private Long id;
-    private String admin;
     private List<KirvesPlayerOut> players;
     private String message;
     private int cardsInDeck;
@@ -21,9 +19,7 @@ public class KirvesGameOut {
 
     public KirvesGameOut() {}
 
-    public KirvesGameOut(Long id, String admin, List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String myExtraCard, List<String> myAvailableActions, String message, boolean canJoin, String valttiKortti, String valtti, boolean canDeclineCut, String cutCard) {
-        this.id = id;
-        this.admin = admin;
+    public KirvesGameOut(List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String myExtraCard, List<String> myAvailableActions, String message, boolean canJoin, String valttiKortti, String valtti, boolean canDeclineCut, String cutCard) {
         this.players = players;
         this.cardsInDeck = cardsInDeck;
         this.dealer = dealer;
@@ -41,10 +37,6 @@ public class KirvesGameOut {
 
     public KirvesGameOut(String message) {
         this.message = message;
-    }
-
-    public String getAdmin() {
-        return admin;
     }
 
     public List<KirvesPlayerOut> getPlayers() {
@@ -67,10 +59,6 @@ public class KirvesGameOut {
 
     public List<String> getMyCardsInHand() {
         return myCardsInHand;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public boolean getCanJoin() {

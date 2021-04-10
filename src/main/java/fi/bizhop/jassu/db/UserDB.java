@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name="users")
-public class UserDB {
+public class UserDB extends TimestampBase {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     public Long id;
