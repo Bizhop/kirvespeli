@@ -177,9 +177,9 @@ public class KirvesGame implements Serializable {
             this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
             if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
                 Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
-                this.message = String.format("Second card is %s", secondAfterCut);
+                this.message = String.format("Seuraava kortti on %s", secondAfterCut);
                 if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
-                    this.message += String.format("\nCut again, %s can decline cutting", cutter.getEmail());
+                    this.message += String.format("\nUusi nosto, %s voi kieltäytyä nostamasta", cutter.getNickname());
                     this.canDeclineCut = true;
                     return;
                 }
@@ -188,7 +188,7 @@ public class KirvesGame implements Serializable {
                 this.forcedGame = true;
             }
         } else {
-            this.message = String.format("%s declined cutting again", cutter.getEmail());
+            this.message = String.format("%s kieltäytyi nostosta", cutter.getNickname());
         }
         this.players.forEach(player -> {
             player.setDeclaredPlayer(false);
@@ -265,7 +265,7 @@ public class KirvesGame implements Serializable {
             player.playCard(index);
             setCardPlayer(player.getNext());
             if(this.turn.equals(this.firstPlayerOfRound)) {
-                List<Card> playedCards = getPlayersStartingFrom(user).stream()
+                List<Card> playedCards = getPlayersStartingFrom(this.firstPlayerOfRound.getUser()).stream()
                         .map(KirvesPlayer::getLastPlayedCard)
                         .collect(toList());
 
@@ -281,7 +281,7 @@ public class KirvesGame implements Serializable {
                 }
                 else {
                     KirvesPlayer handWinner = determineHandWinner();
-                    this.message = String.format("Hand winner is %s", handWinner.getUserEmail());
+                    this.message = String.format("Voittaja on %s", handWinner.getUserNickname());
                     setDealer(this.dealer.getNext());
                 }
             }

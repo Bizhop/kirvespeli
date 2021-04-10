@@ -373,7 +373,7 @@ public class KirvesTest {
         assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
 
         //jokeri voittaa pampun
-        cards = cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
+        cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
         assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
     }
 
