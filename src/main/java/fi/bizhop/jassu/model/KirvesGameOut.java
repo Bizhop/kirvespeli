@@ -16,6 +16,7 @@ public class KirvesGameOut {
     private String valttiKortti;
     private String valtti;
     private String cutCard;
+    private Long id;
 
     public KirvesGameOut() {}
 
@@ -93,5 +94,14 @@ public class KirvesGameOut {
 
     public String getCutCard() {
         return cutCard;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public KirvesGameOut setId(Long id) {
+        this.id = id;
+        return this;
     }
 }

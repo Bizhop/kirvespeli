@@ -41,6 +41,7 @@ public class KirvesService {
         db.admin = adminDB;
         db.active = true;
         db.players = game.getNumberOfPlayers();
+        db.canJoin = true;
         db.gameData = SerializationUtil.getByteArrayObject(game)
             .orElseThrow(() -> new KirvesGameException("Unable to convert KirvesGame to gameData"));
 
@@ -65,6 +66,7 @@ public class KirvesService {
         } else {
             KirvesGame game = getGame(id);
             game.addPlayer(player);
+            saveGame(id, game);
             LOG.info(String.format("Added player email=%s to game id=%d", player.getEmail(), id));
         }
     }
@@ -148,6 +150,7 @@ public class KirvesService {
                 game.setMessage("It's not your turn to SET_VALTTI");
             }
         }
+        saveGame(id, game);
         return game;
     }
 
@@ -164,6 +167,18 @@ public class KirvesService {
             }
         } else {
             throw new KirvesGameException(String.format("Game not id=%d found", id));
+        }
+    }
+
+    private void saveGame(Long id, KirvesGame game) throws KirvesGameException {
+        Optional<KirvesGameDB> gameDBOpt = this.kirvesGameRepo.findByIdAndActiveTrue(id);
+        if(gameDBOpt.isPresent()) {
+            KirvesGameDB gameDB = gameDBOpt.get();
+            gameDB.gameData = SerializationUtil.getByteArrayObject(game)
+                    .orElseThrow(() -> new KirvesGameException("Unable to convert KirvesGame to gameData"));
+            gameDB.players = game.getNumberOfPlayers();
+            gameDB.canJoin = game.getCanJoin();
+            this.kirvesGameRepo.save(gameDB);
         }
     }
 }

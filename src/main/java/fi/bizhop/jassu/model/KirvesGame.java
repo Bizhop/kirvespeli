@@ -471,6 +471,10 @@ public class KirvesGame implements Serializable {
         return this.players.size();
     }
 
+    public Boolean getCanJoin() {
+        return this.canJoin;
+    }
+
     public enum Action {
         DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI
     }
