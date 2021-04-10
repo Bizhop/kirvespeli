@@ -8,6 +8,7 @@ public class KirvesGameBrief {
     public Long id;
     public User admin;
     public Integer players;
+    public Boolean canJoin;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
 
@@ -17,6 +18,7 @@ public class KirvesGameBrief {
         this.id = db.id;
         this.admin = new User(db.admin);
         this.players = db.players;
+        this.canJoin = db.canJoin;
         this.createdAt = db.createdAt;
         this.updatedAt = db.updatedAt;
     }

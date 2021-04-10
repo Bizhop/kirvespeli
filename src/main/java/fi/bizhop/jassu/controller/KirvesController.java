@@ -100,9 +100,9 @@ public class KirvesController {
                 User me = this.userService.get(email);
                 KirvesGame game = this.kirvesService.getGame(id);
                 if(game.hasPlayer(me)) {
-                    return game.out(me);
+                    return game.out(me).setId(id);
                 } else {
-                    return game.out(null);
+                    return game.out(null).setId(id);
                 }
             } catch (KirvesGameException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

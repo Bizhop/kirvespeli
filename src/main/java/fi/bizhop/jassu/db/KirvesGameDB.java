@@ -17,5 +17,6 @@ public class KirvesGameDB extends TimestampBase {
 
     public Integer players;
     public Boolean active;
+    public Boolean canJoin;
     public byte[] gameData;
 }

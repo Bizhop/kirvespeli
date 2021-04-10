@@ -57,4 +57,9 @@
 			<column name="game_data" type="BYTEA" />
 		</addColumn>
 	</changeSet>
+	<changeSet id="addCanJoinToGames" author="Ville">
+		<addColumn tableName="games">
+			<column name="can_join" type="BOOLEAN" />
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
