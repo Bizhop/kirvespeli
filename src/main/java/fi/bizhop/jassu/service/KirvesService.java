@@ -91,7 +91,7 @@ public class KirvesService {
                     throw new KirvesGameException(String.format("Unable to deal cards: %s", e.getMessage()));
                 }
             } else {
-                game.setMessage("You can't deal now");
+                throw new KirvesGameException("You can't deal now");
             }
         }
         else if(in.action == PLAY_CARD) {
@@ -99,10 +99,10 @@ public class KirvesService {
                 try {
                     game.playCard(user, in.index);
                 } catch (CardException e) {
-                    game.setMessage(String.format("Unable to PLAY_CARD with index %d", in.index));
+                    throw new KirvesGameException(String.format("Unable to PLAY_CARD with index %d", in.index));
                 }
             } else {
-                game.setMessage("It's not your turn to PLAY_CARD");
+                throw new KirvesGameException("It's not your turn to PLAY_CARD");
             }
         }
         else if(in.action == CUT) {
@@ -110,10 +110,10 @@ public class KirvesService {
                 try {
                     game.cut(user, in.declineCut);
                 } catch (CardException e) {
-                    game.setMessage("Unable to CUT");
+                    throw new KirvesGameException("Unable to CUT");
                 }
             } else {
-                game.setMessage("It's not your turn to CUT");
+                throw new KirvesGameException("It's not your turn to CUT");
             }
         }
         else if(in.action == DISCARD) {
@@ -121,17 +121,17 @@ public class KirvesService {
                 try {
                     game.discard(user, in.index);
                 } catch (CardException e) {
-                    game.setMessage(String.format("Unable to DISCARD with index %d", in.index));
+                    throw new KirvesGameException(String.format("Unable to DISCARD with index %d", in.index));
                 }
             } else {
-                game.setMessage("It's not your turn to DISCARD");
+                throw new KirvesGameException("It's not your turn to DISCARD");
             }
         }
         else if(in.action == ACE_OR_TWO_DECISION) {
             if(game.userHasActionAvailable(user, ACE_OR_TWO_DECISION)) {
                 game.aceOrTwoDecision(user, in.keepExtraCard);
             } else {
-                game.setMessage("It's not your turn to ACE_OR_TWO_DECISION");
+                throw new KirvesGameException("It's not your turn to ACE_OR_TWO_DECISION");
             }
         }
         else if(in.action == SET_VALTTI) {
@@ -141,13 +141,21 @@ public class KirvesService {
                 } else {
                     User declareUser = this.userService.get(in.declarePlayerEmail);
                     if (declareUser == null) {
-                        game.setMessage(String.format("Declared user %s not found", in.declarePlayerEmail));
+                        throw new KirvesGameException(String.format("Declared user %s not found", in.declarePlayerEmail));
                     } else {
                         game.setValtti(user, in.valtti, declareUser);
                     }
                 }
             } else {
-                game.setMessage("It's not your turn to SET_VALTTI");
+                throw new KirvesGameException("It's not your turn to SET_VALTTI");
+            }
+        }
+        else if(in.action == ADJUST_PLAYERS_IN_GAME) {
+            if(game.userHasActionAvailable(user, ADJUST_PLAYERS_IN_GAME)) {
+                game.adjustPlayersInGame(user, in.resetActivePlayers, in.inactivateByEmail);
+            }
+            else {
+                throw new KirvesGameException("It's not your turn to ADJUST_PLAYERS_IN_GAME");
             }
         }
         saveGame(id, game);

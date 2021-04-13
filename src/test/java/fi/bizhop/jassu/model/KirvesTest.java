@@ -173,11 +173,12 @@ public class KirvesTest {
         game.cut(cutter, false, getRandomCard(JACKS_AND_JOKERS), getRandomCard(OTHER_CARDS));
         game.deal(TEST_USERS.get(0));
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
         Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
-        game.discard(TEST_USERS.get(0), 0);
+
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
         game.discard(TEST_USERS.get(3), 0);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DISCARD));
+        game.discard(TEST_USERS.get(0), 0);
 
         assertEquals(valtti, game.getValtti());
         //check to ensure valtti can not be changed
@@ -321,6 +322,38 @@ public class KirvesTest {
     }
 
     @Test
+    public void testAdjustingPlayers() throws CardException, KirvesGameException {
+        KirvesGame game = getTestGame(TEST_USERS);
+
+        game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+        game.setValtti(TEST_USERS.get(1), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(3));
+        playThroughHand(game, TEST_USERS);
+
+        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
+        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ADJUST_PLAYERS_IN_GAME));
+        game.adjustPlayersInGame(TEST_USERS.get(0), false, Set.of(TEST_USERS.get(1).getEmail(), TEST_USERS.get(2).getEmail()));
+
+        assertEquals(2, game.out(TEST_USERS.get(0)).getPlayers().size());
+        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), CUT));
+        game.cut(TEST_USERS.get(0), false, getRandomCard(OTHER_CARDS), null);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DEAL));
+        game.deal(TEST_USERS.get(3), OTHER_CARDS);
+        game.setValtti(TEST_USERS.get(0), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(0));
+
+        playThroughHand(game, List.of(TEST_USERS.get(0), TEST_USERS.get(3)));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), ADJUST_PLAYERS_IN_GAME));
+        game.adjustPlayersInGame(TEST_USERS.get(3), true, null);
+
+        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
+        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
+    }
+
+    @Test
     public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
         KirvesGame game = getTestGame(TEST_USERS);
 
@@ -342,7 +375,7 @@ public class KirvesTest {
                     fail("Failed to set valtti");
                 }
             });
-            playThroughHand(game);
+            playThroughHand(game, TEST_USERS);
         }
     }
 
@@ -424,7 +457,7 @@ public class KirvesTest {
     //PRIVATE METHODS START HERE
     //--------------------------
 
-    private List<KirvesPlayerOut> getDeclaredPlayers(KirvesGame game) {
+    private List<KirvesPlayerOut> getDeclaredPlayers(KirvesGame game) throws KirvesGameException {
         return game.out().getPlayers().stream()
                 .filter(KirvesPlayerOut::isDeclaredPlayer)
                 .collect(Collectors.toList());
@@ -452,21 +485,21 @@ public class KirvesTest {
         return mutableList.subList(0, count);
     }
 
-    private void playThroughHand(KirvesGame game) throws CardException, KirvesGameException {
+    private void playThroughHand(KirvesGame game, List<User> players) throws CardException, KirvesGameException {
         for(int i = 0; i < 5; i++) {
-            playRound(game, false);
+            playRound(game, players, false);
         }
     }
 
-    private void playRound(KirvesGame game, boolean printMessage) throws KirvesGameException, CardException {
-        User turn = TEST_USERS.stream()
+    private void playRound(KirvesGame game, List<User> players, boolean printMessage) throws KirvesGameException, CardException {
+        User turn = players.stream()
                 .filter(user -> game.userHasActionAvailable(user, PLAY_CARD))
                 .findFirst()
                 .orElseThrow(KirvesGameException::new);
-        int index = TEST_USERS.indexOf(turn);
-        List<User> nextRoundUsers = new ArrayList<>(TEST_USERS.subList(index, TEST_USERS.size()));
+        int index = players.indexOf(turn);
+        List<User> nextRoundUsers = new ArrayList<>(players.subList(index, players.size()));
         if(index > 0) {
-            nextRoundUsers.addAll(TEST_USERS.subList(0, index));
+            nextRoundUsers.addAll(players.subList(0, index));
         }
 
         for (User player : nextRoundUsers) {

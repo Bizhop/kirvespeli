@@ -1,6 +1,5 @@
 package fi.bizhop.jassu.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.*;
@@ -8,7 +7,9 @@ import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,21 +33,18 @@ public class KirvesController {
     public @ResponseBody KirvesGameOut init(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return new KirvesGameOut("Unauthorized");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             User admin = this.userService.get(email);
             if(admin == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return new KirvesGameOut(String.format("Email not found: %s", email));
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Email not found: %s", email));
             }
             try {
                 response.setStatus(HttpServletResponse.SC_OK);
                 Long id = this.kirvesService.newGameForAdmin(admin);
-                return this.kirvesService.getGame(id).out(admin);
+                return this.kirvesService.getGame(id).out(admin).setId(id);
             } catch (CardException  | KirvesGameException e) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return new KirvesGameOut(e.getMessage());
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         }
     }
@@ -55,8 +53,7 @@ public class KirvesController {
     public @ResponseBody List<KirvesGameBrief> getGames(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
             return this.kirvesService.getActiveGames();
@@ -67,13 +64,11 @@ public class KirvesController {
     public @ResponseBody KirvesGameOut joinGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             User user = userService.get(email);
             if(user == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return new KirvesGameOut(String.format("Email not found: %s", email));
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Email not found: %s", email));
             }
             response.setStatus(HttpServletResponse.SC_OK);
             try {
@@ -82,8 +77,7 @@ public class KirvesController {
                 this.refresh(id);
                 return out;
             } catch (KirvesGameException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return new KirvesGameOut(e.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
             }
         }
     }
@@ -92,8 +86,7 @@ public class KirvesController {
     public @ResponseBody KirvesGameOut getGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
             try {
@@ -105,8 +98,7 @@ public class KirvesController {
                     return game.out(null).setId(id);
                 }
             } catch (KirvesGameException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return new KirvesGameOut(e.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
             }
 
         }
@@ -116,14 +108,14 @@ public class KirvesController {
     public void deleteGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
             try {
                 User me = this.userService.get(email);
                 this.kirvesService.inactivateGame(id, me);
             } catch (KirvesGameException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
             }
         }
     }
@@ -132,8 +124,7 @@ public class KirvesController {
     public @ResponseBody KirvesGameOut action(@PathVariable Long id, @RequestBody KirvesGameIn in, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         } else {
             User me = this.userService.get(email);
             response.setStatus(HttpServletResponse.SC_OK);
@@ -142,8 +133,7 @@ public class KirvesController {
                 refresh(id);
                 return out;
             } catch (KirvesGameException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return new KirvesGameOut(e.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
             }
         }
     }
