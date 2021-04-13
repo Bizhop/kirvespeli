@@ -17,10 +17,24 @@ public class KirvesGameOut {
     private String valtti;
     private String cutCard;
     private Long id;
+    private Integer playersTotal;
 
     public KirvesGameOut() {}
 
-    public KirvesGameOut(List<KirvesPlayerOut> players, int cardsInDeck, String dealer, String turn, List<String> myCardsInHand, String myExtraCard, List<String> myAvailableActions, String message, boolean canJoin, String valttiKortti, String valtti, boolean canDeclineCut, String cutCard) {
+    public KirvesGameOut(List<KirvesPlayerOut> players,
+                         int cardsInDeck,
+                         String dealer,
+                         String turn,
+                         List<String> myCardsInHand,
+                         String myExtraCard,
+                         List<String> myAvailableActions,
+                         String message,
+                         boolean canJoin,
+                         String valttiKortti,
+                         String valtti,
+                         boolean canDeclineCut,
+                         String cutCard,
+                         Integer playersTotal) {
         this.players = players;
         this.cardsInDeck = cardsInDeck;
         this.dealer = dealer;
@@ -34,10 +48,7 @@ public class KirvesGameOut {
         this.valtti = valtti;
         this.canDeclineCut = canDeclineCut;
         this.cutCard = cutCard;
-    }
-
-    public KirvesGameOut(String message) {
-        this.message = message;
+        this.playersTotal = playersTotal;
     }
 
     public List<KirvesPlayerOut> getPlayers() {
@@ -103,5 +114,13 @@ public class KirvesGameOut {
     public KirvesGameOut setId(Long id) {
         this.id = id;
         return this;
+    }
+
+    public Integer getPlayersTotal() {
+        return playersTotal;
+    }
+
+    public void setPlayersTotal(Integer playersTotal) {
+        this.playersTotal = playersTotal;
     }
 }

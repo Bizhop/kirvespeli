@@ -39,11 +39,11 @@ public class KirvesGame implements Serializable {
         setDealer(player);
     }
 
-    public KirvesGameOut out() {
+    public KirvesGameOut out() throws KirvesGameException {
         return this.out(null);
     }
 
-    public KirvesGameOut out(User user) {
+    public KirvesGameOut out(User user) throws KirvesGameException {
         List<String> myCards = new ArrayList<>();
         List<String> myActions = new ArrayList<>();
         String myExtraCard = null;
@@ -74,7 +74,8 @@ public class KirvesGame implements Serializable {
                 this.valttiCard == null ? "" : this.valttiCard.toString(),
                 this.valtti == null ? "" : this.valtti.toString(),
                 this.canDeclineCut,
-                this.cutCard == null ? "" : this.cutCard.toString()
+                this.cutCard == null ? "" : this.cutCard.toString(),
+                this.players.size()
         );
     }
 
@@ -91,14 +92,18 @@ public class KirvesGame implements Serializable {
             if (this.players.stream()
                     .noneMatch(player -> user.getEmail().equals(player.getUserEmail()))) {
                 KirvesPlayer player = addPlayerInternal(user);
-                this.players.forEach(KirvesPlayer::resetAvailableActions);
+                this.resetActions();
                 player.setAvailableActions(List.of(CUT));
             } else {
-                throw new KirvesGameException(String.format("Player %s already joined game", user.getEmail()));
+                throw new KirvesGameException(String.format("Pelaaja %s on jo pelissä", user.getNickname()));
             }
         } else {
-            throw new KirvesGameException("Can't join this game now");
+            throw new KirvesGameException("Tähän peliin ei voi liittyä nyt");
         }
+    }
+
+    private void resetActions() {
+        this.players.forEach(KirvesPlayer::resetAvailableActions);
     }
 
     private KirvesPlayer addPlayerInternal(User user) {
@@ -120,8 +125,9 @@ public class KirvesGame implements Serializable {
 
     //use this method directly only when testing!
     public void deal(User user, List<Card> possibleValttiCards) throws CardException, KirvesGameException {
-        if(!this.canDeal) throw new KirvesGameException("Trying to deal but can't deal");
-        for(KirvesPlayer player : this.players) {
+        if(!this.canDeal) throw new KirvesGameException("Jakaminen ei onnistu");
+        List<KirvesPlayer> players = getPlayersStartingFrom(this.dealer.getUser());
+        for(KirvesPlayer player : players) {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
@@ -145,7 +151,7 @@ public class KirvesGame implements Serializable {
             this.valtti = this.valttiCard.getSuit();
         }
         //yhteinen tai väkyri
-        if(     this.players.stream().anyMatch(player -> player.getExtraCard() != null) ||
+        if(     players.stream().anyMatch(player -> player.getExtraCard() != null) ||
                 this.valttiCard.getSuit() == JOKER || this.valttiCard.getRank() == JACK
         ) {
             this.dealer.setExtraCard(this.valttiCard);
@@ -160,17 +166,17 @@ public class KirvesGame implements Serializable {
         this.canDeal = false;
         this.cutCard = null;
         this.canSetValtti = true;
-        KirvesPlayer player = getPlayer(user).orElseThrow(() -> new KirvesGameException("Unable to find user from players"));
+        KirvesPlayer player = getPlayer(user).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
         KirvesPlayer nextPlayer = player.getNext();
         setCardPlayer(nextPlayer);
         this.firstPlayerOfRound = nextPlayer;
-        this.players.forEach(KirvesPlayer::resetWonRounds);
+        players.forEach(KirvesPlayer::resetWonRounds);
     }
 
     //use this method directly only when testing!
     public void cut(User cutter, boolean decline, Card cutCard, Card second) throws CardException, KirvesGameException {
         if(decline && !this.canDeclineCut) {
-            throw new KirvesGameException("Can't decline cut");
+            throw new KirvesGameException("Nostosta ei voi kieltäytyä");
         }
         this.deck = new KirvesDeck().shuffle();
         if(!decline) {
@@ -183,14 +189,14 @@ public class KirvesGame implements Serializable {
                     this.canDeclineCut = true;
                     return;
                 }
-                KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Unable to find cutter player"));
+                KirvesPlayer cutterPlayer = getPlayer(cutter).orElseThrow(() -> new KirvesGameException("Nostajaa ei löydy pelaajista"));
                 cutterPlayer.setExtraCard(this.cutCard);
                 this.forcedGame = true;
             }
         } else {
             this.message = String.format("%s kieltäytyi nostosta", cutter.getNickname());
         }
-        this.players.forEach(player -> {
+        getPlayersStartingFrom(this.dealer.getUser()).forEach(player -> {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
         });
@@ -204,7 +210,7 @@ public class KirvesGame implements Serializable {
         cut(cutter, decline, null, null);
     }
 
-    public void aceOrTwoDecision(User user, boolean keepExtraCard) {
+    public void aceOrTwoDecision(User user, boolean keepExtraCard) throws KirvesGameException {
         Optional<KirvesPlayer> me = getPlayer(user);
         if(me.isPresent()) {
             KirvesPlayer player = me.get();
@@ -228,7 +234,7 @@ public class KirvesGame implements Serializable {
             player.setDeclaredPlayer(true);
             setCardPlayer(this.dealer.getNext());
         } else {
-            throw new KirvesGameException("Not a player in this game");
+            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
         }
     }
 
@@ -239,14 +245,14 @@ public class KirvesGame implements Serializable {
      * @param suit Set valtti to this suit. If same as turned valttiCard, keep current valttiCard.
      */
     public void setValtti(User user, Card.Suit suit, User declareUser) throws KirvesGameException {
-        if(suit == null) throw new KirvesGameException("Valtti can not be null");
+        if(suit == null) throw new KirvesGameException("Valtti ei voi olla tyhjä (null)");
         Optional<KirvesPlayer> me = getPlayer(user);
         if(me.isPresent()) {
             Optional<KirvesPlayer> declarePlayer = getPlayer(declareUser);
             if(declarePlayer.isPresent()) {
                 declarePlayer.get().setDeclaredPlayer(true);
             } else {
-                throw new KirvesGameException(String.format("Declared player %s not found in game", declareUser.getEmail()));
+                throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
             }
             KirvesPlayer player = me.get();
             if(suit != this.valtti) {
@@ -265,14 +271,15 @@ public class KirvesGame implements Serializable {
             player.playCard(index);
             setCardPlayer(player.getNext());
             if(this.turn.equals(this.firstPlayerOfRound)) {
-                List<Card> playedCards = getPlayersStartingFrom(this.firstPlayerOfRound.getUser()).stream()
+                List<KirvesPlayer> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUser());
+                List<Card> playedCards = players.stream()
                         .map(KirvesPlayer::getLastPlayedCard)
                         .collect(toList());
 
                 Card winningCard = winningCard(playedCards, this.valtti);
-                KirvesPlayer roundWinner = this.players.stream()
+                KirvesPlayer roundWinner = players.stream()
                         .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
-                        .findFirst().orElseThrow(() -> new KirvesGameException("Winning card not found from played cards"));
+                        .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
                 roundWinner.addRoundWon();
 
                 if(roundWinner.cardsInHand() != 0) {
@@ -286,34 +293,66 @@ public class KirvesGame implements Serializable {
                 }
             }
         } else {
-            throw new KirvesGameException("Not a player in this game");
+            throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
         }
     }
 
-    public void startNextRound(User user) {
+    public void startNextRound(User user) throws KirvesGameException {
         getPlayersStartingFrom(user).forEach(KirvesPlayer::clearHand);
         setDealer(this.dealer.getNext());
     }
 
-    private List<KirvesPlayer> getPlayersStartingFrom(User user) {
+    public void adjustPlayersInGame(User user, boolean resetActivePlayers, Set<String> inactivateByEmail) throws KirvesGameException {
+        Optional<KirvesPlayer> playerOpt = getPlayer(user);
+        if (playerOpt.isPresent()) {
+            if (resetActivePlayers) {
+                this.players.forEach(KirvesPlayer::activate);
+            } else {
+                this.players.stream()
+                        .filter(item -> inactivateByEmail.contains(item.getUserEmail()))
+                        .forEach(KirvesPlayer::inactivate);
+                //if active players would be less than 2, reset all players to active
+                if (this.players.stream().filter(KirvesPlayer::isInGame).count() < 2) {
+                    this.players.forEach(KirvesPlayer::activate);
+                }
+            }
+            while(!this.dealer.isInGame()) {
+                this.dealer = this.dealer.getNext();
+            }
+            resetActions();
+            KirvesPlayer cutter = this.dealer.getPrevious();
+            while(!cutter.isInGame()) {
+                cutter = cutter.getPrevious();
+            }
+            cutter.setAvailableActions(List.of(CUT, ADJUST_PLAYERS_IN_GAME));
+        } else {
+            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
+        }
+    }
+
+    private List<KirvesPlayer> getPlayersStartingFrom(User user) throws KirvesGameException {
+        if(user == null) {
+            return this.players;
+        }
         Optional<KirvesPlayer> start = getPlayer(user);
         if(start.isPresent()) {
             List<KirvesPlayer> players = new ArrayList<>();
             KirvesPlayer item = start.get();
             do {
-                players.add(item);
+                if(item.isInGame()) {
+                    players.add(item);
+                }
             } while(!(item = item.getNext()).equals(start.get()));
 
             return players;
         } else {
-            return this.players;
+            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
         }
     }
 
-    private void setCardPlayer(KirvesPlayer player) {
-        this.players.forEach(KirvesPlayer::resetAvailableActions);
-        //TODO: possibly buggy: this way of finding the player in need of discard doesn't always provide the same order
-        Optional<KirvesPlayer> needsToDiscard = this.players.stream()
+    private void setCardPlayer(KirvesPlayer player) throws KirvesGameException {
+        this.resetActions();
+        Optional<KirvesPlayer> needsToDiscard = getPlayersStartingFrom(player.getUser()).stream()
                 .filter(item -> item.getExtraCard() != null)
                 .findFirst();
         if(this.dealer.hasInvisibleCards()) {
@@ -325,6 +364,9 @@ public class KirvesGame implements Serializable {
             this.turn = needsToDiscard.get();
         }
         else {
+            while(!player.isInGame()) {
+                player = player.getNext();
+            }
             this.turn = player;
             this.turn.setAvailableActions(this.canSetValtti && !this.forcedGame ? List.of(SET_VALTTI) : List.of(PLAY_CARD));
         }
@@ -338,14 +380,15 @@ public class KirvesGame implements Serializable {
         this.canSetValtti = false;
         this.forcedGame = false;
         this.canDeclineCut = false;
-        this.players.forEach(KirvesPlayer::resetAvailableActions);
+        this.resetActions();
         this.turn = dealer.getPrevious();
-        this.turn.setAvailableActions(List.of(CUT));
+        this.turn.setAvailableActions(List.of(CUT, ADJUST_PLAYERS_IN_GAME));
     }
 
     public KirvesPlayer determineHandWinner() throws KirvesGameException {
+        List<KirvesPlayer> players = getPlayersStartingFrom(this.dealer.getUser());
         //three or more rounds is clear winner
-        Optional<KirvesPlayer> threeOrMore = this.players.stream()
+        Optional<KirvesPlayer> threeOrMore = players.stream()
                 .filter(player -> player.getRoundsWon().size() >= 3)
                 .findFirst();
         if(threeOrMore.isPresent()) {
@@ -353,7 +396,7 @@ public class KirvesGame implements Serializable {
         }
 
         //two rounds
-        List<KirvesPlayer> two = this.players.stream()
+        List<KirvesPlayer> two = players.stream()
                 .filter(player -> player.getRoundsWon().size() == 2)
                 .collect(toList());
 
@@ -369,17 +412,17 @@ public class KirvesGame implements Serializable {
         }
 
         //if these cases don't return anything, there should be five single round winners
-        List<KirvesPlayer> one = this.players.stream()
+        List<KirvesPlayer> one = players.stream()
                 .filter(player -> player.getRoundsWon().size() == 1)
                 .collect(toList());
 
         if(one.size() == 5) {
             //last round wins
-            return this.players.stream()
+            return players.stream()
                     .filter(player -> player.getRoundsWon().get(0) == 4)
                     .findFirst().orElseThrow(KirvesGameException::new);
         } else {
-            throw new KirvesGameException("Unable to determine hand winner");
+            throw new KirvesGameException("Voittajan määritys ei onnistunut");
         }
     }
 
@@ -476,6 +519,6 @@ public class KirvesGame implements Serializable {
     }
 
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI, ADJUST_PLAYERS_IN_GAME
     }
 }

@@ -21,6 +21,7 @@ public class KirvesPlayer implements Serializable {
     private KirvesPlayer next;
     private KirvesPlayer previous;
     private boolean declaredPlayer = false;
+    private boolean inGame = true;
 
     /**
      * Create new player linking to previous and next players
@@ -179,5 +180,17 @@ public class KirvesPlayer implements Serializable {
 
     public void clearHand() {
         this.hand.clear();
+    }
+
+    public boolean isInGame() {
+        return inGame;
+    }
+
+    public void activate() {
+        this.inGame = true;
+    }
+
+    public void inactivate() {
+        this.inGame = false;
     }
 }

@@ -62,7 +62,12 @@ public class User implements Serializable {
     }
 
     public String getNickname() {
-        return nickname;
+        if(this.nickname == null || this.nickname.isEmpty()) {
+            return this.email;
+        }
+        else {
+            return this.nickname;
+        }
     }
 
     public void setNickname(String nickname) {
