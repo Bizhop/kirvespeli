@@ -316,14 +316,11 @@ public class KirvesGame implements Serializable {
                     this.players.forEach(KirvesPlayer::activate);
                 }
             }
-            while(!this.dealer.isInGame()) {
+            if(!this.dealer.isInGame()) {
                 this.dealer = this.dealer.getNext();
             }
             resetActions();
             KirvesPlayer cutter = this.dealer.getPrevious();
-            while(!cutter.isInGame()) {
-                cutter = cutter.getPrevious();
-            }
             cutter.setAvailableActions(List.of(CUT, ADJUST_PLAYERS_IN_GAME));
         } else {
             throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
@@ -338,10 +335,9 @@ public class KirvesGame implements Serializable {
         if(start.isPresent()) {
             List<KirvesPlayer> players = new ArrayList<>();
             KirvesPlayer item = start.get();
+            if(!item.isInGame()) throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", item.getUserNickname()));
             do {
-                if(item.isInGame()) {
-                    players.add(item);
-                }
+                players.add(item);
             } while(!(item = item.getNext()).equals(start.get()));
 
             return players;
@@ -364,7 +360,7 @@ public class KirvesGame implements Serializable {
             this.turn = needsToDiscard.get();
         }
         else {
-            while(!player.isInGame()) {
+            if(!player.isInGame()) {
                 player = player.getNext();
             }
             this.turn = player;
