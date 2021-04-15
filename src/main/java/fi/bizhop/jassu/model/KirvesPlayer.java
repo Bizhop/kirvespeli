@@ -141,7 +141,7 @@ public class KirvesPlayer implements Serializable {
     }
 
     public KirvesPlayer getNext() {
-        return next;
+       return next.inGame ? next : next.getNext();
     }
 
     public void setNext(KirvesPlayer next) {
@@ -149,7 +149,7 @@ public class KirvesPlayer implements Serializable {
     }
 
     public KirvesPlayer getPrevious() {
-        return previous;
+        return previous.inGame ? previous : previous.getPrevious();
     }
 
     public void setPrevious(KirvesPlayer previous) {

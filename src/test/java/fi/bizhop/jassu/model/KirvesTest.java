@@ -92,7 +92,7 @@ public class KirvesTest {
         try {
             game.addPlayer(TEST_USERS.get(3));
         } catch (KirvesGameException e) {
-            assertEquals("Player test4@example.com already joined game", e.getMessage());
+            assertEquals("Pelaaja test4@example.com on jo pelissä", e.getMessage());
         }
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
     }
@@ -334,20 +334,20 @@ public class KirvesTest {
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ADJUST_PLAYERS_IN_GAME));
-        game.adjustPlayersInGame(TEST_USERS.get(0), false, Set.of(TEST_USERS.get(1).getEmail(), TEST_USERS.get(2).getEmail()));
+        game.adjustPlayersInGame(TEST_USERS.get(0), false, Set.of(TEST_USERS.get(2).getEmail()));
 
-        assertEquals(2, game.out(TEST_USERS.get(0)).getPlayers().size());
+        assertEquals(3, game.out(TEST_USERS.get(0)).getPlayers().size());
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), CUT));
         game.cut(TEST_USERS.get(0), false, getRandomCard(OTHER_CARDS), null);
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DEAL));
-        game.deal(TEST_USERS.get(3), OTHER_CARDS);
-        game.setValtti(TEST_USERS.get(0), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(0));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), DEAL));
+        game.deal(TEST_USERS.get(1), OTHER_CARDS);
+        game.setValtti(TEST_USERS.get(3), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(3));
 
-        playThroughHand(game, List.of(TEST_USERS.get(0), TEST_USERS.get(3)));
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), ADJUST_PLAYERS_IN_GAME));
-        game.adjustPlayersInGame(TEST_USERS.get(3), true, null);
+        playThroughHand(game, List.of(TEST_USERS.get(0), TEST_USERS.get(1), TEST_USERS.get(3)));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), ADJUST_PLAYERS_IN_GAME));
+        game.adjustPlayersInGame(TEST_USERS.get(1), true, null);
 
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
@@ -451,7 +451,6 @@ public class KirvesTest {
         KirvesGameOut output4 = game.out(null);
         assertEquals(cutCard.toString(), output4.getCutCard());
     }
-
 
     //--------------------------
     //PRIVATE METHODS START HERE
