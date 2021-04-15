@@ -62,7 +62,7 @@ public class KirvesService {
     public void joinGame(Long id, String email) throws KirvesGameException {
         User player = this.userService.get(email);
         if(player == null) {
-            throw new KirvesGameException("Email not found");
+            throw new KirvesGameException("Tunnusta ei löytynyt");
         } else {
             KirvesGame game = getGame(id);
             game.addPlayer(player);
@@ -77,7 +77,7 @@ public class KirvesService {
             return SerializationUtil.getJavaObject(game.get().gameData, KirvesGame.class)
                         .orElseThrow(() -> new KirvesGameException("Unable to convert gameData to KirvesGame"));
         } else {
-            throw new KirvesGameException(String.format("Game not id=%d found", id));
+            throw new KirvesGameException(String.format("Peliä ei löytynyt, id=%d", id));
         }
     }
 
@@ -88,10 +88,10 @@ public class KirvesService {
                 try {
                     game.deal(user);
                 } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Unable to deal cards: %s", e.getMessage()));
+                    throw new KirvesGameException(String.format("Jako ei onnistunut: %s", e.getMessage()));
                 }
             } else {
-                throw new KirvesGameException("You can't deal now");
+                throw new KirvesGameException("Et voi jakaa nyt (DEAL)");
             }
         }
         else if(in.action == PLAY_CARD) {
@@ -99,10 +99,10 @@ public class KirvesService {
                 try {
                     game.playCard(user, in.index);
                 } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Unable to PLAY_CARD with index %d", in.index));
+                    throw new KirvesGameException(String.format("Kortin pelaaminen ei onnistunut (index=%d)", in.index));
                 }
             } else {
-                throw new KirvesGameException("It's not your turn to PLAY_CARD");
+                throw new KirvesGameException("Ei ole vuorosi pelata (PLAY_CARD)");
             }
         }
         else if(in.action == CUT) {
@@ -110,10 +110,10 @@ public class KirvesService {
                 try {
                     game.cut(user, in.declineCut);
                 } catch (CardException e) {
-                    throw new KirvesGameException("Unable to CUT");
+                    throw new KirvesGameException("Nosto ei onnistunut (CUT)");
                 }
             } else {
-                throw new KirvesGameException("It's not your turn to CUT");
+                throw new KirvesGameException("Et voi nostaa nyt (CUT)");
             }
         }
         else if(in.action == DISCARD) {
@@ -121,17 +121,17 @@ public class KirvesService {
                 try {
                     game.discard(user, in.index);
                 } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Unable to DISCARD with index %d", in.index));
+                    throw new KirvesGameException(String.format("Tyhjennys ei onnistunut (DISCARD, index=%d)", in.index));
                 }
             } else {
-                throw new KirvesGameException("It's not your turn to DISCARD");
+                throw new KirvesGameException("Et voi tyhjentää nyt (DISCARD)");
             }
         }
         else if(in.action == ACE_OR_TWO_DECISION) {
             if(game.userHasActionAvailable(user, ACE_OR_TWO_DECISION)) {
                 game.aceOrTwoDecision(user, in.keepExtraCard);
             } else {
-                throw new KirvesGameException("It's not your turn to ACE_OR_TWO_DECISION");
+                throw new KirvesGameException("Et voi tehdä hakkipäätöstä nyt (ACE_OR_TWO_DECISION)");
             }
         }
         else if(in.action == SET_VALTTI) {
@@ -141,13 +141,13 @@ public class KirvesService {
                 } else {
                     User declareUser = this.userService.get(in.declarePlayerEmail);
                     if (declareUser == null) {
-                        throw new KirvesGameException(String.format("Declared user %s not found", in.declarePlayerEmail));
+                        throw new KirvesGameException(String.format("Pelinviejää ei löytynyt (%s)", in.declarePlayerEmail));
                     } else {
                         game.setValtti(user, in.valtti, declareUser);
                     }
                 }
             } else {
-                throw new KirvesGameException("It's not your turn to SET_VALTTI");
+                throw new KirvesGameException("Et voi asettaa valttia nyt (SET_VALTTI)");
             }
         }
         else if(in.action == ADJUST_PLAYERS_IN_GAME) {
@@ -155,7 +155,7 @@ public class KirvesService {
                 game.adjustPlayersInGame(user, in.resetActivePlayers, in.inactivateByEmail);
             }
             else {
-                throw new KirvesGameException("It's not your turn to ADJUST_PLAYERS_IN_GAME");
+                throw new KirvesGameException("Et voi lisätä/poistaa pelaajia nyt (ADJUST_PLAYERS_IN_GAME)");
             }
         }
         saveGame(id, game);
@@ -171,10 +171,10 @@ public class KirvesService {
                 kirvesGameRepo.save(game);
                 LOG.info(String.format("Inactivated game id=%d", id));
             } else {
-                throw new KirvesGameException(String.format("Can't delete, %s is not admin of game id=%d", me.getEmail(), id));
+                throw new KirvesGameException(String.format("Et voi poistaa peliä, %s ei ole pelin omistaja (gameId=%d)", me.getNickname(), id));
             }
         } else {
-            throw new KirvesGameException(String.format("Game not id=%d found", id));
+            throw new KirvesGameException(String.format("Peliä ei löytynyt (gameId=%d)", id));
         }
     }
 

@@ -37,7 +37,7 @@ public class KirvesController {
         } else {
             User admin = this.userService.get(email);
             if(admin == null) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Email not found: %s", email));
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Tunnusta ei löytynyt: %s", email));
             }
             try {
                 response.setStatus(HttpServletResponse.SC_OK);
@@ -68,7 +68,7 @@ public class KirvesController {
         } else {
             User user = userService.get(email);
             if(user == null) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Email not found: %s", email));
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Tunnusta ei löytynyt: %s", email));
             }
             response.setStatus(HttpServletResponse.SC_OK);
             try {

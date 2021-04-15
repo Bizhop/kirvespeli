@@ -179,6 +179,7 @@ public class KirvesGame implements Serializable {
             throw new KirvesGameException("Nostosta ei voi kieltäytyä");
         }
         this.deck = new KirvesDeck().shuffle();
+        this.message = "";
         if(!decline) {
             this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
             if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
