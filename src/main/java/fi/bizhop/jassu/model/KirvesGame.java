@@ -199,6 +199,7 @@ public class KirvesGame implements Serializable {
         getPlayersStartingFrom(this.dealer.getUser()).forEach(player -> {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
+            player.getPlayedCards().clear();
         });
         this.dealer.setAvailableActions(List.of(DEAL));
         this.turn = this.dealer;

@@ -362,6 +362,7 @@ public class KirvesTest {
             User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
             game.cut(cutter, false, cutCard, null);
             assertNotNull(game.getCutCard());
+            assertEquals(0, game.out().getPlayers().stream().mapToInt(p -> p.getPlayedCards().size()).sum());
 
             List<Card> possibleValttiCards = new ArrayList<>(OTHER_CARDS);
             possibleValttiCards.remove(cutCard);
