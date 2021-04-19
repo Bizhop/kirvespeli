@@ -29,10 +29,7 @@ public class KirvesService {
     private final UserService userService;
     private final KirvesGameRepo kirvesGameRepo;
 
-    private final SimpleCache<Long, KirvesGameDB> gameCache = new SimpleCache<>(5000);
-
-    //TODO: remove this later
-    private int dbReadCount = 0;
+    private final SimpleCache<Long, KirvesGameDB> gameCache = new SimpleCache<>(5 * 60 * 1000); //5 mins cache
 
     public KirvesService(UserService userService, KirvesGameRepo kirvesGameRepo) {
         this.userService = userService;
@@ -91,7 +88,6 @@ public class KirvesService {
             return cached;
         } else {
             Optional<KirvesGameDB> game = kirvesGameRepo.findByIdAndActiveTrue(id);
-            LOG.info(String.format("DB read count: %d", dbReadCount++));
             if(game.isPresent()) {
                 gameCache.put(id, game.get());
                 return game.get();
