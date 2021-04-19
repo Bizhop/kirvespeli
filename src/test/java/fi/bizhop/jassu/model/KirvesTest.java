@@ -111,29 +111,37 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
         game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+        assertEquals(0, game.out().getNumOfPlayedRounds());
 
         List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(1).getEmail(), declaredPlayers.get(0).getEmail());
 
+        assertEquals("", game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         game.playCard(TEST_USERS.get(1), 0);
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+        assertEquals(0, game.out().getNumOfPlayedRounds());
 
+        String ajomaa = getAjomaa(game);
+        System.out.printf("Ajomaa: %s%n", ajomaa);
+
+        assertEquals(ajomaa, game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), PLAY_CARD));
         game.playCard(TEST_USERS.get(2), 0);
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+        assertEquals(0, game.out().getNumOfPlayedRounds());
 
+        assertEquals(ajomaa, game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), PLAY_CARD));
         game.playCard(TEST_USERS.get(3), 0);
-        assertEquals(0, game.out(null).getNumOfPlayedRounds());
+        assertEquals(0, game.out().getNumOfPlayedRounds());
 
+        assertEquals(ajomaa, game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), PLAY_CARD));
         game.playCard(TEST_USERS.get(0), 0);
-        assertEquals(1, game.out(null).getNumOfPlayedRounds());
+        assertEquals(1, game.out().getNumOfPlayedRounds());
 
-        KirvesGameOut out = game.out(null);
+        assertEquals("", game.out().getFirstCardSuit());
+        KirvesGameOut out = game.out();
 
         System.out.printf("Valtti: %s%n", out.getValtti());
         System.out.println(getRoundCards(out, 1, 0));
@@ -141,6 +149,19 @@ public class KirvesTest {
         KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
         System.out.printf("Round winner is %s%n", winner.getUserEmail());
         assertTrue(game.userHasActionAvailable(winner.getUser(), PLAY_CARD));
+    }
+
+    private String getAjomaa(KirvesGame game) throws KirvesGameException {
+        return game.getPlayer(TEST_USERS.get(1))
+                .map(player -> {
+                    Card card = player.getLastPlayedCard();
+                    if (card.getSuit() == JOKER || card.getRank() == JACK) {
+                        return game.getValtti().name();
+                    } else {
+                        return card.getSuit().name();
+                    }
+                })
+                .orElseThrow(KirvesGameException::new);
     }
 
     @Test
@@ -444,12 +465,12 @@ public class KirvesTest {
         assertEquals(4, output2.getPlayers().size());
         assertEquals(TEST_USERS.get(2).getEmail(), output2.getPlayers().get(0).getEmail());
 
-        KirvesGameOut output3 = game.out(null);
+        KirvesGameOut output3 = game.out();
         assertEquals(4, output3.getPlayers().size());
 
         Card cutCard = getRandomCard(OTHER_CARDS);
         game.cut(TEST_USERS.get(3), false, cutCard, null);
-        KirvesGameOut output4 = game.out(null);
+        KirvesGameOut output4 = game.out();
         assertEquals(cutCard.toString(), output4.getCutCard());
     }
 

@@ -18,6 +18,7 @@ public class KirvesGameOut {
     private String cutCard;
     private Long id;
     private Integer playersTotal;
+    private String firstCardSuit;
 
     public KirvesGameOut() {}
 
@@ -34,7 +35,8 @@ public class KirvesGameOut {
                          String valtti,
                          boolean canDeclineCut,
                          String cutCard,
-                         Integer playersTotal) {
+                         Integer playersTotal,
+                         String firstCardSuit) {
         this.players = players;
         this.cardsInDeck = cardsInDeck;
         this.dealer = dealer;
@@ -49,6 +51,7 @@ public class KirvesGameOut {
         this.canDeclineCut = canDeclineCut;
         this.cutCard = cutCard;
         this.playersTotal = playersTotal;
+        this.firstCardSuit = firstCardSuit;
     }
 
     public List<KirvesPlayerOut> getPlayers() {
@@ -122,5 +125,9 @@ public class KirvesGameOut {
 
     public void setPlayersTotal(Integer playersTotal) {
         this.playersTotal = playersTotal;
+    }
+
+    public String getFirstCardSuit() {
+        return firstCardSuit;
     }
 }
