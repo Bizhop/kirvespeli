@@ -61,6 +61,7 @@ public class KirvesGame implements Serializable {
                 }
             }
         }
+
         return new KirvesGameOut(
                 getPlayersStartingFrom(user).stream().map(KirvesPlayerOut::new).collect(toList()),
                 this.deck.size(),
@@ -75,11 +76,23 @@ public class KirvesGame implements Serializable {
                 this.valtti == null ? "" : this.valtti.toString(),
                 this.canDeclineCut,
                 this.cutCard == null ? "" : this.cutCard.toString(),
-                this.players.size()
+                this.players.size(),
+                getFirstCardSuit()
         );
     }
 
-    private Optional<KirvesPlayer> getPlayer(User user) {
+    private String getFirstCardSuit() {
+        if(this.firstPlayerOfRound == null || this.valtti == null) return "";
+        Card firstCard = this.firstPlayerOfRound.equals(this.turn) ? null : this.firstPlayerOfRound.getLastPlayedCard();
+        if(firstCard == null) return "";
+        if(firstCard.getSuit() == JOKER || firstCard.getRank() == JACK) {
+            return this.valtti.name();
+        } else {
+            return firstCard.getSuit().name();
+        }
+    }
+
+    public Optional<KirvesPlayer> getPlayer(User user) {
         return this.players.stream().filter(player -> player.getUser().equals(user)).findFirst();
     }
 
