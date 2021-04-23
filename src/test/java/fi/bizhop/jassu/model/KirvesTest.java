@@ -2,6 +2,8 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
+import fi.bizhop.jassu.model.kirves.*;
+import fi.bizhop.jassu.util.JsonUtil;
 import fi.bizhop.jassu.util.RandomUtil;
 import org.junit.Test;
 
@@ -10,7 +12,7 @@ import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
-import static fi.bizhop.jassu.model.KirvesGame.Action.*;
+import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static org.junit.Assert.*;
 
 public class KirvesTest {
@@ -77,14 +79,14 @@ public class KirvesTest {
 
     @Test
     public void testKirvesDeck() throws CardException {
-        Cards kirvesDeck = new KirvesDeck();
+        Cards kirvesDeck = new Deck();
 
         assertEquals(54, kirvesDeck.size());
     }
 
     @Test
     public void testAddingPlayers() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
 
@@ -99,7 +101,7 @@ public class KirvesTest {
 
     @Test
     public void testTurnOrderAndAvailableActions() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -113,7 +115,7 @@ public class KirvesTest {
         game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(1).getEmail(), declaredPlayers.get(0).getEmail());
 
@@ -141,17 +143,17 @@ public class KirvesTest {
         assertEquals(1, game.out().getNumOfPlayedRounds());
 
         assertEquals("", game.out().getFirstCardSuit());
-        KirvesGameOut out = game.out();
+        GameOut out = game.out();
 
         System.out.printf("Valtti: %s%n", out.getValtti());
         System.out.println(getRoundCards(out, 1, 0));
 
-        KirvesPlayer winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
+        Player winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
         System.out.printf("Round winner is %s%n", winner.getUserEmail());
         assertTrue(game.userHasActionAvailable(winner.getUser(), PLAY_CARD));
     }
 
-    private String getAjomaa(KirvesGame game) throws KirvesGameException {
+    private String getAjomaa(Game game) throws KirvesGameException {
         return game.getPlayer(TEST_USERS.get(1))
                 .map(player -> {
                     Card card = player.getLastPlayedCard();
@@ -166,7 +168,7 @@ public class KirvesTest {
 
     @Test
     public void testVakyri() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -180,7 +182,7 @@ public class KirvesTest {
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
 
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(0).getEmail(), declaredPlayers.get(0).getEmail());
@@ -188,7 +190,7 @@ public class KirvesTest {
 
     @Test
     public void testYhteinen() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(JACKS_AND_JOKERS), getRandomCard(OTHER_CARDS));
@@ -205,7 +207,7 @@ public class KirvesTest {
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
 
         assertEquals(2, declaredPlayers.size());
         assertTrue(declaredPlayers.stream().anyMatch(p -> p.getEmail().equals(TEST_USERS.get(0).getEmail())));
@@ -214,7 +216,7 @@ public class KirvesTest {
 
     @Test
     public void testDoubleCutAcceptingSecondCut() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         List<Card> cutCards = getRandomCards(JACKS_AND_JOKERS, 2);
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
@@ -228,7 +230,7 @@ public class KirvesTest {
 
     @Test
     public void testDoubleCutDecliningSecondCut() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         List<Card> cutCards = getRandomCards(JACKS_AND_JOKERS, 2);
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
@@ -244,7 +246,7 @@ public class KirvesTest {
 
     @Test
     public void testHakki() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -260,7 +262,7 @@ public class KirvesTest {
         //check to ensure valtti can not be changed
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
 
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(0).getEmail(), declaredPlayers.get(0).getEmail());
@@ -268,7 +270,7 @@ public class KirvesTest {
 
     @Test
     public void testHakkiDontKeepCard() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -281,7 +283,7 @@ public class KirvesTest {
 
     @Test
     public void testSetValtti() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -293,7 +295,7 @@ public class KirvesTest {
         Card.Suit newValtti = suits.get(RandomUtil.getInt(suits.size()));
         game.setValtti(TEST_USERS.get(1), newValtti, TEST_USERS.get(2));
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(2).getEmail(), declaredPlayers.get(0).getEmail());
 
@@ -303,7 +305,7 @@ public class KirvesTest {
 
     @Test
     public void testPassing() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -316,14 +318,14 @@ public class KirvesTest {
         assertEquals(TEST_USERS.get(0), cutter);
 
         int cardsInHands = game.out().getPlayers().stream()
-                .mapToInt(KirvesPlayerOut::getCardsInHand)
+                .mapToInt(PlayerOut::getCardsInHand)
                 .sum();
         assertEquals(0, cardsInHands);
     }
 
     @Test
     public void testKeepValtti() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
@@ -333,7 +335,7 @@ public class KirvesTest {
         Card.Suit valtti = game.getValtti();
         game.setValtti(TEST_USERS.get(1), valtti, TEST_USERS.get(3));
 
-        List<KirvesPlayerOut> declaredPlayers = getDeclaredPlayers(game);
+        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
         assertEquals(1, declaredPlayers.size());
         assertEquals(TEST_USERS.get(3).getEmail(), declaredPlayers.get(0).getEmail());
 
@@ -344,7 +346,7 @@ public class KirvesTest {
 
     @Test
     public void testAdjustingPlayers() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
@@ -376,7 +378,7 @@ public class KirvesTest {
 
     @Test
     public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
         for (User dealer : TEST_USERS) {
             Card cutCard = getRandomCard(OTHER_CARDS);
@@ -405,31 +407,31 @@ public class KirvesTest {
     public void testWinningCards() throws CardException {
         //samaa maata, isompi voittaa
         List<Card> cards = List.of(new Card(SPADES, SEVEN), new Card(SPADES, TEN));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(1), Game.winningCard(cards, DIAMONDS));
 
         //eri maata, ajokortti voittaa
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TEN));
-        assertEquals(cards.get(0), KirvesGame.winningCard(cards, DIAMONDS));
+        assertEquals(cards.get(0), Game.winningCard(cards, DIAMONDS));
 
         //valtti voittaa, vaikkaa on pienempi
         cards = List.of(new Card(SPADES, SEVEN), new Card(CLUBS, TWO));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, CLUBS));
+        assertEquals(cards.get(1), Game.winningCard(cards, CLUBS));
 
         //pamppu voittaa valttiässän
         cards = List.of(new Card(SPADES, ACE), new Card(SPADES, JACK));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), Game.winningCard(cards, SPADES));
 
         //pamppu voittaa hantin (lasketaan valtiksi)
         cards = List.of(new Card(CLUBS, ACE), new Card(SPADES, JACK));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, HEARTS));
+        assertEquals(cards.get(1), Game.winningCard(cards, HEARTS));
 
         //punainen jokeri voittaa mustan
         cards = List.of(new Card(JOKER, BLACK), new Card(JOKER, RED));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), Game.winningCard(cards, SPADES));
 
         //jokeri voittaa pampun
         cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
-        assertEquals(cards.get(1), KirvesGame.winningCard(cards, SPADES));
+        assertEquals(cards.get(1), Game.winningCard(cards, SPADES));
     }
 
     @Test
@@ -455,32 +457,61 @@ public class KirvesTest {
 
     @Test
     public void testOutputByUser() throws CardException, KirvesGameException {
-        KirvesGame game = getTestGame(TEST_USERS);
+        Game game = getTestGame(TEST_USERS);
 
-        KirvesGameOut output1 = game.out(TEST_USERS.get(0));
+        GameOut output1 = game.out(TEST_USERS.get(0));
         assertEquals(4, output1.getPlayers().size());
         assertEquals(TEST_USERS.get(0).getEmail(), output1.getPlayers().get(0).getEmail());
 
-        KirvesGameOut output2 = game.out(TEST_USERS.get(2));
+        GameOut output2 = game.out(TEST_USERS.get(2));
         assertEquals(4, output2.getPlayers().size());
         assertEquals(TEST_USERS.get(2).getEmail(), output2.getPlayers().get(0).getEmail());
 
-        KirvesGameOut output3 = game.out();
+        GameOut output3 = game.out();
         assertEquals(4, output3.getPlayers().size());
 
         Card cutCard = getRandomCard(OTHER_CARDS);
         game.cut(TEST_USERS.get(3), false, cutCard, null);
-        KirvesGameOut output4 = game.out();
+        GameOut output4 = game.out();
         assertEquals(cutCard.toString(), output4.getCutCard());
+    }
+
+    @Test
+    public void testPOJO() throws CardException, KirvesGameException {
+        Game game = getTestGame(TEST_USERS);
+
+        GameDataPOJO pojo = game.toPojo();
+        assertEquals(4, pojo.players.size());
+
+        game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        pojo = game.toPojo();
+        assertEquals(4, pojo.players.size());
+
+        game = new Game(pojo);
+        assertEquals(4, game.getNumberOfPlayers());
+    }
+
+    @Test
+    public void testPOJOWithJsonUtil() throws CardException, KirvesGameException {
+        Game game = getTestGame(TEST_USERS);
+
+        GameDataPOJO pojoIn = game.toPojo();
+        String json = JsonUtil.getJson(pojoIn).orElseThrow();
+        GameDataPOJO pojoOut = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
+        Game gameFromPojo = new Game(pojoOut);
+
+        assertEquals(game, gameFromPojo);
     }
 
     //--------------------------
     //PRIVATE METHODS START HERE
     //--------------------------
 
-    private List<KirvesPlayerOut> getDeclaredPlayers(KirvesGame game) throws KirvesGameException {
+    private List<PlayerOut> getDeclaredPlayers(Game game) throws KirvesGameException {
         return game.out().getPlayers().stream()
-                .filter(KirvesPlayerOut::isDeclaredPlayer)
+                .filter(PlayerOut::isDeclaredPlayer)
                 .collect(Collectors.toList());
     }
 
@@ -506,13 +537,13 @@ public class KirvesTest {
         return mutableList.subList(0, count);
     }
 
-    private void playThroughHand(KirvesGame game, List<User> players) throws CardException, KirvesGameException {
+    private void playThroughHand(Game game, List<User> players) throws CardException, KirvesGameException {
         for(int i = 0; i < 5; i++) {
             playRound(game, players, false);
         }
     }
 
-    private void playRound(KirvesGame game, List<User> players, boolean printMessage) throws KirvesGameException, CardException {
+    private void playRound(Game game, List<User> players, boolean printMessage) throws KirvesGameException, CardException {
         User turn = players.stream()
                 .filter(user -> game.userHasActionAvailable(user, PLAY_CARD))
                 .findFirst()
@@ -537,11 +568,11 @@ public class KirvesTest {
         }
     }
 
-    private KirvesGame getTestGame(List<User> players) throws CardException, KirvesGameException {
+    private Game getTestGame(List<User> players) throws CardException, KirvesGameException {
         if(players == null || players.isEmpty()) {
             throw new KirvesGameException("TEST: you must define at least one player");
         }
-        KirvesGame game = new KirvesGame(players.get(0));
+        Game game = new Game(players.get(0));
         if(players.size() > 1) {
             for(int i = 1; i < players.size(); i++) {
                 game.addPlayer(players.get(i));
@@ -550,11 +581,11 @@ public class KirvesTest {
         return game;
     }
 
-    private String getRoundCards(KirvesGameOut out, int offset, int round) {
-        List<KirvesPlayerOut> players = out.getPlayers();
+    private String getRoundCards(GameOut out, int offset, int round) {
+        List<PlayerOut> players = out.getPlayers();
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < players.size(); i++) {
-            KirvesPlayerOut player = players.get((i + offset) % players.size());
+            PlayerOut player = players.get((i + offset) % players.size());
             sb.append(player.getEmail());
             sb.append(": ");
             sb.append(player.getPlayedCards().get(round));

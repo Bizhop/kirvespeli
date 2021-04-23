@@ -2,8 +2,8 @@ package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.PokerGameException;
-import fi.bizhop.jassu.model.PokerGame;
-import fi.bizhop.jassu.model.PokerGameIn;
+import fi.bizhop.jassu.model.poker.PokerGame;
+import fi.bizhop.jassu.model.poker.PokerGameIn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static fi.bizhop.jassu.model.PokerGame.Action.*;
+import static fi.bizhop.jassu.model.poker.PokerGame.Action.*;
 
 @Service
 public class PokerService {

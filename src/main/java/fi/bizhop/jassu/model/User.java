@@ -1,13 +1,11 @@
 package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.db.UserDB;
+import fi.bizhop.jassu.model.kirves.UserPOJO;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class User {
     private String email;
     private String jwt;
     private String nickname;
@@ -26,6 +24,11 @@ public class User implements Serializable {
         this.email = userDB.email;
         this.money = userDB.money;
         this.nickname = userDB.nickname;
+    }
+
+    public User(UserPOJO pojo) {
+        this.email = pojo.email;
+        this.nickname = pojo.nickname;
     }
 
     public String getEmail() {
@@ -54,11 +57,8 @@ public class User implements Serializable {
 
     @Override
     public boolean equals(Object other) {
-        if(other instanceof User) {
-            return this.email.equals(((User) other).email);
-        } else {
-            return false;
-        }
+        if(!(other instanceof User)) return false;
+        return this.email.equals(((User) other).email);
     }
 
     public String getNickname() {

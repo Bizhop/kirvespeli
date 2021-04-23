@@ -1,10 +1,10 @@
-package fi.bizhop.jassu.model;
+package fi.bizhop.jassu.model.kirves;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-public class KirvesPlayerOut {
+public class PlayerOut {
     private String email;
     private String nickname;
     private int cardsInHand;
@@ -14,9 +14,9 @@ public class KirvesPlayerOut {
     private String extraCard;
     private boolean declaredPlayer;
 
-    public KirvesPlayerOut() {}
+    public PlayerOut() {}
 
-    public KirvesPlayerOut(KirvesPlayer player) {
+    public PlayerOut(Player player) {
         this.email = player.getUserEmail();
         this.nickname = player.getUserNickname();
         this.cardsInHand = player.cardsInHand();

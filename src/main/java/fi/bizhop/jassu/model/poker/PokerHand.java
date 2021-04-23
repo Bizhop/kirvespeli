@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.model;
+package fi.bizhop.jassu.model.poker;
 
 import java.util.HashMap;
 import java.util.Map;

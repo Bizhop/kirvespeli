@@ -1,9 +1,11 @@
-package fi.bizhop.jassu.model;
+package fi.bizhop.jassu.model.kirves;
+
+import fi.bizhop.jassu.model.Card;
 
 import java.util.Set;
 
-public class KirvesGameIn {
-    public KirvesGame.Action action;
+public class GameIn {
+    public Game.Action action;
     public int index;
     public boolean keepExtraCard;
     public Card.Suit valtti;

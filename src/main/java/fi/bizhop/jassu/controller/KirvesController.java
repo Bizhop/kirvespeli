@@ -3,6 +3,10 @@ package fi.bizhop.jassu.controller;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.*;
+import fi.bizhop.jassu.model.kirves.Game;
+import fi.bizhop.jassu.model.kirves.GameBrief;
+import fi.bizhop.jassu.model.kirves.GameIn;
+import fi.bizhop.jassu.model.kirves.GameOut;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
@@ -30,7 +34,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody KirvesGameOut init(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut init(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -43,14 +47,14 @@ public class KirvesController {
                 response.setStatus(HttpServletResponse.SC_OK);
                 Long id = this.kirvesService.newGameForAdmin(admin);
                 return this.kirvesService.getGame(id).out(admin).setId(id);
-            } catch (CardException  | KirvesGameException e) {
+            } catch (CardException | KirvesGameException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         }
     }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody List<KirvesGameBrief> getGames(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody List<GameBrief> getGames(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -61,7 +65,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody KirvesGameOut joinGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut joinGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -73,17 +77,19 @@ public class KirvesController {
             response.setStatus(HttpServletResponse.SC_OK);
             try {
                 this.kirvesService.joinGame(id, email);
-                KirvesGameOut out = this.kirvesService.getGame(id).out(user);
+                GameOut out = this.kirvesService.getGame(id).out(user);
                 this.refresh(id);
                 return out;
             } catch (KirvesGameException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            } catch (CardException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         }
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody KirvesGameOut getGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut getGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -91,7 +97,7 @@ public class KirvesController {
             response.setStatus(HttpServletResponse.SC_OK);
             try {
                 User me = this.userService.get(email);
-                KirvesGame game = this.kirvesService.getGame(id);
+                Game game = this.kirvesService.getGame(id);
                 if(game.hasPlayer(me)) {
                     return game.out(me).setId(id);
                 } else {
@@ -99,6 +105,8 @@ public class KirvesController {
                 }
             } catch (KirvesGameException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            } catch (CardException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
 
         }
@@ -121,7 +129,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
-    public @ResponseBody KirvesGameOut action(@PathVariable Long id, @RequestBody KirvesGameIn in, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut action(@PathVariable Long id, @RequestBody GameIn in, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -129,11 +137,13 @@ public class KirvesController {
             User me = this.userService.get(email);
             response.setStatus(HttpServletResponse.SC_OK);
             try {
-                KirvesGameOut out = this.kirvesService.action(id, in, me).out(me);
+                GameOut out = this.kirvesService.action(id, in, me).out(me);
                 refresh(id);
                 return out;
             } catch (KirvesGameException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            } catch (CardException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         }
     }

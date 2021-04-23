@@ -1,17 +1,15 @@
 package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Cards implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Cards {
+    private static final Logger LOG = LogManager.getLogger(Cards.class);
 
     protected final List<Card> cards;
 
@@ -21,6 +19,21 @@ public class Cards implements Serializable {
 
     public Cards(List<Card> cards) {
         this.cards = cards;
+    }
+
+    public static Cards fromAbbrs(List<String> abbrs) {
+        List<Card> cards = abbrs.stream()
+                .map(abbr -> {
+                    try {
+                        return Card.fromAbbr(abbr);
+                    } catch (CardException e) {
+                        LOG.warn(String.format("Unable to get card from abbr: %s", abbr));
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return new Cards(cards);
     }
 
     //default sort is by rank
@@ -200,5 +213,16 @@ public class Cards implements Serializable {
             return card;
         }
         else throw new CardException(String.format("Card %s not found in deck", card));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof Cards)) return false;
+        Cards other = (Cards)o;
+        if(this.size() != other.size()) return false;
+        for(int i=0; i < this.size(); i++) {
+           if(!this.cards.get(i).equals(other.cards.get(i))) return false;
+        }
+        return true;
     }
 }

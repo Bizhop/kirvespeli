@@ -2,28 +2,45 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 
-import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
 
-public class Card implements Comparable<Card>, Serializable {
-    private static final long serialVersionUID = 1L;
+import static java.util.stream.Collectors.toMap;
 
-    private final Suit suit;
-    private final Rank rank;
+public class Card implements Comparable<Card> {
+    private final Suit SUIT;
+    private final Rank RANK;
+
+    private static final Map<String, Suit> SUITS_BY_ABBR =
+            Arrays.stream(Suit.values()).collect(toMap(Suit::getAbbr, Function.identity()));
+    private static final Map<String, Rank> RANKS_BY_ABBR =
+            Arrays.stream(Rank.values()).collect(toMap(Rank::getAbbr, Function.identity()));;
+
 
     public Suit getSuit() {
-        return suit;
+        return SUIT;
     }
 
     public Rank getRank() {
-        return rank;
+        return RANK;
     }
 
     public Card(Suit suit, Rank rank) throws CardException {
         if(suit == Suit.JOKER && rank.value < 15) {
             throw new CardException("Joker must be rank 15 or 16");
         }
-        this.suit = suit;
-        this.rank = rank;
+        this.SUIT = suit;
+        this.RANK = rank;
+    }
+
+    public static Card fromAbbr(String abbr) throws CardException {
+        if(abbr == null || abbr.isEmpty()) return null;
+        if(abbr.length() != 2) throw new CardException("Invalid abbr");
+        Suit suit = SUITS_BY_ABBR.get(abbr.substring(1));
+        Rank rank = RANKS_BY_ABBR.get(abbr.substring(0, 1));
+        if(suit == null || rank == null) throw new CardException("Invalid abbr");
+        return new Card(suit, rank);
     }
 
     @Override
@@ -31,7 +48,7 @@ public class Card implements Comparable<Card>, Serializable {
         if(o == null) return false;
         if(o instanceof Card) {
             Card card = (Card) o;
-            return this.suit == card.suit && this.rank == card.rank;
+            return this.SUIT == card.SUIT && this.RANK == card.RANK;
         }
         return false;
     }
@@ -39,12 +56,12 @@ public class Card implements Comparable<Card>, Serializable {
     @Override
     //default sort is by rank desc
     public int compareTo(Card card) {
-        return card.rank.getValue() - this.rank.getValue();
+        return card.RANK.getValue() - this.RANK.getValue();
     }
 
     @Override
     public String toString() {
-        return this.rank.abbr + this.suit.abbr;
+        return this.RANK.abbr + this.SUIT.abbr;
     }
 
     public enum Suit {
@@ -60,6 +77,11 @@ public class Card implements Comparable<Card>, Serializable {
         Suit(int value, String abbr) {
             this.value = value;
             this.abbr = abbr;
+        }
+
+        public static Suit fromAbbr(String abbr) {
+            if(abbr == null || abbr.isEmpty()) return null;
+            return SUITS_BY_ABBR.get(abbr);
         }
 
         public int getValue() {
