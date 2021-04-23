@@ -34,8 +34,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody
-    GameOut init(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut init(HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -66,8 +65,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody
-    GameOut joinGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut joinGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -91,8 +89,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    GameOut getGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut getGame(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -132,8 +129,7 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
-    public @ResponseBody
-    GameOut action(@PathVariable Long id, @RequestBody GameIn in, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody GameOut action(@PathVariable Long id, @RequestBody GameIn in, HttpServletRequest request, HttpServletResponse response) {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
