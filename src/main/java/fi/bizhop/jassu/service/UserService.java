@@ -68,10 +68,4 @@ public class UserService {
     public UserDB get(User admin) {
         return userRepo.findByEmail(admin.getEmail()).orElseThrow();
     }
-
-    public List<User> getUsers(List<String> emails) {
-        return userRepo.findByEmailIn(emails).stream()
-                .map(User::new)
-                .collect(Collectors.toList());
-    }
 }
