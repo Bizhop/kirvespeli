@@ -3,20 +3,20 @@ package fi.bizhop.jassu.model;
 import fi.bizhop.jassu.exception.CardException;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
 
 public class Card implements Comparable<Card> {
     private final Suit SUIT;
     private final Rank RANK;
 
-    private static final Map<String, Suit> SUITS_BY_ABBR = new HashMap<>();
-    private static final Map<String, Rank> RANKS_BY_ABBR = new HashMap<>();
+    private static final Map<String, Suit> SUITS_BY_ABBR =
+            Arrays.stream(Suit.values()).collect(toMap(Suit::getAbbr, Function.identity()));
+    private static final Map<String, Rank> RANKS_BY_ABBR =
+            Arrays.stream(Rank.values()).collect(toMap(Rank::getAbbr, Function.identity()));;
 
-    static {
-        Arrays.stream(Suit.values()).forEach(suit -> SUITS_BY_ABBR.put(suit.abbr, suit));
-        Arrays.stream(Rank.values()).forEach(rank -> RANKS_BY_ABBR.put(rank.abbr, rank));
-    }
 
     public Suit getSuit() {
         return SUIT;
@@ -35,7 +35,7 @@ public class Card implements Comparable<Card> {
     }
 
     public static Card fromAbbr(String abbr) throws CardException {
-        if(abbr == null || abbr.length() == 0) return null;
+        if(abbr == null || abbr.isEmpty()) return null;
         if(abbr.length() != 2) throw new CardException("Invalid abbr");
         Suit suit = SUITS_BY_ABBR.get(abbr.substring(1));
         Rank rank = RANKS_BY_ABBR.get(abbr.substring(0, 1));
@@ -79,14 +79,9 @@ public class Card implements Comparable<Card> {
             this.abbr = abbr;
         }
 
-        public static Suit fromAbbr(String valtti) {
-            if(valtti == null || valtti.isEmpty()) return null;
-            for(Suit suit : Suit.values()) {
-                if(valtti.equals(suit.abbr)) {
-                    return suit;
-                }
-            }
-            return null;
+        public static Suit fromAbbr(String abbr) {
+            if(abbr == null || abbr.isEmpty()) return null;
+            return SUITS_BY_ABBR.get(abbr);
         }
 
         public int getValue() {
