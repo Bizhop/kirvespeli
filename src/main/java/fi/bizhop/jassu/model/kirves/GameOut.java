@@ -1,9 +1,9 @@
-package fi.bizhop.jassu.model;
+package fi.bizhop.jassu.model.kirves;
 
 import java.util.List;
 
-public class KirvesGameOut {
-    private List<KirvesPlayerOut> players;
+public class GameOut {
+    private List<PlayerOut> players;
     private String message;
     private int cardsInDeck;
     private String turn;
@@ -20,23 +20,23 @@ public class KirvesGameOut {
     private Integer playersTotal;
     private String firstCardSuit;
 
-    public KirvesGameOut() {}
+    public GameOut() {}
 
-    public KirvesGameOut(List<KirvesPlayerOut> players,
-                         int cardsInDeck,
-                         String dealer,
-                         String turn,
-                         List<String> myCardsInHand,
-                         String myExtraCard,
-                         List<String> myAvailableActions,
-                         String message,
-                         boolean canJoin,
-                         String valttiKortti,
-                         String valtti,
-                         boolean canDeclineCut,
-                         String cutCard,
-                         Integer playersTotal,
-                         String firstCardSuit) {
+    public GameOut(List<PlayerOut> players,
+                   int cardsInDeck,
+                   String dealer,
+                   String turn,
+                   List<String> myCardsInHand,
+                   String myExtraCard,
+                   List<String> myAvailableActions,
+                   String message,
+                   boolean canJoin,
+                   String valttiKortti,
+                   String valtti,
+                   boolean canDeclineCut,
+                   String cutCard,
+                   Integer playersTotal,
+                   String firstCardSuit) {
         this.players = players;
         this.cardsInDeck = cardsInDeck;
         this.dealer = dealer;
@@ -54,7 +54,7 @@ public class KirvesGameOut {
         this.firstCardSuit = firstCardSuit;
     }
 
-    public List<KirvesPlayerOut> getPlayers() {
+    public List<PlayerOut> getPlayers() {
         return players;
     }
 
@@ -114,7 +114,7 @@ public class KirvesGameOut {
         return id;
     }
 
-    public KirvesGameOut setId(Long id) {
+    public GameOut setId(Long id) {
         this.id = id;
         return this;
     }

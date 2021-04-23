@@ -1,7 +1,7 @@
 package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.TestBase;
-import fi.bizhop.jassu.model.KirvesGameBrief;
+import fi.bizhop.jassu.model.kirves.GameBrief;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
@@ -60,16 +60,16 @@ public class KirvesControllerTest extends TestBase {
 
         MvcResult result = mockMvc.perform(builder).andReturn();
 
-        KirvesGameBrief[] response = mapper.readValue(result.getResponse().getContentAsString(), KirvesGameBrief[].class);
+        GameBrief[] response = mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
 
         assertEquals(1, response.length);
-        KirvesGameBrief brief = response[0];
+        GameBrief brief = response[0];
         assertEquals(1, brief.players.longValue());
         assertEquals(TEST_USER_EMAIL, brief.admin.getEmail());
     }
 
-    private List<KirvesGameBrief> getTestGames() {
-        KirvesGameBrief brief = new KirvesGameBrief();
+    private List<GameBrief> getTestGames() {
+        GameBrief brief = new GameBrief();
         brief.id = 0L;
         brief.players = 1;
         brief.admin = getTestUser(TEST_USER_EMAIL);

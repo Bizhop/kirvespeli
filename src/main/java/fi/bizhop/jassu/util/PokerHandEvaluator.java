@@ -2,7 +2,7 @@ package fi.bizhop.jassu.util;
 
 import fi.bizhop.jassu.model.Card;
 import fi.bizhop.jassu.model.Cards;
-import fi.bizhop.jassu.model.PokerHand;
+import fi.bizhop.jassu.model.poker.PokerHand;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.Card.Suit.HEARTS;
-import static fi.bizhop.jassu.model.PokerHand.Type.*;
+import static fi.bizhop.jassu.model.poker.PokerHand.Type.*;
 
 public class PokerHandEvaluator {
     public static PokerHand evaluate(Cards originalCards) {

@@ -1,6 +1,9 @@
-package fi.bizhop.jassu.model;
+package fi.bizhop.jassu.model.poker;
 
 import fi.bizhop.jassu.exception.CardException;
+import fi.bizhop.jassu.model.Card;
+import fi.bizhop.jassu.model.Cards;
+import fi.bizhop.jassu.model.StandardDeck;
 import fi.bizhop.jassu.service.UserService;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
 
@@ -11,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static fi.bizhop.jassu.model.PokerHand.Type;
+import static fi.bizhop.jassu.model.poker.PokerHand.Type;
 
 public class PokerGame {
 

@@ -62,4 +62,8 @@
 			<column name="can_join" type="BOOLEAN" />
 		</addColumn>
 	</changeSet>
+	<changeSet id="revertChangeGameDataType" author="Ville">
+		<delete tableName="games" />
+		<modifyDataType tableName="games" columnName="game_data" newDataType="TEXT" />
+	</changeSet>
 </databaseChangeLog>
