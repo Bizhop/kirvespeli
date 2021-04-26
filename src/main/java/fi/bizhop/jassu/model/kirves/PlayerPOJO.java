@@ -1,33 +1,46 @@
 package fi.bizhop.jassu.model.kirves;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerPOJO {
-    public UserPOJO user;
+    //these values are only updated when generating save data
     public List<String> hand;
     public List<String> invisibleCards;
     public String extraCard;
     public List<String> playedCards;
-    public List<Integer> roundsWon;
-    public List<String> availableActions;
     public String next;
     public String previous;
-    public boolean declaredPlayer;
-    public boolean inGame;
+
+    //these values are updated running the game and evaluated for Player equality
+    public UserPOJO user;
+    public final List<Integer> roundsWon = new ArrayList<>();
+    public final List<Game.Action> availableActions = new ArrayList<>();
+    public boolean declaredPlayer = false;
+    public boolean inGame = true;
 
     public PlayerPOJO() {}
 
-    public PlayerPOJO(UserPOJO user, List<String> hand, List<String> invisibleCards, String extraCard, List<String> playedCards, List<Integer> roundsWon, List<String> availableActions, String next, String previous, boolean declaredPlayer, boolean inGame) {
+    public PlayerPOJO(UserPOJO user) {
         this.user = user;
-        this.hand = hand;
-        this.invisibleCards = invisibleCards;
-        this.extraCard = extraCard;
-        this.playedCards = playedCards;
-        this.roundsWon = roundsWon;
-        this.availableActions = availableActions;
-        this.next = next;
-        this.previous = previous;
-        this.declaredPlayer = declaredPlayer;
-        this.inGame = inGame;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof PlayerPOJO)) return false;
+        PlayerPOJO other = (PlayerPOJO)o;
+        
+        if(this.roundsWon.size() != other.roundsWon.size()) return false;
+        for(int i=0; i < this.roundsWon.size(); i++) {
+            if(!this.roundsWon.get(i).equals(other.roundsWon.get(i))) return false;
+        }
+        if(this.availableActions.size() != other.availableActions.size()) return false;
+        for(int i=0; i < this.availableActions.size(); i++) {
+            if(this.availableActions.get(i) != other.availableActions.get(i)) return false;
+        }
+
+        return this.user.equals(other.user)
+                && this.declaredPlayer == other.declaredPlayer
+                && this.inGame == other.inGame;
     }
 }

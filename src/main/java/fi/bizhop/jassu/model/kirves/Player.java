@@ -4,27 +4,20 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.Card;
 import fi.bizhop.jassu.model.Cards;
-import fi.bizhop.jassu.model.User;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 public class Player {
 
-    private final User user;
     private final Cards hand = new Cards();
     private final Cards invisibleCards = new Cards();
     private Card extraCard;
     private final Cards playedCards = new Cards();
-    private final List<Integer> roundsWon = new ArrayList<>();
-    private final List<Game.Action> availableActions = new ArrayList<>();
     private Player next;
     private Player previous;
-    private boolean declaredPlayer = false;
-    private boolean inGame = true;
+
+    private final PlayerPOJO data;
 
     /**
      * Recreate player from pojo data. Links previous if available.
@@ -34,27 +27,23 @@ public class Player {
      * @throws CardException
      */
     public Player(PlayerPOJO pojo, Player previous) throws CardException {
-        this.user = new User(pojo.user);
+        this.data = pojo;
         this.hand.add(Cards.fromAbbrs(pojo.hand));
         this.invisibleCards.add(Cards.fromAbbrs(pojo.invisibleCards));
         this.extraCard = Card.fromAbbr(pojo.extraCard);
         this.playedCards.add(Cards.fromAbbrs(pojo.playedCards));
-        this.roundsWon.addAll(pojo.roundsWon);
-        this.availableActions.addAll(pojo.availableActions.stream().map(Game.Action::valueOf).collect(toList()));
         if(previous != null) {
             this.previous = previous;
             this.previous.setNext(this);
         }
-        this.declaredPlayer = pojo.declaredPlayer;
-        this.inGame = pojo.inGame;
     }
 
     /**
      * Create new player linking to previous and next players
      * @param user
      */
-    public Player(User user, Player next, Player previous) {
-        this.user = user;
+    public Player(UserPOJO user, Player next, Player previous) {
+        this.data = new PlayerPOJO(user);
         this.next = next;
         this.previous = previous;
         next.previous = this;
@@ -65,26 +54,24 @@ public class Player {
      * Create new player (first) linking only to self
      * @param user
      */
-    public Player(User user) {
-        this.user = user;
+    public Player(UserPOJO user) {
+        this.data = new PlayerPOJO(user);
         this.next = this;
         this.previous = this;
     }
 
     public String getUserEmail() {
-        return this.user == null
+        return this.getUser() == null
                 ? ""
-                : this.user.getEmail();
+                : this.getUser().email;
     }
 
     public String getUserNickname() {
-        return this.user == null
-                ? ""
-                : this.user.getNickname();
+        return this.getUser() == null ? "" : getUser().getNickname();
     }
 
-    public User getUser() {
-        return this.user;
+    public UserPOJO getUser() {
+        return this.data.user;
     }
 
     public int cardsInHand() {
@@ -108,28 +95,28 @@ public class Player {
     }
 
     public void addRoundWon() {
-        this.roundsWon.add(this.playedCards.size() - 1);
+        this.data.roundsWon.add(this.playedCards.size() - 1);
     }
 
     public void resetWonRounds() {
-        this.roundsWon.clear();
+        this.data.roundsWon.clear();
     }
 
     public void resetAvailableActions() {
-        this.availableActions.clear();
+        this.data.availableActions.clear();
     }
 
     public List<Integer> getRoundsWon() {
-        return Collections.unmodifiableList(this.roundsWon);
+        return Collections.unmodifiableList(this.data.roundsWon);
     }
 
     public List<Game.Action> getAvailableActions() {
-        return Collections.unmodifiableList(this.availableActions);
+        return Collections.unmodifiableList(this.data.availableActions);
     }
 
     public void setAvailableActions(List<Game.Action> availableActions) {
-        this.availableActions.clear();
-        this.availableActions.addAll(availableActions);
+        this.data.availableActions.clear();
+        this.data.availableActions.addAll(availableActions);
     }
 
     public Card getExtraCard() {
@@ -167,7 +154,7 @@ public class Player {
     }
 
     public Player getNext() {
-       return next.inGame ? next : next.getNext();
+       return next.data.inGame ? next : next.getNext();
     }
 
     public void setNext(Player next) {
@@ -175,7 +162,7 @@ public class Player {
     }
 
     public Player getPrevious() {
-        return previous.inGame ? previous : previous.getPrevious();
+        return previous.data.inGame ? previous : previous.getPrevious();
     }
 
     public void setPrevious(Player previous) {
@@ -186,24 +173,16 @@ public class Player {
     public boolean equals(Object o) {
         if(!(o instanceof Player)) return false;
         Player other = (Player)o;
+
         if(this.extraCard == null && other.extraCard != null) return false;
-        if(this.roundsWon.size() != other.roundsWon.size()) return false;
-        for(int i=0; i < this.roundsWon.size(); i++) {
-            if(!this.roundsWon.get(i).equals(other.roundsWon.get(i))) return false;
-        }
-        if(this.availableActions.size() != other.availableActions.size()) return false;
-        for(int i=0; i < this.availableActions.size(); i++) {
-            if(this.availableActions.get(i) != other.availableActions.get(i)) return false;
-        }
-        return this.user.equals(other.user)
+
+        return this.data.equals(other.data)
                 && this.hand.equals(other.hand)
                 && this.invisibleCards.equals(other.invisibleCards)
                 && (this.extraCard == null || this.extraCard.equals(other.extraCard))
                 && this.playedCards.equals(other.playedCards)
                 && this.next.getUserEmail().equals(other.next.getUserEmail())
-                && this.previous.getUserEmail().equals(other.previous.getUserEmail())
-                && this.declaredPlayer == other.declaredPlayer
-                && this.inGame == other.inGame;
+                && this.previous.getUserEmail().equals(other.previous.getUserEmail());
     }
 
     @Override
@@ -212,11 +191,11 @@ public class Player {
     }
 
     public boolean isDeclaredPlayer() {
-        return declaredPlayer;
+        return data.declaredPlayer;
     }
 
     public void setDeclaredPlayer(boolean declaredPlayer) {
-        this.declaredPlayer = declaredPlayer;
+        this.data.declaredPlayer = declaredPlayer;
     }
 
     public void clearHand() {
@@ -224,30 +203,25 @@ public class Player {
     }
 
     public boolean isInGame() {
-        return inGame;
+        return data.inGame;
     }
 
     public void activate() {
-        this.inGame = true;
+        this.data.inGame = true;
     }
 
     public void inactivate() {
-        this.inGame = false;
+        this.data.inGame = false;
     }
 
     public PlayerPOJO toPojo() {
-        return new PlayerPOJO(
-                new UserPOJO(this.user.getEmail(), this.user.getNickname()),
-                this.hand.getCardsOut(),
-                this.invisibleCards.getCardsOut(),
-                this.extraCard == null ? null : this.extraCard.toString(),
-                this.playedCards.getCardsOut(),
-                this.roundsWon,
-                this.availableActions.stream().map(Game.Action::name).collect(toList()),
-                this.next == null ? null : this.next.getUserEmail(),
-                this.previous == null ? null : this.previous.getUserEmail(),
-                this.declaredPlayer,
-                this.inGame
-        );
+        this.data.hand = this.hand.getCardsOut();
+        this.data.invisibleCards = this.invisibleCards.getCardsOut();
+        this.data.extraCard = this.extraCard == null ? null : this.extraCard.toString();
+        this.data.playedCards = this.playedCards.getCardsOut();
+        this.data.next = this.next == null ? null : this.next.getUserEmail();
+        this.data.previous = this.previous == null ? null : this.previous.getUserEmail();
+
+        return this.data;
     }
 }
