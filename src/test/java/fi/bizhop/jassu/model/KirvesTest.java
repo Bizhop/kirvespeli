@@ -518,16 +518,16 @@ public class KirvesTest {
         Player player = new Player(pojo, null);
 
         //should be able to fold: no cards played
-        assertTrue(Game.canFold(player, DIAMONDS));
+        assertTrue(Game.canFold(player, DIAMONDS, 4));
 
         pojo.hand = List.of("3H", "4S", "6C", "TH");
         player = new Player(pojo, null);
 
         //should be able to fold: cards played, no valtti in hand
-        assertTrue(Game.canFold(player, DIAMONDS));
+        assertTrue(Game.canFold(player, DIAMONDS, 4));
 
         //should not be able to fold: cards played, valtti in hand
-        assertFalse(Game.canFold(player, HEARTS));
+        assertFalse(Game.canFold(player, HEARTS, 4));
     }
 
     //--------------------------

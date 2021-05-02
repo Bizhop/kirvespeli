@@ -404,7 +404,10 @@ public class Game {
         if(start.isPresent()) {
             List<Player> players = new ArrayList<>();
             Player item = start.get();
-            if(!item.isInGame()) throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", item.getUserNickname()));
+            if(!item.isInGame()) {
+                item = item.getNext();
+                start = Optional.of(item);
+            }
             do {
                 players.add(item);
             } while((item = item.getNext()) != start.get());
@@ -437,12 +440,13 @@ public class Game {
                 this.turn.setAvailableActions(List.of(SET_VALTTI));
             }
             else {
-                this.turn.setAvailableActions(canFold(this.turn, this.valtti) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
+                this.turn.setAvailableActions(canFold(this.turn, this.valtti, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
             }
         }
     }
 
-    public static boolean canFold(Player player, Card.Suit valtti) {
+    public static boolean canFold(Player player, Card.Suit valtti, int numberOfPlayers) {
+        if(numberOfPlayers < 2) return false;
         if(valtti == null) return false;
         if(player.cardsInHand() == 5) return true;
         return player.getHand().hasValtti(valtti);
@@ -592,7 +596,15 @@ public class Game {
     }
 
     public int getNumberOfPlayers() {
-        return this.players.size();
+        return getNumberOfPlayers(false);
+    }
+
+    private int getNumberOfPlayers(boolean onlyActive) {
+        if(onlyActive) {
+            return (int) this.players.stream().filter(Player::isInGame).count();
+        } else {
+            return this.players.size();
+        }
     }
 
     public Boolean getCanJoin() {
