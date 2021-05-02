@@ -91,7 +91,7 @@ public class GameOut {
             return 0;
         }
 
-        return players.stream().map(player -> player.getPlayedCards().size()).mapToInt(value -> value).min().orElse(0);
+        return players.stream().mapToInt(playerOut -> playerOut.getRoundsWon().size()).sum();
     }
 
     public List<String> getMyAvailableActions() {

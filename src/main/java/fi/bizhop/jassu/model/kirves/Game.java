@@ -323,30 +323,46 @@ public class Game {
             Player player = me.get();
             player.playCard(index);
             setCardPlayer(player.getNext());
-            if(this.turn.equals(this.firstPlayerOfRound)) {
-                List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
-                List<Card> playedCards = players.stream()
-                        .map(Player::getLastPlayedCard)
-                        .collect(toList());
-
-                Card winningCard = winningCard(playedCards, this.valtti);
-                Player roundWinner = players.stream()
-                        .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
-                        .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
-                roundWinner.addRoundWon();
-
-                if(roundWinner.cardsInHand() != 0) {
-                    setCardPlayer(roundWinner);
-                    this.firstPlayerOfRound = roundWinner;
-                }
-                else {
-                    Player handWinner = determineHandWinner();
-                    this.data.message = String.format("Voittaja on %s", handWinner.getUserNickname());
-                    setDealer(this.dealer.getNext());
-                }
-            }
+            determinePossibleRoundWinner();
         } else {
             throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
+        }
+    }
+
+    public void fold(User user) throws KirvesGameException {
+        Optional<Player> me = getPlayer(user.getEmail());
+        if(me.isPresent()) {
+            Player player = me.get();
+            player.fold();
+            setCardPlayer(player.getNext());
+            determinePossibleRoundWinner();
+        } else {
+            throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
+        }
+    }
+
+    private void determinePossibleRoundWinner() throws KirvesGameException {
+        if(this.turn.equals(this.firstPlayerOfRound)) {
+            List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
+            List<Card> playedCards = players.stream()
+                    .map(Player::getLastPlayedCard)
+                    .collect(toList());
+
+            Card winningCard = winningCard(playedCards, this.valtti);
+            Player roundWinner = players.stream()
+                    .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
+                    .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
+            roundWinner.addRoundWon();
+
+            if(roundWinner.cardsInHand() != 0) {
+                setCardPlayer(roundWinner);
+                this.firstPlayerOfRound = roundWinner;
+            }
+            else {
+                Player handWinner = determineHandWinner();
+                this.data.message = String.format("Voittaja on %s", handWinner.getUserNickname());
+                setDealer(this.dealer.getNext());
+            }
         }
     }
 
@@ -417,11 +433,25 @@ public class Game {
                 player = player.getNext();
             }
             this.turn = player;
-            this.turn.setAvailableActions(this.data.canSetValtti && !this.data.forcedGame ? List.of(SET_VALTTI) : List.of(PLAY_CARD));
+            if(this.data.canSetValtti && !this.data.forcedGame) {
+                this.turn.setAvailableActions(List.of(SET_VALTTI));
+            }
+            else {
+                this.turn.setAvailableActions(canFold(this.turn, this.valtti) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
+            }
         }
     }
 
+    public static boolean canFold(Player player, Card.Suit valtti) {
+        if(valtti == null) return false;
+        if(player.cardsInHand() == 5) return true;
+        return player.getHand().hasValtti(valtti);
+    }
+
     private void setDealer(Player dealer) {
+        this.players.stream()
+                .filter(Player::isFolded)
+                .forEach(Player::activate);
         this.dealer = dealer;
         this.data.canDeal = false;
         this.valttiCard = null;

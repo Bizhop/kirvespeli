@@ -177,6 +177,14 @@ public class KirvesService {
                 throw new KirvesGameException("Et voi lisätä/poistaa pelaajia nyt (ADJUST_PLAYERS_IN_GAME)");
             }
         }
+        else if(in.action == FOLD) {
+            if(game.userHasActionAvailable(user, FOLD)) {
+                game.fold(user);
+            }
+            else {
+                throw new KirvesGameException("Et voi mennä pakkaan nyt (FOLD)");
+            }
+        }
         saveGame(id, game);
         return game;
     }

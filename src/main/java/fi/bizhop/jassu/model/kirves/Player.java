@@ -208,10 +208,20 @@ public class Player {
 
     public void activate() {
         this.data.inGame = true;
+        this.data.folded = false;
     }
 
     public void inactivate() {
         this.data.inGame = false;
+    }
+
+    public void fold() {
+        this.data.inGame = false;
+        this.data.folded = true;
+    }
+
+    public boolean isFolded() {
+        return this.data.folded;
     }
 
     public PlayerPOJO toPojo() {

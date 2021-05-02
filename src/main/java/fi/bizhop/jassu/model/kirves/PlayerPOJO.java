@@ -18,6 +18,7 @@ public class PlayerPOJO {
     public final List<Game.Action> availableActions = new ArrayList<>();
     public boolean declaredPlayer = false;
     public boolean inGame = true;
+    public boolean folded = false;
 
     public PlayerPOJO() {}
 
@@ -41,6 +42,7 @@ public class PlayerPOJO {
 
         return this.user.equals(other.user)
                 && this.declaredPlayer == other.declaredPlayer
-                && this.inGame == other.inGame;
+                && this.inGame == other.inGame
+                && this.folded == other.folded;
     }
 }
