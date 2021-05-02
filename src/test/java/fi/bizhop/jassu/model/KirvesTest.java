@@ -150,11 +150,11 @@ public class KirvesTest {
 
         Player winner = game.getRoundWinner(0).orElseThrow(KirvesGameException::new);
         System.out.printf("Round winner is %s%n", winner.getUserEmail());
-        assertTrue(game.userHasActionAvailable(winner.getUser(), PLAY_CARD));
+        assertTrue(game.userHasActionAvailable(new User(winner.getUser()), PLAY_CARD));
     }
 
     private String getAjomaa(Game game) throws KirvesGameException {
-        return game.getPlayer(TEST_USERS.get(1))
+        return game.getPlayer(TEST_USERS.get(1).getEmail())
                 .map(player -> {
                     Card card = player.getLastPlayedCard();
                     if (card.getSuit() == JOKER || card.getRank() == JACK) {

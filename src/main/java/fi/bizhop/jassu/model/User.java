@@ -70,6 +70,10 @@ public class User {
         }
     }
 
+    public UserPOJO toPOJO() {
+        return new UserPOJO(this.email, this.nickname);
+    }
+
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
