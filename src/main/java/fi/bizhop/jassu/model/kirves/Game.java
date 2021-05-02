@@ -551,6 +551,7 @@ public class Game {
     }
 
     public Card getExtraCard(User user) {
+        if(user == null) return null;
         return getPlayer(user.getEmail())
                 .map(Player::getExtraCard)
                 .orElse(null);
