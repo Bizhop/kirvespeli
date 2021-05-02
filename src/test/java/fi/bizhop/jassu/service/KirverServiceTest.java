@@ -24,16 +24,13 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 public class KirverServiceTest {
     @MockBean
-    UserService userService;
-
-    @MockBean
     KirvesGameRepo kirvesGameRepo;
 
     KirvesService kirvesService;
 
     @Before
     public void setup() {
-        this.kirvesService = new KirvesService(userService, kirvesGameRepo);
+        this.kirvesService = new KirvesService(null, kirvesGameRepo);
     }
 
     @Test
