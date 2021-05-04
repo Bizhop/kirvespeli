@@ -13,13 +13,13 @@ public class GameDataPOJO {
     public String valtti;
     public String cutCard;
 
-    //these values are updated running the game and evaluated for Game equality
-    public boolean canJoin;
-    public boolean canDeal;
+    //these values are updated running the game and evaluated for GameDataPOJO equality
+    public boolean canJoin = false;
+    public boolean canDeal = false;
     public String message;
-    public boolean canSetValtti;
-    public boolean forcedGame;
-    public boolean canDeclineCut;
+    public boolean forcedGame = false;
+    public boolean canDeclineCut = false;
+    public boolean speaking = false;
 
     public GameDataPOJO() {}
 
@@ -33,8 +33,8 @@ public class GameDataPOJO {
         return this.canJoin == other.canJoin
                 && this.canDeal == other.canDeal
                 && (this.message == null || this.message.equals(other.message))
-                && this.canSetValtti == other.canSetValtti
                 && this.forcedGame == other.forcedGame
-                && this.canDeclineCut == other.canDeclineCut;
+                && this.canDeclineCut == other.canDeclineCut
+                && this.speaking == other.speaking;
     }
 }

@@ -12,13 +12,14 @@ public class PlayerPOJO {
     public String next;
     public String previous;
 
-    //these values are updated running the game and evaluated for Player equality
+    //these values are updated running the game and evaluated for PlayerPOJO equality
     public UserPOJO user;
     public final List<Integer> roundsWon = new ArrayList<>();
     public final List<Game.Action> availableActions = new ArrayList<>();
     public boolean declaredPlayer = false;
     public boolean inGame = true;
     public boolean folded = false;
+    public Game.Speak speak = null;
 
     public PlayerPOJO() {}
 
@@ -43,6 +44,7 @@ public class PlayerPOJO {
         return this.user.equals(other.user)
                 && this.declaredPlayer == other.declaredPlayer
                 && this.inGame == other.inGame
-                && this.folded == other.folded;
+                && this.folded == other.folded
+                && this.speak == other.speak;
     }
 }

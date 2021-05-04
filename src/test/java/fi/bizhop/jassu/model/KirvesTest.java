@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
+import static fi.bizhop.jassu.model.kirves.Game.Speak.*;
 import static org.junit.Assert.*;
 
 public class KirvesTest {
@@ -24,10 +25,10 @@ public class KirvesTest {
 
     static {
         TEST_USERS = List.of(
+                new User("test0@example.com", ""),
                 new User("test1@example.com", ""),
                 new User("test2@example.com", ""),
-                new User("test3@example.com", ""),
-                new User("test4@example.com", ""));
+                new User("test3@example.com", ""));
 
         try {
             JACKS_AND_JOKERS = List.of(
@@ -94,7 +95,7 @@ public class KirvesTest {
         try {
             game.addPlayer(TEST_USERS.get(3));
         } catch (KirvesGameException e) {
-            assertEquals("Pelaaja test4@example.com on jo pelissä", e.getMessage());
+            assertEquals("Pelaaja test3@example.com on jo pelissä", e.getMessage());
         }
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
     }
@@ -111,8 +112,8 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
         assertNull(game.getCutCard());
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
+        game.speak(TEST_USERS.get(1), KEEP);
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
         List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
@@ -284,70 +285,106 @@ public class KirvesTest {
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ACE_OR_TWO_DECISION));
         game.aceOrTwoDecision(TEST_USERS.get(0), false);
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
     }
 
     @Test
-    public void testSetValtti() throws CardException, KirvesGameException {
+    public void testSpeakPassing() throws CardException, KirvesGameException {
         Game game = getTestGame();
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        List<Card.Suit> suits = new ArrayList<>(Set.of(HEARTS, CLUBS, SPADES, DIAMONDS));
-        suits.remove(game.getValtti());
-        Card.Suit newValtti = suits.get(RandomUtil.getInt(suits.size()));
-        game.setValtti(TEST_USERS.get(1), newValtti, TEST_USERS.get(2));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
+        game.speak(TEST_USERS.get(1), PASS);
 
-        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
-        assertEquals(1, declaredPlayers.size());
-        assertEquals(TEST_USERS.get(2).getEmail(), declaredPlayers.get(0).getEmail());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), SPEAK));
+        game.speak(TEST_USERS.get(2), PASS);
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
-        assertEquals(newValtti, game.getValtti());
-    }
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), SPEAK));
+        game.speak(TEST_USERS.get(3), PASS);
 
-    @Test
-    public void testPassing() throws CardException, KirvesGameException {
-        Game game = getTestGame();
-
-        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
-        game.deal(TEST_USERS.get(0), OTHER_CARDS);
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        game.startNextRound();
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), SPEAK));
+        game.speak(TEST_USERS.get(0), PASS);
 
         cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        assertEquals(TEST_USERS.get(0), cutter);
-
-        int cardsInHands = game.out().getPlayers().stream()
-                .mapToInt(PlayerOut::getCardsInHand)
-                .sum();
-        assertEquals(0, cardsInHands);
+        assertEquals(cutter.getEmail(), TEST_USERS.get(0).getEmail());
     }
 
     @Test
-    public void testKeepValtti() throws CardException, KirvesGameException {
+    public void testSpeakChanging() throws CardException, KirvesGameException {
         Game game = getTestGame();
 
         User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        Card.Suit valtti = game.getValtti();
-        game.setValtti(TEST_USERS.get(1), valtti, TEST_USERS.get(3));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
+        game.speak(TEST_USERS.get(1), CHANGE);
 
-        List<PlayerOut> declaredPlayers = getDeclaredPlayers(game);
-        assertEquals(1, declaredPlayers.size());
-        assertEquals(TEST_USERS.get(3).getEmail(), declaredPlayers.get(0).getEmail());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), SPEAK));
+        game.speak(TEST_USERS.get(2), PASS);
 
-        assertNotNull(game.getValttiCard());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), SPEAK));
+        game.speak(TEST_USERS.get(3), PASS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), SPEAK));
+        game.speak(TEST_USERS.get(0), PASS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK_SUIT));
+        Card.Suit valtti = getRandomSuitOtherThan(game.getValtti());
+        assertNotEquals(valtti, game.getValtti());
+        game.speakSuit(TEST_USERS.get(1), valtti);
         assertEquals(valtti, game.getValtti());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+    }
+
+    @Test
+    public void testSpeakKeeping() throws CardException, KirvesGameException {
+        Game game = getTestGame();
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
+        game.speak(TEST_USERS.get(1), KEEP);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+    }
+
+    @Test
+    public void testSpeakKeepAfterWantingChange() throws CardException, KirvesGameException {
+        Game game = getTestGame();
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
+        game.speak(TEST_USERS.get(1), CHANGE);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), SPEAK));
+        game.speak(TEST_USERS.get(2), KEEP);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+    }
+
+    @Test
+    public void testFoldingEndsRound() throws CardException, KirvesGameException {
+        Game game = getTestGame(List.of(TEST_USERS.get(0), TEST_USERS.get(1)));
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+        game.speak(TEST_USERS.get(1), KEEP);
+        game.playCard(TEST_USERS.get(1), 0);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
+        game.fold(TEST_USERS.get(0));
+
+        assertEquals("Voittaja on test1@example.com", game.getMessage());
     }
 
     @Test
@@ -356,7 +393,7 @@ public class KirvesTest {
 
         game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
-        game.setValtti(TEST_USERS.get(1), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(3));
+        game.speak(TEST_USERS.get(1), KEEP);
         playThroughHand(game, TEST_USERS);
 
         assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
@@ -372,7 +409,7 @@ public class KirvesTest {
         game.cut(TEST_USERS.get(0), false, getRandomCard(OTHER_CARDS), null);
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), DEAL));
         game.deal(TEST_USERS.get(1), OTHER_CARDS);
-        game.setValtti(TEST_USERS.get(3), getRandomCard(OTHER_CARDS).getSuit(), TEST_USERS.get(3));
+        game.speak(TEST_USERS.get(3), KEEP);
 
         playThroughHand(game, List.of(TEST_USERS.get(0), TEST_USERS.get(1), TEST_USERS.get(3)));
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), ADJUST_PLAYERS_IN_GAME));
@@ -397,12 +434,12 @@ public class KirvesTest {
             possibleValttiCards.remove(cutCard);
             assertTrue(game.userHasActionAvailable(dealer, DEAL));
             game.deal(dealer, possibleValttiCards);
-            game.getUserWithAction(SET_VALTTI).ifPresent(player -> {
-                assertTrue(game.userHasActionAvailable(player, SET_VALTTI));
+            game.getUserWithAction(SPEAK).ifPresent(player -> {
+                assertTrue(game.userHasActionAvailable(player, SPEAK));
                 try {
-                    game.setValtti(player, game.getValtti(), player);
+                    game.speak(player, KEEP);
                 } catch (KirvesGameException e) {
-                    fail("Failed to set valtti");
+                    fail("Failed to speak");
                 }
             });
             playThroughHand(game, TEST_USERS);
@@ -528,22 +565,12 @@ public class KirvesTest {
 
         //should not be able to fold: cards played, valtti in hand
         assertFalse(Game.canFold(player, HEARTS, 4));
-    }
 
-    @Test
-    public void testFoldingEndsRound() throws CardException, KirvesGameException {
-        Game game = getTestGame(List.of(TEST_USERS.get(0), TEST_USERS.get(1)));
-
-        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
-        game.deal(TEST_USERS.get(0), OTHER_CARDS);
-        game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
-        game.playCard(TEST_USERS.get(1), 0);
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
-        game.fold(TEST_USERS.get(0));
-
-        assertEquals("Voittaja on test2@example.com", game.getMessage());
+        //should not be able to fold: declared player
+        pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
+        pojo.declaredPlayer = true;
+        player = new Player(pojo, null);
+        assertFalse(Game.canFold(player, HEARTS, 4));
     }
 
     //--------------------------
@@ -556,6 +583,13 @@ public class KirvesTest {
                 .collect(Collectors.toList());
     }
 
+    private Card.Suit getRandomSuitOtherThan(Card.Suit suit) throws CardException {
+        if(suit == JOKER) throw new CardException("JOKER is not allowed as suit here");
+        List<Card.Suit> suits = new ArrayList<>(Set.of(SPADES, HEARTS, CLUBS, DIAMONDS));
+        suits.remove(suit);
+        Collections.shuffle(suits);
+        return suits.get(0);
+    }
 
     private Card.Suit getValtti(Card card) {
         if(card.getSuit() == JOKER) {
