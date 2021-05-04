@@ -122,7 +122,6 @@ public class KirvesTest {
 
         assertEquals("", game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), FOLD));
         game.playCard(TEST_USERS.get(1), 0);
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
