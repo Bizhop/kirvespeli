@@ -122,7 +122,6 @@ public class KirvesTest {
 
         assertEquals("", game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), FOLD));
         game.playCard(TEST_USERS.get(1), 0);
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
@@ -321,21 +320,21 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK));
-        game.speak(TEST_USERS.get(1), CHANGE);
+        game.speak(TEST_USERS.get(1), PASS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), SPEAK));
         game.speak(TEST_USERS.get(2), PASS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), SPEAK));
-        game.speak(TEST_USERS.get(3), PASS);
+        game.speak(TEST_USERS.get(3), CHANGE);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), SPEAK));
         game.speak(TEST_USERS.get(0), PASS);
 
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SPEAK_SUIT));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), SPEAK_SUIT));
         Card.Suit valtti = getRandomSuitOtherThan(game.getValtti());
         assertNotEquals(valtti, game.getValtti());
-        game.speakSuit(TEST_USERS.get(1), valtti);
+        game.speakSuit(TEST_USERS.get(3), valtti);
         assertEquals(valtti, game.getValtti());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
     }

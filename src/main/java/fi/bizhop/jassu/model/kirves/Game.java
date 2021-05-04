@@ -308,13 +308,12 @@ public class Game {
                 player.setSpeak(speak);
                 Player next = player.getNext();
                 if(this.firstPlayerOfRound.equals(next)) {
-                    Optional<Speak> change = getPlayersStartingFrom(next.getUserEmail()).stream()
-                            .map(Player::getSpeak)
-                            .filter(s -> s.equals(CHANGE))
+                    Optional<Player> changer = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
+                            .filter(s -> s.getSpeak() == CHANGE)
                             .findFirst();
-                    if(change.isPresent()) {
+                    if(changer.isPresent()) {
                         player.resetAvailableActions();
-                        next.setAvailableActions(List.of(SPEAK_SUIT));
+                        changer.get().setAvailableActions(List.of(SPEAK_SUIT));
                     } else {
                         startNextRound();
                     }
