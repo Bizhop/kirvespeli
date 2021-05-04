@@ -9,8 +9,8 @@ public class GameIn {
     public int index;
     public boolean keepExtraCard;
     public Card.Suit valtti;
-    public String declarePlayerEmail;
     public boolean declineCut;
     public boolean resetActivePlayers;
     public Set<String> inactivateByEmail;
+    public Game.Speak speak;
 }

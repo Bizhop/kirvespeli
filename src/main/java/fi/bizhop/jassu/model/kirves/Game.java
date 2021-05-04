@@ -8,10 +8,13 @@ import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.util.RandomUtil;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
+import static fi.bizhop.jassu.model.kirves.Game.Speak.CHANGE;
+import static fi.bizhop.jassu.model.kirves.Game.Speak.KEEP;
 import static java.util.stream.Collectors.toList;
 
 public class Game {
@@ -215,7 +218,7 @@ public class Game {
         }
         this.data.canDeal = false;
         this.cutCard = null;
-        this.data.canSetValtti = true;
+        this.data.speaking = true;
         Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
         Player nextPlayer = player.getNext();
         setCardPlayer(nextPlayer);
@@ -252,6 +255,7 @@ public class Game {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
             player.getPlayedCards().clear();
+            player.setSpeak(null);
         });
         this.dealer.setAvailableActions(List.of(DEAL));
         this.turn = this.dealer;
@@ -268,7 +272,7 @@ public class Game {
         if(me.isPresent()) {
             Player player = me.get();
             if(keepExtraCard) {
-                this.data.canSetValtti = false;
+                this.data.speaking = false;
             } else {
                 this.valttiCard = player.getExtraCard();
                 player.setExtraCard(null);
@@ -291,29 +295,51 @@ public class Game {
         }
     }
 
-    /**
-     * Set valtti
-     *
-     * @param user User
-     * @param suit Set valtti to this suit. If same as turned valttiCard, keep current valttiCard.
-     */
-    public void setValtti(User user, Card.Suit suit, User declareUser) throws KirvesGameException {
+    public void speak(User user, Speak speak) throws KirvesGameException {
+        if(speak == null) throw new KirvesGameException("Puhe ei voi olla tyhjä (null)");
+        Optional<Player> me = getPlayer(user.getEmail());
+        if(me.isPresent()) {
+            Player player = me.get();
+            if(speak == KEEP) {
+                player.setDeclaredPlayer(true);
+                this.data.speaking = false;
+                setCardPlayer(this.firstPlayerOfRound);
+            } else {
+                player.setSpeak(speak);
+                Player next = player.getNext();
+                if(this.firstPlayerOfRound.equals(next)) {
+                    Optional<Speak> change = getPlayersStartingFrom(next.getUserEmail()).stream()
+                            .map(Player::getSpeak)
+                            .filter(s -> s.equals(CHANGE))
+                            .findFirst();
+                    if(change.isPresent()) {
+                        player.resetAvailableActions();
+                        next.setAvailableActions(List.of(SPEAK_SUIT));
+                    } else {
+                        startNextRound();
+                    }
+                } else {
+                    setCardPlayer(next);
+                }
+            }
+        } else {
+            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
+        }
+    }
+
+    public void speakSuit(User user, Card.Suit suit) throws KirvesGameException {
         if(suit == null) throw new KirvesGameException("Valtti ei voi olla tyhjä (null)");
         Optional<Player> me = getPlayer(user.getEmail());
         if(me.isPresent()) {
-            Optional<Player> declarePlayer = getPlayer(declareUser.getEmail());
-            if(declarePlayer.isPresent()) {
-                declarePlayer.get().setDeclaredPlayer(true);
-            } else {
-                throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
-            }
             Player player = me.get();
-            if(suit != this.valtti) {
-                this.valttiCard = null;
-                this.valtti = suit;
-            }
-            this.data.canSetValtti = false;
-            setCardPlayer(player);
+            if(suit == this.valtti) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
+            player.setDeclaredPlayer(true);
+            this.valtti = suit;
+            this.valttiCard = null;
+            this.data.speaking = false;
+            setCardPlayer(this.firstPlayerOfRound);
+        } else {
+            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
         }
     }
 
@@ -442,8 +468,8 @@ public class Game {
                 player = player.getNext();
             }
             this.turn = player;
-            if(this.data.canSetValtti && !this.data.forcedGame) {
-                this.turn.setAvailableActions(List.of(SET_VALTTI));
+            if(this.data.speaking && !this.data.forcedGame) {
+                this.turn.setAvailableActions(List.of(SPEAK));
             }
             else {
                 this.turn.setAvailableActions(canFold(this.turn, this.valtti, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
@@ -452,8 +478,7 @@ public class Game {
     }
 
     public static boolean canFold(Player player, Card.Suit valtti, int numberOfPlayers) {
-        if(numberOfPlayers < 2) return false;
-        if(valtti == null) return false;
+        if(numberOfPlayers < 2 || valtti == null || player.isDeclaredPlayer()) return false;
         if(player.cardsInHand() == 5) return true;
         return player.getHand().hasValtti(valtti);
     }
@@ -467,7 +492,7 @@ public class Game {
         this.data.canDeal = false;
         this.valttiCard = null;
         this.valtti = null;
-        this.data.canSetValtti = false;
+        this.data.speaking = false;
         this.data.forcedGame = false;
         this.data.canDeclineCut = false;
         this.resetActions();
@@ -619,7 +644,11 @@ public class Game {
     }
 
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, DISCARD, SET_VALTTI, ADJUST_PLAYERS_IN_GAME
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, ADJUST_PLAYERS_IN_GAME
+    }
+
+    public enum Speak {
+        CHANGE, KEEP, PASS
     }
 
     @Override

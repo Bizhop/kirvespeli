@@ -14,6 +14,7 @@ public class PlayerOut {
     private String extraCard;
     private boolean declaredPlayer;
     private boolean folded;
+    private String speak;
 
     public PlayerOut() {}
 
@@ -29,6 +30,7 @@ public class PlayerOut {
         this.extraCard = player.getExtraCard() != null ? player.getExtraCard().toString() : null;
         this.declaredPlayer = player.isDeclaredPlayer();
         this.folded = player.isFolded();
+        this.speak = player.getSpeak() == null ? null : player.getSpeak().name();
     }
 
     public String getEmail() {
@@ -70,5 +72,9 @@ public class PlayerOut {
 
     public boolean isFolded() {
         return folded;
+    }
+
+    public String getSpeak() {
+        return speak;
     }
 }

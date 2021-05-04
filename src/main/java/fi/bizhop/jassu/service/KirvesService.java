@@ -153,20 +153,18 @@ public class KirvesService {
                 throw new KirvesGameException("Et voi tehdä hakkipäätöstä nyt (ACE_OR_TWO_DECISION)");
             }
         }
-        else if(in.action == SET_VALTTI) {
-            if(game.userHasActionAvailable(user, SET_VALTTI)) {
-                if("PASS".equals(in.declarePlayerEmail)) {
-                    game.startNextRound();
-                } else {
-                    User declareUser = this.userService.get(in.declarePlayerEmail);
-                    if (declareUser == null) {
-                        throw new KirvesGameException(String.format("Pelinviejää ei löytynyt (%s)", in.declarePlayerEmail));
-                    } else {
-                        game.setValtti(user, in.valtti, declareUser);
-                    }
-                }
+        else if(in.action == SPEAK) {
+            if(game.userHasActionAvailable(user, SPEAK)) {
+                game.speak(user, in.speak);
             } else {
-                throw new KirvesGameException("Et voi asettaa valttia nyt (SET_VALTTI)");
+                throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
+            }
+        }
+        else if(in.action == SPEAK_SUIT) {
+            if(game.userHasActionAvailable(user, SPEAK_SUIT)) {
+                game.speakSuit(user, in.valtti);
+            } else {
+                throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
             }
         }
         else if(in.action == ADJUST_PLAYERS_IN_GAME) {

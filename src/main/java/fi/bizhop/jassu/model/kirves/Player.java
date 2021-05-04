@@ -213,12 +213,14 @@ public class Player {
 
     public void inactivate() {
         this.hand.clear();
+        this.playedCards.clear();
+        this.extraCard = null;
+        this.invisibleCards.clear();
         this.data.inGame = false;
     }
 
     public void fold() {
-        this.hand.clear();
-        this.data.inGame = false;
+        this.inactivate();
         this.data.folded = true;
     }
 
@@ -235,5 +237,13 @@ public class Player {
         this.data.previous = this.previous == null ? null : this.previous.getUserEmail();
 
         return this.data;
+    }
+
+    public void setSpeak(Game.Speak speak) {
+        this.data.speak = speak;
+    }
+
+    public Game.Speak getSpeak() {
+        return this.data.speak;
     }
 }
