@@ -54,7 +54,7 @@ public class Game {
         this.cutCard = Card.fromAbbr(pojo.cutCard);
     }
 
-    public Game(User admin) throws CardException {
+    public Game(User admin) throws CardException, KirvesGameException {
         this.data = new GameDataPOJO();
         this.deck = new Deck().shuffle();
         this.data.canJoin = true;
@@ -334,6 +334,9 @@ public class Game {
         if(me.isPresent()) {
             Player player = me.get();
             player.fold();
+            if(this.firstPlayerOfRound.equals(player)) {
+                this.firstPlayerOfRound = player.getNext();
+            }
             setCardPlayer(player.getNext());
             determinePossibleRoundWinner();
         } else {
@@ -342,8 +345,12 @@ public class Game {
     }
 
     private void determinePossibleRoundWinner() throws KirvesGameException {
-        if(this.turn.equals(this.firstPlayerOfRound)) {
-            List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
+        List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
+        if(players.size() == 0) throw new KirvesGameException("Virhe: 0 pelaajaa jäljellä");
+        if(players.size() == 1) {
+            this.data.message = String.format("Voittaja on %s", players.get(0).getUserNickname());
+            startNextRound();
+        } else if(this.turn.equals(this.firstPlayerOfRound)) {
             List<Card> playedCards = players.stream()
                     .map(Player::getLastPlayedCard)
                     .collect(toList());
@@ -366,8 +373,7 @@ public class Game {
         }
     }
 
-    public void startNextRound(User user) throws KirvesGameException {
-        getPlayersStartingFrom(user.getEmail()).forEach(Player::clearHand);
+    public void startNextRound() throws KirvesGameException {
         setDealer(this.dealer.getNext());
     }
 
@@ -452,10 +458,11 @@ public class Game {
         return player.getHand().hasValtti(valtti);
     }
 
-    private void setDealer(Player dealer) {
+    private void setDealer(Player dealer) throws KirvesGameException {
         this.players.stream()
                 .filter(Player::isFolded)
                 .forEach(Player::activate);
+        getPlayersStartingFrom(dealer.getUserEmail()).forEach(Player::clearHand);
         this.dealer = dealer;
         this.data.canDeal = false;
         this.valttiCard = null;

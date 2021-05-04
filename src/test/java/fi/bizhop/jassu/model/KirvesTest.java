@@ -318,7 +318,7 @@ public class KirvesTest {
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), SET_VALTTI));
-        game.startNextRound(TEST_USERS.get(1));
+        game.startNextRound();
 
         cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
         assertEquals(TEST_USERS.get(0), cutter);
@@ -530,6 +530,22 @@ public class KirvesTest {
         assertFalse(Game.canFold(player, HEARTS, 4));
     }
 
+    @Test
+    public void testFoldingEndsRound() throws CardException, KirvesGameException {
+        Game game = getTestGame(List.of(TEST_USERS.get(0), TEST_USERS.get(1)));
+
+        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+        game.setValtti(TEST_USERS.get(1), game.getValtti(), TEST_USERS.get(1));
+        game.playCard(TEST_USERS.get(1), 0);
+
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
+        game.fold(TEST_USERS.get(0));
+
+        assertEquals("Voittaja on test2@example.com", game.getMessage());
+    }
+
     //--------------------------
     //PRIVATE METHODS START HERE
     //--------------------------
@@ -591,10 +607,14 @@ public class KirvesTest {
     }
 
     private Game getTestGame() throws CardException, KirvesGameException {
-        Game game = new Game(KirvesTest.TEST_USERS.get(0));
-        if(KirvesTest.TEST_USERS.size() > 1) {
-            for(int i = 1; i < KirvesTest.TEST_USERS.size(); i++) {
-                game.addPlayer(KirvesTest.TEST_USERS.get(i));
+        return getTestGame(TEST_USERS);
+    }
+
+    private Game getTestGame(List<User> users) throws CardException, KirvesGameException {
+        Game game = new Game(users.get(0));
+        if(users.size() > 1) {
+            for(int i = 1; i < users.size(); i++) {
+                game.addPlayer(users.get(i));
             }
         }
         return game;

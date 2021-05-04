@@ -156,7 +156,7 @@ public class KirvesService {
         else if(in.action == SET_VALTTI) {
             if(game.userHasActionAvailable(user, SET_VALTTI)) {
                 if("PASS".equals(in.declarePlayerEmail)) {
-                    game.startNextRound(user);
+                    game.startNextRound();
                 } else {
                     User declareUser = this.userService.get(in.declarePlayerEmail);
                     if (declareUser == null) {

@@ -212,10 +212,12 @@ public class Player {
     }
 
     public void inactivate() {
+        this.hand.clear();
         this.data.inGame = false;
     }
 
     public void fold() {
+        this.hand.clear();
         this.data.inGame = false;
         this.data.folded = true;
     }
