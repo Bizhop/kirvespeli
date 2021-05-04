@@ -22,6 +22,7 @@ public class Cards {
     }
 
     public static Cards fromAbbrs(List<String> abbrs) {
+        if(abbrs == null) return new Cards();
         List<Card> cards = abbrs.stream()
                 .map(abbr -> {
                     try {
@@ -224,5 +225,9 @@ public class Cards {
            if(!this.cards.get(i).equals(other.cards.get(i))) return false;
         }
         return true;
+    }
+
+    public boolean hasValtti(Card.Suit valtti) {
+        return this.cards.stream().noneMatch(card -> card.getRank() == Card.Rank.JACK || List.of(valtti, Card.Suit.JOKER).contains(card.getSuit()));
     }
 }

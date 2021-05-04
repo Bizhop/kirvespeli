@@ -54,7 +54,7 @@ public class Game {
         this.cutCard = Card.fromAbbr(pojo.cutCard);
     }
 
-    public Game(User admin) throws CardException {
+    public Game(User admin) throws CardException, KirvesGameException {
         this.data = new GameDataPOJO();
         this.deck = new Deck().shuffle();
         this.data.canJoin = true;
@@ -323,35 +323,57 @@ public class Game {
             Player player = me.get();
             player.playCard(index);
             setCardPlayer(player.getNext());
-            if(this.turn.equals(this.firstPlayerOfRound)) {
-                List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
-                List<Card> playedCards = players.stream()
-                        .map(Player::getLastPlayedCard)
-                        .collect(toList());
-
-                Card winningCard = winningCard(playedCards, this.valtti);
-                Player roundWinner = players.stream()
-                        .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
-                        .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
-                roundWinner.addRoundWon();
-
-                if(roundWinner.cardsInHand() != 0) {
-                    setCardPlayer(roundWinner);
-                    this.firstPlayerOfRound = roundWinner;
-                }
-                else {
-                    Player handWinner = determineHandWinner();
-                    this.data.message = String.format("Voittaja on %s", handWinner.getUserNickname());
-                    setDealer(this.dealer.getNext());
-                }
-            }
+            determinePossibleRoundWinner();
         } else {
             throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
         }
     }
 
-    public void startNextRound(User user) throws KirvesGameException {
-        getPlayersStartingFrom(user.getEmail()).forEach(Player::clearHand);
+    public void fold(User user) throws KirvesGameException {
+        Optional<Player> me = getPlayer(user.getEmail());
+        if(me.isPresent()) {
+            Player player = me.get();
+            player.fold();
+            if(this.firstPlayerOfRound.equals(player)) {
+                this.firstPlayerOfRound = player.getNext();
+            }
+            setCardPlayer(player.getNext());
+            determinePossibleRoundWinner();
+        } else {
+            throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
+        }
+    }
+
+    private void determinePossibleRoundWinner() throws KirvesGameException {
+        List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
+        if(players.size() == 0) throw new KirvesGameException("Virhe: 0 pelaajaa jäljellä");
+        if(players.size() == 1) {
+            this.data.message = String.format("Voittaja on %s", players.get(0).getUserNickname());
+            startNextRound();
+        } else if(this.turn.equals(this.firstPlayerOfRound)) {
+            List<Card> playedCards = players.stream()
+                    .map(Player::getLastPlayedCard)
+                    .collect(toList());
+
+            Card winningCard = winningCard(playedCards, this.valtti);
+            Player roundWinner = players.stream()
+                    .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
+                    .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
+            roundWinner.addRoundWon();
+
+            if(roundWinner.cardsInHand() != 0) {
+                setCardPlayer(roundWinner);
+                this.firstPlayerOfRound = roundWinner;
+            }
+            else {
+                Player handWinner = determineHandWinner();
+                this.data.message = String.format("Voittaja on %s", handWinner.getUserNickname());
+                setDealer(this.dealer.getNext());
+            }
+        }
+    }
+
+    public void startNextRound() throws KirvesGameException {
         setDealer(this.dealer.getNext());
     }
 
@@ -388,7 +410,10 @@ public class Game {
         if(start.isPresent()) {
             List<Player> players = new ArrayList<>();
             Player item = start.get();
-            if(!item.isInGame()) throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", item.getUserNickname()));
+            if(!item.isInGame()) {
+                item = item.getNext();
+                start = Optional.of(item);
+            }
             do {
                 players.add(item);
             } while((item = item.getNext()) != start.get());
@@ -417,11 +442,27 @@ public class Game {
                 player = player.getNext();
             }
             this.turn = player;
-            this.turn.setAvailableActions(this.data.canSetValtti && !this.data.forcedGame ? List.of(SET_VALTTI) : List.of(PLAY_CARD));
+            if(this.data.canSetValtti && !this.data.forcedGame) {
+                this.turn.setAvailableActions(List.of(SET_VALTTI));
+            }
+            else {
+                this.turn.setAvailableActions(canFold(this.turn, this.valtti, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
+            }
         }
     }
 
-    private void setDealer(Player dealer) {
+    public static boolean canFold(Player player, Card.Suit valtti, int numberOfPlayers) {
+        if(numberOfPlayers < 2) return false;
+        if(valtti == null) return false;
+        if(player.cardsInHand() == 5) return true;
+        return player.getHand().hasValtti(valtti);
+    }
+
+    private void setDealer(Player dealer) throws KirvesGameException {
+        this.players.stream()
+                .filter(Player::isFolded)
+                .forEach(Player::activate);
+        getPlayersStartingFrom(dealer.getUserEmail()).forEach(Player::clearHand);
         this.dealer = dealer;
         this.data.canDeal = false;
         this.valttiCard = null;
@@ -562,7 +603,15 @@ public class Game {
     }
 
     public int getNumberOfPlayers() {
-        return this.players.size();
+        return getNumberOfPlayers(false);
+    }
+
+    private int getNumberOfPlayers(boolean onlyActive) {
+        if(onlyActive) {
+            return (int) this.players.stream().filter(Player::isInGame).count();
+        } else {
+            return this.players.size();
+        }
     }
 
     public Boolean getCanJoin() {

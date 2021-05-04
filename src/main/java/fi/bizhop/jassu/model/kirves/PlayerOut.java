@@ -13,6 +13,7 @@ public class PlayerOut {
     private List<String> availableActions;
     private String extraCard;
     private boolean declaredPlayer;
+    private boolean folded;
 
     public PlayerOut() {}
 
@@ -27,6 +28,7 @@ public class PlayerOut {
                 .collect(toList());
         this.extraCard = player.getExtraCard() != null ? player.getExtraCard().toString() : null;
         this.declaredPlayer = player.isDeclaredPlayer();
+        this.folded = player.isFolded();
     }
 
     public String getEmail() {
@@ -64,5 +66,9 @@ public class PlayerOut {
 
     public boolean isDeclaredPlayer() {
         return declaredPlayer;
+    }
+
+    public boolean isFolded() {
+        return folded;
     }
 }

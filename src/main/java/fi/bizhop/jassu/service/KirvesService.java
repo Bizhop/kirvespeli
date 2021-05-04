@@ -156,7 +156,7 @@ public class KirvesService {
         else if(in.action == SET_VALTTI) {
             if(game.userHasActionAvailable(user, SET_VALTTI)) {
                 if("PASS".equals(in.declarePlayerEmail)) {
-                    game.startNextRound(user);
+                    game.startNextRound();
                 } else {
                     User declareUser = this.userService.get(in.declarePlayerEmail);
                     if (declareUser == null) {
@@ -175,6 +175,14 @@ public class KirvesService {
             }
             else {
                 throw new KirvesGameException("Et voi lisätä/poistaa pelaajia nyt (ADJUST_PLAYERS_IN_GAME)");
+            }
+        }
+        else if(in.action == FOLD) {
+            if(game.userHasActionAvailable(user, FOLD)) {
+                game.fold(user);
+            }
+            else {
+                throw new KirvesGameException("Et voi mennä pakkaan nyt (FOLD)");
             }
         }
         saveGame(id, game);
