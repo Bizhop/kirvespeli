@@ -308,7 +308,7 @@ public class Game {
                 player.setSpeak(speak);
                 Player next = player.getNext();
                 if(this.firstPlayerOfRound.equals(next)) {
-                    Optional<Player> changer = getPlayersStartingFrom(next.getUserEmail()).stream()
+                    Optional<Player> changer = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
                             .filter(s -> s.getSpeak() == CHANGE)
                             .findFirst();
                     if(changer.isPresent()) {
