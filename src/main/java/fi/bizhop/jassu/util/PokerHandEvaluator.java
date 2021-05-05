@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static fi.bizhop.jassu.model.Card.Suit.*;
-import static fi.bizhop.jassu.model.Card.Suit.HEARTS;
 import static fi.bizhop.jassu.model.poker.PokerHand.Type.*;
 
 public class PokerHandEvaluator {

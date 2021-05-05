@@ -1,4 +1,6 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.pojo;
+
+import fi.bizhop.jassu.model.kirves.Game;
 
 import java.util.ArrayList;
 import java.util.List;

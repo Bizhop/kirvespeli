@@ -6,9 +6,9 @@ import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.kirves.Game;
-import fi.bizhop.jassu.model.kirves.GameBrief;
-import fi.bizhop.jassu.model.kirves.GameDataPOJO;
-import fi.bizhop.jassu.model.kirves.GameIn;
+import fi.bizhop.jassu.model.kirves.out.GameBrief;
+import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
+import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.util.JsonUtil;
 import org.apache.logging.log4j.LogManager;
@@ -165,14 +165,6 @@ public class KirvesService {
                 game.speakSuit(user, in.valtti);
             } else {
                 throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
-            }
-        }
-        else if(in.action == ADJUST_PLAYERS_IN_GAME) {
-            if(game.userHasActionAvailable(user, ADJUST_PLAYERS_IN_GAME)) {
-                game.adjustPlayersInGame(user, in.resetActivePlayers, in.inactivateByEmail);
-            }
-            else {
-                throw new KirvesGameException("Et voi lisätä/poistaa pelaajia nyt (ADJUST_PLAYERS_IN_GAME)");
             }
         }
         else if(in.action == FOLD) {

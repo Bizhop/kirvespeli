@@ -17,8 +17,6 @@ import java.util.Optional;
 
 import static fi.bizhop.jassu.util.TestUserUtil.TEST_USER_EMAIL;
 import static fi.bizhop.jassu.util.TestUserUtil.getTestUserDB;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)

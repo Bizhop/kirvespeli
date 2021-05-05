@@ -1,6 +1,7 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.out;
 
 import java.util.List;
+import java.util.Map;
 
 public class GameOut {
     private List<PlayerOut> players;
@@ -19,6 +20,8 @@ public class GameOut {
     private Long id;
     private Integer playersTotal;
     private String firstCardSuit;
+    private Map<String, Integer> scores;
+    private List<Map<String, Integer>> scoresHistory;
 
     public GameOut() {}
 
@@ -36,7 +39,9 @@ public class GameOut {
                    boolean canDeclineCut,
                    String cutCard,
                    Integer playersTotal,
-                   String firstCardSuit) {
+                   String firstCardSuit,
+                   Map<String, Integer> scores,
+                   List<Map<String, Integer>> scoresHistory) {
         this.players = players;
         this.cardsInDeck = cardsInDeck;
         this.dealer = dealer;
@@ -52,6 +57,8 @@ public class GameOut {
         this.cutCard = cutCard;
         this.playersTotal = playersTotal;
         this.firstCardSuit = firstCardSuit;
+        this.scores = scores;
+        this.scoresHistory = scoresHistory;
     }
 
     public List<PlayerOut> getPlayers() {
@@ -123,11 +130,15 @@ public class GameOut {
         return playersTotal;
     }
 
-    public void setPlayersTotal(Integer playersTotal) {
-        this.playersTotal = playersTotal;
-    }
-
     public String getFirstCardSuit() {
         return firstCardSuit;
+    }
+
+    public Map<String, Integer> getScores() {
+        return scores;
+    }
+
+    public List<Map<String, Integer>> getScoresHistory() {
+        return scoresHistory;
     }
 }

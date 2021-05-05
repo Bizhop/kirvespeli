@@ -3,8 +3,6 @@ package fi.bizhop.jassu.util;
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.model.User;
 
-import java.util.Optional;
-
 public class TestUserUtil {
     public static final String TEST_USER_EMAIL = "user@mock.com";
 

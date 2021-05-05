@@ -18,10 +18,10 @@ public class RandomUtilTest {
                 if(RandomUtil.win(PROBABILITY)) {
                     wins++;
                 }
-            } catch (ProbabilityException e) {}
+            } catch (ProbabilityException ignored) {}
         }
 
-        System.out.println(String.format("Probability: %d, wins: %d / %d", PROBABILITY, wins, ROUNDS));
+        System.out.printf("Probability: %d, wins: %d / %d%n", PROBABILITY, wins, ROUNDS);
     }
 
     @Test
@@ -29,11 +29,11 @@ public class RandomUtilTest {
         try {
             RandomUtil.win(0);
             fail("0 should not be fair probability");
-        } catch (ProbabilityException e) {}
+        } catch (ProbabilityException ignored) {}
         try {
             RandomUtil.win(100);
             fail("100 should not be fair probability");
-        } catch (ProbabilityException e) {}
+        } catch (ProbabilityException ignored) {}
     }
 
     @Test

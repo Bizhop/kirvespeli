@@ -22,7 +22,7 @@ public class PokerService {
 
     final UserService userService;
 
-    private Map<Long, PokerGame> games = new HashMap<>();
+    private final Map<Long, PokerGame> games = new HashMap<>();
     private Long sequence = 0L;
 
     public PokerService(UserService userService) {
@@ -48,7 +48,7 @@ public class PokerService {
             throw new PokerGameException(String.format("No game with id: %d", id));
         }
         else if(!email.equals(game.getPlayer())) {
-            throw new PokerGameException(String.format("Not your game"));
+            throw new PokerGameException("Not your game");
         }
         else {
             return game;

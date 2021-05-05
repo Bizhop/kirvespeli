@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class JWTAuth {
     private static final Logger LOG = LogManager.getLogger(JWTAuth.class);
-    private static final long EXPIRATION_TIME = 1209600000l; //14 days
+    private static final long EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000; //14 days
     private static final String JWT_SECRET;
     public static final String JWT_TOKEN_PREFIX = "JWT ";
 

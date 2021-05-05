@@ -2,8 +2,6 @@ package fi.bizhop.jassu.util;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class LotteryTest {
 
     @Test
@@ -30,8 +28,8 @@ public class LotteryTest {
             }
         }
 
-        System.out.println(String.format("Bank: %f, (%f - %f)", bank, bankMin, bankMax));
-        System.out.println(String.format("Wagered: %f, winnings: %f, percentage: %f", ROUNDS * wager, winnings, winnings/(ROUNDS * wager)));
+        System.out.printf("Bank: %f, (%f - %f)%n", bank, bankMin, bankMax);
+        System.out.printf("Wagered: %f, winnings: %f, percentage: %f%n", ROUNDS * wager, winnings, winnings/(ROUNDS * wager));
     }
 
     @Test
@@ -58,7 +56,7 @@ public class LotteryTest {
             }
         }
 
-        System.out.println(String.format("Bank: %f, (%f - %f)", bank, bankMin, bankMax));
-        System.out.println(String.format("Wagered: %f, winnings: %f, percentage: %f", ROUNDS * wager, winnings, winnings/(ROUNDS * wager)));
+        System.out.printf("Bank: %f, (%f - %f)%n", bank, bankMin, bankMax);
+        System.out.printf("Wagered: %f, winnings: %f, percentage: %f%n", ROUNDS * wager, winnings, winnings/(ROUNDS * wager));
     }
 }

@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.pojo;
 
 public class UserPOJO {
     public String email;
