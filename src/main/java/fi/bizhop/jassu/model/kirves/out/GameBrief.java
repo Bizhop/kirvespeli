@@ -1,4 +1,4 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.out;
 
 import fi.bizhop.jassu.db.KirvesGameDB;
 import fi.bizhop.jassu.model.User;

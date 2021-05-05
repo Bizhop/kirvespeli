@@ -1,7 +1,7 @@
 package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.db.UserDB;
-import fi.bizhop.jassu.model.kirves.UserPOJO;
+import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 
 import java.math.BigDecimal;
 

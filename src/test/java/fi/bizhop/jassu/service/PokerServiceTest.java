@@ -52,7 +52,7 @@ public class PokerServiceTest {
             if(ev.type == type) {
                 System.out.println(ev);
                 System.out.println(hand);
-                System.out.println(String.format("Reps: %d, time: %dms", reps, System.currentTimeMillis() - time));
+                System.out.printf("Reps: %d, time: %dms%n", reps, System.currentTimeMillis() - time);
                 run = false;
             }
         }

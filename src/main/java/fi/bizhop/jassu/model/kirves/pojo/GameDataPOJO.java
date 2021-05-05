@@ -1,6 +1,9 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.pojo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameDataPOJO {
     //these values are only updated when generating save data
@@ -14,6 +17,8 @@ public class GameDataPOJO {
     public String cutCard;
 
     //these values are updated running the game and evaluated for GameDataPOJO equality
+    public Map<String, Integer> scores = new HashMap<>();
+    public List<Map<String, Integer>> scoresHistory = new ArrayList<>();
     public boolean canJoin = false;
     public boolean canDeal = false;
     public String message;
@@ -30,7 +35,9 @@ public class GameDataPOJO {
 
         if(this.message == null && other.message != null) return false;
 
-        return this.canJoin == other.canJoin
+        return this.scores.equals(other.scores)
+                && this.scoresHistory.equals(other.scoresHistory)
+                && this.canJoin == other.canJoin
                 && this.canDeal == other.canDeal
                 && (this.message == null || this.message.equals(other.message))
                 && this.forcedGame == other.forcedGame

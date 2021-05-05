@@ -38,17 +38,12 @@ public class Cards {
     }
 
     //default sort is by rank
-    public Cards sort() {
-        Collections.sort(cards);
-        return this;
-    }
-
-    public void sort(Comparator<Card> c) {
-        Collections.sort(cards, c);
+    public void sort() {
+        Collections.sort(this.cards);
     }
 
     public Cards shuffle() {
-        Collections.shuffle(cards);
+        Collections.shuffle(this.cards);
         return this;
     }
 

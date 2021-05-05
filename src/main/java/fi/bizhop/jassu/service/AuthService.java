@@ -17,7 +17,7 @@ public class AuthService {
         this.userService = userService;
     }
 
-    public User login(HttpServletRequest request) throws Exception {
+    public User login(HttpServletRequest request) {
         String userEmail = getEmail(request);
         if(userEmail == null) {
             return null;

@@ -1,8 +1,7 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.in;
 
 import fi.bizhop.jassu.model.Card;
-
-import java.util.Set;
+import fi.bizhop.jassu.model.kirves.Game;
 
 public class GameIn {
     public Game.Action action;
@@ -10,7 +9,5 @@ public class GameIn {
     public boolean keepExtraCard;
     public Card.Suit valtti;
     public boolean declineCut;
-    public boolean resetActivePlayers;
-    public Set<String> inactivateByEmail;
     public Game.Speak speak;
 }

@@ -1,7 +1,7 @@
 package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.TestBase;
-import fi.bizhop.jassu.model.kirves.GameBrief;
+import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;

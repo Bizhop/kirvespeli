@@ -3,11 +3,18 @@ package fi.bizhop.jassu.model;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.kirves.*;
+import fi.bizhop.jassu.model.kirves.out.GameOut;
+import fi.bizhop.jassu.model.kirves.out.PlayerOut;
+import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
+import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
+import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
-import fi.bizhop.jassu.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
@@ -202,7 +209,10 @@ public class KirvesTest {
         game.cut(cutter, false, getRandomCard(JACKS_AND_JOKERS), getRandomCard(OTHER_CARDS));
         game.deal(TEST_USERS.get(0));
 
-        Card.Suit valtti = game.getExtraCard(TEST_USERS.get(0)).getSuit();
+        Card valttiCard = game.getExtraCard(TEST_USERS.get(0));
+        Card.Suit valtti = valttiCard.getSuit() == JOKER ?
+                (valttiCard.getRank() == BLACK ? SPADES : HEARTS) :
+                valttiCard.getSuit();
 
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), DISCARD));
         game.discard(TEST_USERS.get(3), 0);
@@ -383,46 +393,15 @@ public class KirvesTest {
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
         game.fold(TEST_USERS.get(0));
 
-        assertEquals("Voittaja on test1@example.com", game.getMessage());
+        assertEquals("Voittajat: test1@example.com", game.getMessage());
     }
 
     @Test
-    public void testAdjustingPlayers() throws CardException, KirvesGameException {
+    public void testPlayingThroughThreeHands() throws CardException, KirvesGameException {
+        //currently there is no easy way to test more than three hands
         Game game = getTestGame();
 
-        game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
-        game.deal(TEST_USERS.get(0), OTHER_CARDS);
-        game.speak(TEST_USERS.get(1), KEEP);
-        playThroughHand(game, TEST_USERS);
-
-        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
-        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), ADJUST_PLAYERS_IN_GAME));
-        game.adjustPlayersInGame(TEST_USERS.get(0), false, Set.of(TEST_USERS.get(2).getEmail()));
-
-        assertEquals(3, game.out(TEST_USERS.get(0)).getPlayers().size());
-        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
-
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), CUT));
-        game.cut(TEST_USERS.get(0), false, getRandomCard(OTHER_CARDS), null);
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), DEAL));
-        game.deal(TEST_USERS.get(1), OTHER_CARDS);
-        game.speak(TEST_USERS.get(3), KEEP);
-
-        playThroughHand(game, List.of(TEST_USERS.get(0), TEST_USERS.get(1), TEST_USERS.get(3)));
-        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), ADJUST_PLAYERS_IN_GAME));
-        game.adjustPlayersInGame(TEST_USERS.get(1), true, null);
-
-        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayers().size());
-        assertEquals(4, game.out(TEST_USERS.get(0)).getPlayersTotal().longValue());
-    }
-
-    @Test
-    public void testPlayingThroughFourHands() throws CardException, KirvesGameException {
-        Game game = getTestGame();
-
-        for (User dealer : TEST_USERS) {
+        for (User dealer : TEST_USERS.subList(0, 3)) {
             Card cutCard = getRandomCard(OTHER_CARDS);
             User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
             game.cut(cutter, false, cutCard, null);
@@ -474,6 +453,38 @@ public class KirvesTest {
         //jokeri voittaa pampun
         cards = List.of(new Card(CLUBS, JACK), new Card(JOKER, BLACK));
         assertEquals(cards.get(1), Game.winningCard(cards, SPADES));
+    }
+
+    @Test
+    public void testHandWinner() throws CardException, KirvesGameException {
+        PlayerPOJO firstTwoPOJO = new PlayerPOJO();
+        firstTwoPOJO.user = new UserPOJO("firstTwo", "firstTwo");
+        firstTwoPOJO.roundsWon.addAll(List.of(0, 1));
+
+        PlayerPOJO thirdPOJO = new PlayerPOJO();
+        thirdPOJO.user = new UserPOJO("third", "third");
+        thirdPOJO.roundsWon.addAll(List.of(2));
+
+        PlayerPOJO lastTwoPOJO = new PlayerPOJO();
+        lastTwoPOJO.user = new UserPOJO("lastTwo", "lastTwo");
+        lastTwoPOJO.roundsWon.addAll(List.of(3,4));
+
+        PlayerPOJO lastThreePOJO = new PlayerPOJO();
+        lastThreePOJO.user = new UserPOJO("lastThree", "lastThree");
+        lastThreePOJO.roundsWon.addAll(List.of(2,3,4));
+
+        //three should win
+        Player winner = Game.determineHandWinner(List.of(
+                new Player(firstTwoPOJO, null),
+                new Player(lastThreePOJO, null)));
+        assertEquals(winner.getUserEmail(), lastThreePOJO.user.email);
+
+        //two earlier should win
+        winner = Game.determineHandWinner(List.of(
+                new Player(firstTwoPOJO, null),
+                new Player(thirdPOJO, null),
+                new Player(lastTwoPOJO, null)));
+        assertEquals(winner.getUserEmail(), firstTwoPOJO.user.email);
     }
 
     @Test

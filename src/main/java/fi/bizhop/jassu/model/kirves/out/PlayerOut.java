@@ -1,4 +1,6 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.model.kirves.out;
+
+import fi.bizhop.jassu.model.kirves.Player;
 
 import java.util.List;
 

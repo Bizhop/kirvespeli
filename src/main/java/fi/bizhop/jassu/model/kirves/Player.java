@@ -4,6 +4,8 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.model.Card;
 import fi.bizhop.jassu.model.Cards;
+import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
+import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 
 import java.util.Collections;
 import java.util.List;
