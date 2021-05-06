@@ -9,6 +9,7 @@ import fi.bizhop.jassu.model.kirves.out.GameOut;
 import fi.bizhop.jassu.model.kirves.out.PlayerOut;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
+import fi.bizhop.jassu.model.kirves.pojo.ScorePOJO;
 import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 import fi.bizhop.jassu.util.RandomUtil;
 
@@ -20,6 +21,7 @@ import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static fi.bizhop.jassu.model.kirves.Game.Speak.CHANGE;
 import static fi.bizhop.jassu.model.kirves.Game.Speak.KEEP;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class Game {
     private static final int NUM_OF_CARD_TO_DEAL = 5;
@@ -122,9 +124,13 @@ public class Game {
                 this.cutCard == null ? "" : this.cutCard.toString(),
                 this.players.size(),
                 getFirstCardSuit(),
-                this.data.scores,
-                this.data.scoresHistory
+                getScoreOutput(this.data.scores),
+                this.data.scoresHistory.stream().map(this::getScoreOutput).collect(toList())
         );
+    }
+
+    private Map<String, Integer> getScoreOutput(Map<String, ScorePOJO> input) {
+        return input.entrySet().stream().collect(toMap(entry -> entry.getValue().nickname, entry -> entry.getValue().score));
     }
 
     private String getFirstCardSuit() {
@@ -174,7 +180,7 @@ public class Game {
             player = new Player(user);
         }
         this.players.add(player);
-        this.data.scores.put(user.getNickname(), 0);
+        this.data.scores.put(user.email, new ScorePOJO(user.getNickname(), 0));
         return player;
     }
 
@@ -430,9 +436,9 @@ public class Game {
         this.data.message = String.format("Voittajat: %s", String.join(",", winners));
         for(String winner : winners) {
             Player player = getPlayer(winner).orElseThrow(() -> new KirvesGameException(String.format("Pelaajaa ei löytynyt: %s", winner)));
-            Integer previousScore = this.data.scores.get(player.getUserNickname());
-            this.data.scores.put(player.getUserNickname(), previousScore + 1);
-            if(previousScore + 1 == 3) {
+            ScorePOJO previousScore = this.data.scores.get(player.getUserEmail());
+            previousScore.score++;
+            if(previousScore.score == 3) {
                 player.inactivate();
             }
         }
@@ -442,7 +448,7 @@ public class Game {
             this.data.scores = new HashMap<>();
             this.players.forEach(player -> {
                 player.activate();
-                this.data.scores.put(player.getUserNickname(), 0);
+                this.data.scores.put(player.getUserEmail(), new ScorePOJO(player.getUserNickname(), 0));
             });
             setDealer(this.dealer);
         }
