@@ -486,6 +486,47 @@ public class KirvesTest {
                 new Player(lastTwoPOJO, null)));
         assertEquals(winner.getUserEmail(), firstTwoPOJO.user.email);
     }
+    
+    @Test
+    public void testScoringWinnersLogic() throws CardException {
+        PlayerPOJO pojo1 = new PlayerPOJO();
+        pojo1.user = new UserPOJO("first", "first");
+        pojo1.declaredPlayer = true;
+        Player p1 = new Player(pojo1, null);
+
+        PlayerPOJO pojo2 = new PlayerPOJO();
+        pojo2.user = new UserPOJO("second", "second");
+        pojo2.declaredPlayer = false;
+        Player p2 = new Player(pojo2, p1);
+
+        PlayerPOJO pojo3 = new PlayerPOJO();
+        pojo3.user = new UserPOJO("third", "third");
+        pojo3.declaredPlayer = false;
+        Player p3 = new Player(pojo3, p2);
+
+        PlayerPOJO pojo4 = new PlayerPOJO();
+        pojo4.user = new UserPOJO("fourth", "fourth");
+        pojo4.declaredPlayer = true;
+        Player p4 = new Player(pojo4, p3);
+        p1.setPrevious(p4);
+        p4.setNext(p1);
+
+        Set<String> declaredPlayerWins = Game.determineScoringWinners(List.of(p1, p2, p3), p1);
+        assertEquals(1, declaredPlayerWins.size());
+        assertTrue(declaredPlayerWins.contains("first"));
+
+        Set<String> declaredPlayerLoses = Game.determineScoringWinners(List.of(p1,p2,p3), p2);
+        assertEquals(2, declaredPlayerLoses.size());
+        assertTrue(declaredPlayerLoses.containsAll(List.of("second", "third")));
+
+        Set<String> yhteinenDeclaredPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p1);
+        assertEquals(3, yhteinenDeclaredPlayerWins.size());
+        assertTrue(yhteinenDeclaredPlayerWins.containsAll(List.of("first", "second", "third")));
+
+        Set<String> yhteinenOtherPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p2);
+        assertEquals(2, yhteinenOtherPlayerWins.size());
+        assertTrue(yhteinenOtherPlayerWins.containsAll(List.of("second", "third")));
+    }
 
     @Test
     public void testGetRandomCards() throws CardException {

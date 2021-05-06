@@ -404,7 +404,7 @@ public class Game {
         }
     }
 
-    private Set<String> determineScoringWinners(List<Player> players, Player handWinner) {
+    public static Set<String> determineScoringWinners(List<Player> players, Player handWinner) {
         Set<String> winners = new HashSet<>();
         for(Player player : players) {
             //case: player is handWinner
@@ -412,11 +412,13 @@ public class Game {
                 winners.add(player.getUserEmail());
             } else {
                 //case: other player didn't win as declared player
-                List<Player> otherPlayers = new ArrayList<>(players);
-                otherPlayers.remove(player);
-                for (Player other : otherPlayers) {
-                    if (other.isDeclaredPlayer() && !other.equals(handWinner)) {
-                        winners.add(player.getUserEmail());
+                if(!player.isDeclaredPlayer()) {
+                    List<Player> otherPlayers = new ArrayList<>(players);
+                    otherPlayers.remove(player);
+                    for (Player other : otherPlayers) {
+                        if (other.isDeclaredPlayer() && !other.equals(handWinner)) {
+                            winners.add(player.getUserEmail());
+                        }
                     }
                 }
             }
