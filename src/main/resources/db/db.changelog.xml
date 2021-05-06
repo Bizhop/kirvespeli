@@ -66,4 +66,7 @@
 		<delete tableName="games" />
 		<modifyDataType tableName="games" columnName="game_data" newDataType="TEXT" />
 	</changeSet>
+	<changeSet id="setUserNicknameUnique" author="Ville">
+		<addUniqueConstraint tableName="users" columnNames="nickname" />
+	</changeSet>
 </databaseChangeLog>

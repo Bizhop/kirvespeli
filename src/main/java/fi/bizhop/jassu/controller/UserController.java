@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.controller;
 
+import fi.bizhop.jassu.exception.UserException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.UserIn;
 import fi.bizhop.jassu.service.AuthService;
@@ -22,18 +23,14 @@ public class UserController {
     @RequestMapping(value = "/api/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody User update(   @RequestBody UserIn userIn,
                                         HttpServletRequest request,
-                                        HttpServletResponse response) {
+                                        HttpServletResponse response) throws UserException {
         String email = this.authService.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            User updated = userService.updateUser(email, userIn);
-            if(updated == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            return updated;
+            return userService.updateUser(email, userIn);
         }
     }
 }
