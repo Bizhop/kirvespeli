@@ -9,8 +9,11 @@ import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -622,6 +625,21 @@ public class KirvesTest {
         pojo.declaredPlayer = true;
         player = new Player(pojo, null);
         assertFalse(Game.canFold(player, HEARTS, 4));
+    }
+
+    @Test
+    public void testGame18Bug() throws IOException, CardException, KirvesGameException {
+        String json = FileUtils.readFileToString(new File("src/test/resources/game18.json"), "UTF-8");
+        GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
+
+        Game game = new Game(pojo);
+        assertEquals(3, game.getNumberOfPlayers());
+        User p1 = new User(pojo.players.get(0).user);
+        User p2 = new User(pojo.players.get(1).user);
+        User p3 = new User(pojo.players.get(2).user);
+
+        assertTrue(game.userHasActionAvailable(p2, FOLD));
+        game.fold(p2);
     }
 
     //--------------------------

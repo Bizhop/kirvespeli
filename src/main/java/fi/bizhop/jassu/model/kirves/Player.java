@@ -155,16 +155,28 @@ public class Player {
         this.extraCard = null;
     }
 
-    public Player getNext() {
-       return next.data.inGame ? next : next.getNext();
+    public Player getNext(int max) throws KirvesGameException {
+       return this.getNextInternal(max, 0);
+    }
+
+    private Player getNextInternal(int max, int count) throws KirvesGameException {
+        count++;
+        if(count > max) throw new KirvesGameException("Internal error: reached Player.getNext() limit");
+        return this.next.data.inGame ? this.next : this.next.getNextInternal(max, count);
     }
 
     public void setNext(Player next) {
         this.next = next;
     }
 
-    public Player getPrevious() {
-        return previous.data.inGame ? previous : previous.getPrevious();
+    public Player getPrevious(int max) throws KirvesGameException {
+        return this.getPreviousInternal(max, 0);
+    }
+
+    private Player getPreviousInternal(int max, int count) throws KirvesGameException {
+        count++;
+        if(count > max) throw new KirvesGameException("Internal error: reached Player.getPrevious() limit");
+        return this.previous.data.inGame ? this.previous : this.previous.getPreviousInternal(max, count);
     }
 
     public void setPrevious(Player previous) {

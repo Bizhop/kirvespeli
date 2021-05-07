@@ -232,7 +232,7 @@ public class Game {
         this.cutCard = null;
         this.data.speaking = true;
         Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
-        Player nextPlayer = player.getNext();
+        Player nextPlayer = player.getNext(this.players.size());
         setCardPlayer(nextPlayer);
         this.firstPlayerOfRound = nextPlayer;
         players.forEach(Player::resetWonRounds);
@@ -280,105 +280,80 @@ public class Game {
     }
 
     public void aceOrTwoDecision(User user, boolean keepExtraCard) throws KirvesGameException {
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            if(keepExtraCard) {
-                this.data.speaking = false;
-            } else {
-                this.valttiCard = player.getExtraCard();
-                player.setExtraCard(null);
-            }
-            player.moveInvisibleCardsToHand();
-            setCardPlayer(this.dealer.getNext());
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        if(keepExtraCard) {
+            this.data.speaking = false;
+        } else {
+            this.valttiCard = player.getExtraCard();
+            player.setExtraCard(null);
         }
+        player.moveInvisibleCardsToHand();
+        setCardPlayer(this.dealer.getNext(this.players.size()));
     }
 
     public void discard(User user, int index) throws KirvesGameException, CardException {
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            player.discard(index);
-            //anyone discarding is always declared player
-            player.setDeclaredPlayer(true);
-            setCardPlayer(this.dealer.getNext());
-        } else {
-            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
-        }
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        player.discard(index);
+        //anyone discarding is always declared player
+        player.setDeclaredPlayer(true);
+        setCardPlayer(this.dealer.getNext(this.players.size()));
     }
 
     public void speak(User user, Speak speak) throws KirvesGameException {
         if(speak == null) throw new KirvesGameException("Puhe ei voi olla tyhjä (null)");
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            if(speak == KEEP) {
-                player.setDeclaredPlayer(true);
-                this.data.speaking = false;
-                setCardPlayer(this.firstPlayerOfRound);
-            } else {
-                player.setSpeak(speak);
-                Player next = player.getNext();
-                if(this.firstPlayerOfRound.equals(next)) {
-                    Optional<Player> changer = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
-                            .filter(s -> s.getSpeak() == CHANGE)
-                            .findFirst();
-                    if(changer.isPresent()) {
-                        player.resetAvailableActions();
-                        changer.get().setAvailableActions(List.of(SPEAK_SUIT));
-                    } else {
-                        startNextRound();
-                    }
-                } else {
-                    setCardPlayer(next);
-                }
-            }
+
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        if(speak == KEEP) {
+            player.setDeclaredPlayer(true);
+            player.setSpeak(KEEP);
+            this.data.speaking = false;
+            setCardPlayer(this.firstPlayerOfRound);
         } else {
-            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
+            player.setSpeak(speak);
+            Player next = player.getNext(this.players.size());
+            if(this.firstPlayerOfRound.equals(next)) {
+                Optional<Player> changer = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
+                        .filter(s -> s.getSpeak() == CHANGE)
+                        .findFirst();
+                if(changer.isPresent()) {
+                    player.resetAvailableActions();
+                    changer.get().setAvailableActions(List.of(SPEAK_SUIT));
+                } else {
+                    startNextRound();
+                }
+            } else {
+                setCardPlayer(next);
+            }
         }
     }
 
     public void speakSuit(User user, Card.Suit suit) throws KirvesGameException {
         if(suit == null) throw new KirvesGameException("Valtti ei voi olla tyhjä (null)");
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            if(suit == this.valtti) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
-            player.setDeclaredPlayer(true);
-            this.valtti = suit;
-            this.valttiCard = null;
-            this.data.speaking = false;
-            setCardPlayer(this.firstPlayerOfRound);
-        } else {
-            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", user.getNickname()));
-        }
+        if(suit == this.valtti) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
+
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        player.setDeclaredPlayer(true);
+        this.valtti = suit;
+        this.valttiCard = null;
+        this.data.speaking = false;
+        setCardPlayer(this.firstPlayerOfRound);
     }
 
     public void playCard(User user, int index) throws KirvesGameException, CardException {
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            player.playCard(index);
-            setCardPlayer(player.getNext());
-            determinePossibleRoundWinner();
-        } else {
-            throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
-        }
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        player.playCard(index);
+        setCardPlayer(player.getNext(this.players.size()));
+        determinePossibleRoundWinner();
     }
 
     public void fold(User user) throws KirvesGameException {
-        Optional<Player> me = getPlayer(user.getEmail());
-        if(me.isPresent()) {
-            Player player = me.get();
-            player.fold();
-            if(this.firstPlayerOfRound.equals(player)) {
-                this.firstPlayerOfRound = player.getNext();
-            }
-            setCardPlayer(player.getNext());
-            determinePossibleRoundWinner();
-        } else {
-            throw new KirvesGameException("Käyttäjä ei ole tässä pelissä");
+        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        player.fold();
+        if(this.firstPlayerOfRound.equals(player)) {
+            this.firstPlayerOfRound = player.getNext(this.players.size());
         }
+        setCardPlayer(player.getNext(this.players.size()));
+        determinePossibleRoundWinner();
     }
 
     private void determinePossibleRoundWinner() throws KirvesGameException {
@@ -435,7 +410,7 @@ public class Game {
     private void handleScoring(Set<String> winners) throws KirvesGameException {
         this.data.message = String.format("Voittajat: %s", String.join(",", winners));
         for(String winner : winners) {
-            Player player = getPlayer(winner).orElseThrow(() -> new KirvesGameException(String.format("Pelaajaa ei löytynyt: %s", winner)));
+            Player player = getPlayer(winner).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
             ScorePOJO previousScore = this.data.scores.get(player.getUserEmail());
             previousScore.score++;
             if(previousScore.score == 3) {
@@ -455,29 +430,36 @@ public class Game {
     }
 
     public void startNextRound() throws KirvesGameException {
-        setDealer(this.dealer.getNext());
+        this.players.stream()
+                .filter(Player::isFolded)
+                .forEach(Player::activate);
+        setDealer(this.dealer.getNext(this.players.size()));
     }
 
     private List<Player> getPlayersStartingFrom(String userEmail) throws KirvesGameException {
         if(userEmail == null) {
             return this.players;
         }
-        Optional<Player> start = getPlayer(userEmail);
-        if(start.isPresent()) {
-            List<Player> players = new ArrayList<>();
-            Player item = start.get();
-            if(!item.isInGame()) {
-                item = item.getNext();
-                start = Optional.of(item);
-            }
-            do {
-                players.add(item);
-            } while((item = item.getNext()) != start.get());
+        Player item = getPlayer(userEmail).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        return getPlayersStartingFrom(item, userEmail, this.players.size());
+    }
 
-            return players;
-        } else {
-            throw new KirvesGameException(String.format("'%s' ei ole tässä pelissä", userEmail));
+    public static List<Player> getPlayersStartingFrom(Player item, String userEmail, int playersCount) throws KirvesGameException {
+        List<Player> players = new ArrayList<>();
+        if(!item.isInGame()) {
+            item = item.getNext(playersCount);
+            if(userEmail.equals(item.getUserEmail())) return List.of(item);
+            userEmail = item.getUserEmail();
         }
+        int safetyCounter = 0;
+        do {
+            safetyCounter++;
+            if(safetyCounter > playersCount) throw new KirvesGameException("Virhe pelaajien linkityksessä");
+            players.add(item);
+            item = item.getNext(playersCount);
+        } while (!item.getUserEmail().equals(userEmail));
+
+        return players;
     }
 
     private void setCardPlayer(Player player) throws KirvesGameException {
@@ -495,7 +477,7 @@ public class Game {
         }
         else {
             if(!player.isInGame()) {
-                player = player.getNext();
+                player = player.getNext(this.players.size());
             }
             this.turn = player;
             if(this.data.speaking && !this.data.forcedGame) {
@@ -514,9 +496,6 @@ public class Game {
     }
 
     private void setDealer(Player dealer) throws KirvesGameException {
-        this.players.stream()
-                .filter(Player::isFolded)
-                .forEach(Player::activate);
         getPlayersStartingFrom(dealer.getUserEmail()).forEach(Player::clearHand);
         this.dealer = dealer;
         this.data.canDeal = false;
@@ -526,7 +505,7 @@ public class Game {
         this.data.forcedGame = false;
         this.data.canDeclineCut = false;
         this.resetActions();
-        this.turn = dealer.getPrevious();
+        this.turn = dealer.getPrevious(this.players.size());
         this.turn.setAvailableActions(List.of(CUT));
     }
 
