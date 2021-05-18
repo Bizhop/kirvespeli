@@ -125,6 +125,7 @@ public class Game {
                 this.valtti == null ? "" : this.valtti.toString(),
                 this.data.canDeclineCut,
                 this.cutCard == null ? "" : this.cutCard.toString(),
+                this.secondCutCard == null ? "" : this.secondCutCard.toString(),
                 this.players.size(),
                 getFirstCardSuit(),
                 getScoreOutput(this.data.scores),
