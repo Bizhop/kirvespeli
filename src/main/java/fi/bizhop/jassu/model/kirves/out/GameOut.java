@@ -17,6 +17,7 @@ public class GameOut {
     private String valttiKortti;
     private String valtti;
     private String cutCard;
+    private String secondCutCard;
     private Long id;
     private Integer playersTotal;
     private String firstCardSuit;
@@ -38,6 +39,7 @@ public class GameOut {
                    String valtti,
                    boolean canDeclineCut,
                    String cutCard,
+                   String secondCutCard,
                    Integer playersTotal,
                    String firstCardSuit,
                    Map<String, Integer> scores,
@@ -55,6 +57,7 @@ public class GameOut {
         this.valtti = valtti;
         this.canDeclineCut = canDeclineCut;
         this.cutCard = cutCard;
+        this.secondCutCard = secondCutCard;
         this.playersTotal = playersTotal;
         this.firstCardSuit = firstCardSuit;
         this.scores = scores;
@@ -140,5 +143,9 @@ public class GameOut {
 
     public List<Map<String, Integer>> getScoresHistory() {
         return scoresHistory;
+    }
+
+    public String getSecondCutCard() {
+        return secondCutCard;
     }
 }
