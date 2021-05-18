@@ -12,6 +12,7 @@ public class GameDataPOJO {
     public String valttiCard;
     public String valtti;
     public String cutCard;
+    public String secondCutCard;
 
     //these values are updated running the game and evaluated for GameDataPOJO equality
     public Map<String, ScorePOJO> scores = new LinkedHashMap<>();

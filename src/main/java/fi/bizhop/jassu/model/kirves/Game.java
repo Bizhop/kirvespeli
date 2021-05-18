@@ -34,6 +34,7 @@ public class Game {
     private Card valttiCard = null;
     private Card.Suit valtti = null;
     private Card cutCard = null;
+    private Card secondCutCard = null;
     
     private final GameDataPOJO data;
 
@@ -61,6 +62,7 @@ public class Game {
         this.valttiCard = Card.fromAbbr(pojo.valttiCard);
         this.valtti = Card.Suit.fromAbbr(pojo.valtti);
         this.cutCard = Card.fromAbbr(pojo.cutCard);
+        this.secondCutCard = Card.fromAbbr(pojo.secondCutCard);
     }
 
     public Game(User admin) throws CardException, KirvesGameException {
@@ -81,7 +83,8 @@ public class Game {
         this.data.valttiCard = this.valttiCard == null ? null : this.valttiCard.toString();
         this.data.valtti = this.valtti == null ? null : this.valtti.getAbbr();
         this.data.cutCard = this.cutCard == null ? null : this.cutCard.toString();
-        
+        this.data.secondCutCard = this.secondCutCard == null ? null : this.secondCutCard.toString();
+
         return this.data;
     }
 
@@ -230,6 +233,7 @@ public class Game {
         }
         this.data.canDeal = false;
         this.cutCard = null;
+        this.secondCutCard = null;
         this.data.speaking = true;
         Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
         Player nextPlayer = player.getNext(this.players.size());
@@ -245,14 +249,13 @@ public class Game {
         }
         this.deck.clear();
         this.deck.add(new Deck().shuffle());
-        this.data.message = "";
         if(!decline) {
             this.cutCard = cutCard != null ? this.deck.removeCard(cutCard) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
             if (this.cutCard.getRank() == JACK || this.cutCard.getSuit() == JOKER) {
                 Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
-                this.data.message = String.format("Seuraava kortti on %s", secondAfterCut);
+                this.secondCutCard = secondAfterCut;
                 if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
-                    this.data.message += String.format("\nUusi nosto, %s voi kieltäytyä nostamasta", cutter.getNickname());
+                    this.data.message = String.format("\nUusi nosto, %s voi kieltäytyä nostamasta", cutter.getNickname());
                     this.data.canDeclineCut = true;
                     return;
                 }
@@ -657,6 +660,8 @@ public class Game {
         Game other = (Game)o;
         if(this.players.size() != other.players.size()) return false;
         if(this.firstPlayerOfRound == null && other.firstPlayerOfRound != null) return false;
+        if(this.cutCard == null && other.cutCard != null) return false;
+        if(this.secondCutCard == null && other.secondCutCard != null) return false;
         for(int i=0; i < this.players.size(); i++) {
             if(!(this.players.get(0).equals(other.players.get(0)))) return false;
         }
@@ -667,6 +672,7 @@ public class Game {
                 && (this.firstPlayerOfRound == null || this.firstPlayerOfRound.equals(other.firstPlayerOfRound))
                 && this.valttiCard == other.valttiCard
                 && this.valtti == other.valtti
-                && this.cutCard == other.cutCard;
+                && (this.cutCard == null || this.cutCard.equals(other.cutCard))
+                && (this.secondCutCard == null || this.secondCutCard.equals(other.secondCutCard));
     }
 }
