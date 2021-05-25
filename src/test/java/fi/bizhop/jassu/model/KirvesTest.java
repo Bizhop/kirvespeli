@@ -577,13 +577,17 @@ public class KirvesTest {
     public void testPOJO() throws CardException, KirvesGameException {
         Game game = getTestGame();
 
-        GameDataPOJO pojo = game.toPojo();
+        String json = game.toJson();
+        GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElse(null);
+        assertNotNull(pojo);
         assertEquals(4, pojo.players.size());
 
         game.cut(TEST_USERS.get(3), false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
 
-        pojo = game.toPojo();
+        json = game.toJson();
+        pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElse(null);
+        assertNotNull(pojo);
         assertEquals(4, pojo.players.size());
 
         game = new Game(pojo);
@@ -594,8 +598,7 @@ public class KirvesTest {
     public void testPOJOWithJsonUtil() throws CardException, KirvesGameException {
         Game game = getTestGame();
 
-        GameDataPOJO pojoIn = game.toPojo();
-        String json = JsonUtil.getJson(pojoIn).orElseThrow();
+        String json = game.toJson();
         GameDataPOJO pojoOut = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
         Game gameFromPojo = new Game(pojoOut);
 

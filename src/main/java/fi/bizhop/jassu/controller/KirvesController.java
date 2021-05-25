@@ -2,6 +2,7 @@ package fi.bizhop.jassu.controller;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
+import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.*;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
@@ -18,6 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+
+import static fi.bizhop.jassu.exception.TransactionException.Type.INTERNAL;
+import static fi.bizhop.jassu.exception.TransactionException.Type.UNKNOWN;
 
 @RestController
 public class KirvesController {
@@ -137,11 +141,16 @@ public class KirvesController {
             User me = this.userService.get(email);
             response.setStatus(HttpServletResponse.SC_OK);
             try {
-                GameOut out = this.kirvesService.action(id, in, me).out(me);
+                GameOut out = this.kirvesService.action(id, in, me, 0).out(me);
                 refresh(id);
                 return out;
             } catch (KirvesGameException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            } catch (TransactionException e) {
+                if(List.of(UNKNOWN, INTERNAL).contains(e.getType())) {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+                }
+                throw new ResponseStatusException(HttpStatus.CONFLICT, String.format("%s: %s", e.getType(), e.getMessage()));
             } catch (CardException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }

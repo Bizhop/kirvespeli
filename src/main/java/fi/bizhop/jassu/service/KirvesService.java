@@ -5,8 +5,10 @@ import fi.bizhop.jassu.db.KirvesGameRepo;
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
+import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.Game;
+import fi.bizhop.jassu.model.kirves.Transaction;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
@@ -18,9 +20,9 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static fi.bizhop.jassu.exception.TransactionException.Type.TIMEOUT;
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static java.util.stream.Collectors.toList;
 
@@ -32,6 +34,8 @@ public class KirvesService {
     private final KirvesGameRepo kirvesGameRepo;
 
     private final Map<Long, Game> inMemoryGames = new ConcurrentHashMap<>();
+
+    private final Transaction TX = new Transaction();
 
     public KirvesService(UserService userService, KirvesGameRepo kirvesGameRepo) {
         this.userService = userService;
@@ -47,8 +51,7 @@ public class KirvesService {
         db.active = true;
         db.players = game.getNumberOfPlayers();
         db.canJoin = true;
-        db.gameData = JsonUtil.getJson(game.toPojo())
-            .orElseThrow(() -> new KirvesGameException("Unable to convert KirvesGame to gameData"));
+        db.gameData = game.toJson();
 
         Long id = kirvesGameRepo.save(db).id;
         LOG.info(String.format("New game saved with id=%d", id));
@@ -92,88 +95,116 @@ public class KirvesService {
     }
 
     private KirvesGameDB getGameDB(Long id) throws KirvesGameException {
-         Optional<KirvesGameDB> game = kirvesGameRepo.findByIdAndActiveTrue(id);
-        if(game.isPresent()) {
-            return game.get();
-        } else {
-            throw new KirvesGameException(String.format("Peliä ei löytynyt, id=%d", id));
+        return kirvesGameRepo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new KirvesGameException(String.format("Peliä ei löytynyt, id=%d", id)));
+    }
+
+    private void sleep(long delay) {
+        if(delay > 0) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                LOG.warn("Thread error when trying to delay. This message should never be displayed outside unit testing, very rarely even there");
+            }
         }
     }
 
-    public Game action(Long id, GameIn in, User user) throws KirvesGameException, CardException {
+    //Use delay only for testing transaction timeout
+    public Game action(Long id, GameIn in, User user, long delay) throws KirvesGameException, CardException, TransactionException {
         Game game = this.getGame(id);
-        if(in.action == DEAL) {
-            if(game.userHasActionAvailable(user, DEAL)) {
-                try {
-                    game.deal(user);
-                } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Jako ei onnistunut: %s", e.getMessage()));
+        try {
+            this.TX.begin(user, game.toJson());
+        } catch (TransactionException e) {
+            if(e.getType() == TIMEOUT) {
+                this.TX.rollback();
+                this.TX.begin(user, game.toJson());
+            } else {
+                throw e;
+            }
+        }
+        this.TX.check(user);
+        sleep(delay);
+        try {
+            if (in.action == DEAL) {
+                if (game.userHasActionAvailable(user, DEAL)) {
+                    try {
+                        game.deal(user);
+                    } catch (CardException e) {
+                        throw new KirvesGameException(String.format("Jako ei onnistunut: %s", e.getMessage()));
+                    }
+                } else {
+                    throw new KirvesGameException("Et voi jakaa nyt (DEAL)");
                 }
-            } else {
-                throw new KirvesGameException("Et voi jakaa nyt (DEAL)");
-            }
-        }
-        else if(in.action == PLAY_CARD) {
-            if(game.userHasActionAvailable(user, PLAY_CARD)) {
-                try {
-                    game.playCard(user, in.index);
-                } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Kortin pelaaminen ei onnistunut (index=%d)", in.index));
+            } else if (in.action == PLAY_CARD) {
+                if (game.userHasActionAvailable(user, PLAY_CARD)) {
+                    try {
+                        game.playCard(user, in.index);
+                    } catch (CardException e) {
+                        throw new KirvesGameException(String.format("Kortin pelaaminen ei onnistunut (index=%d)", in.index));
+                    }
+                } else {
+                    throw new KirvesGameException("Ei ole vuorosi pelata (PLAY_CARD)");
                 }
-            } else {
-                throw new KirvesGameException("Ei ole vuorosi pelata (PLAY_CARD)");
-            }
-        }
-        else if(in.action == CUT) {
-            if(game.userHasActionAvailable(user, CUT)) {
-                try {
-                    game.cut(user, in.declineCut);
-                } catch (CardException e) {
-                    throw new KirvesGameException("Nosto ei onnistunut (CUT)");
+            } else if (in.action == CUT) {
+                if (game.userHasActionAvailable(user, CUT)) {
+                    try {
+                        game.cut(user, in.declineCut);
+                    } catch (CardException e) {
+                        throw new KirvesGameException("Nosto ei onnistunut (CUT)");
+                    }
+                } else {
+                    throw new KirvesGameException("Et voi nostaa nyt (CUT)");
                 }
-            } else {
-                throw new KirvesGameException("Et voi nostaa nyt (CUT)");
-            }
-        }
-        else if(in.action == DISCARD) {
-            if(game.userHasActionAvailable(user, DISCARD)) {
-                try {
-                    game.discard(user, in.index);
-                } catch (CardException e) {
-                    throw new KirvesGameException(String.format("Tyhjennys ei onnistunut (DISCARD, index=%d)", in.index));
+            } else if (in.action == DISCARD) {
+                if (game.userHasActionAvailable(user, DISCARD)) {
+                    try {
+                        game.discard(user, in.index);
+                    } catch (CardException e) {
+                        throw new KirvesGameException(String.format("Tyhjennys ei onnistunut (DISCARD, index=%d)", in.index));
+                    }
+                } else {
+                    throw new KirvesGameException("Et voi tyhjentää nyt (DISCARD)");
                 }
-            } else {
-                throw new KirvesGameException("Et voi tyhjentää nyt (DISCARD)");
+            } else if (in.action == ACE_OR_TWO_DECISION) {
+                if (game.userHasActionAvailable(user, ACE_OR_TWO_DECISION)) {
+                    game.aceOrTwoDecision(user, in.keepExtraCard);
+                } else {
+                    throw new KirvesGameException("Et voi tehdä hakkipäätöstä nyt (ACE_OR_TWO_DECISION)");
+                }
+            } else if (in.action == SPEAK) {
+                if (game.userHasActionAvailable(user, SPEAK)) {
+                    game.speak(user, in.speak);
+                } else {
+                    throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
+                }
+            } else if (in.action == SPEAK_SUIT) {
+                if (game.userHasActionAvailable(user, SPEAK_SUIT)) {
+                    game.speakSuit(user, in.valtti);
+                } else {
+                    throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
+                }
+            } else if (in.action == FOLD) {
+                if (game.userHasActionAvailable(user, FOLD)) {
+                    game.fold(user);
+                } else {
+                    throw new KirvesGameException("Et voi mennä pakkaan nyt (FOLD)");
+                }
             }
+        } catch (KirvesGameException e) {
+            GameDataPOJO pojo = JsonUtil.getJavaObject(TX.rollback(), GameDataPOJO.class)
+                    .orElseThrow(() -> new KirvesGameException("Unable to recreate game from rollback state"));
+            inMemoryGames.put(id, new Game(pojo));
+            throw e;
         }
-        else if(in.action == ACE_OR_TWO_DECISION) {
-            if(game.userHasActionAvailable(user, ACE_OR_TWO_DECISION)) {
-                game.aceOrTwoDecision(user, in.keepExtraCard);
-            } else {
-                throw new KirvesGameException("Et voi tehdä hakkipäätöstä nyt (ACE_OR_TWO_DECISION)");
-            }
-        }
-        else if(in.action == SPEAK) {
-            if(game.userHasActionAvailable(user, SPEAK)) {
-                game.speak(user, in.speak);
-            } else {
-                throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
-            }
-        }
-        else if(in.action == SPEAK_SUIT) {
-            if(game.userHasActionAvailable(user, SPEAK_SUIT)) {
-                game.speakSuit(user, in.valtti);
-            } else {
-                throw new KirvesGameException("Et voi puhua nyt (SPEAK)");
-            }
-        }
-        else if(in.action == FOLD) {
-            if(game.userHasActionAvailable(user, FOLD)) {
-                game.fold(user);
-            }
-            else {
-                throw new KirvesGameException("Et voi mennä pakkaan nyt (FOLD)");
-            }
+        try {
+            TX.end();
+        } catch (TransactionException e) {
+            //ending transaction failed, probably for timeout. Log and rollback;
+            LOG.warn(String.format("Ending transaction failed (id=%d, user=%s, message=%s), rolling back", id, user.getEmail(), e.getMessage()));
+            GameDataPOJO pojo = JsonUtil.getJavaObject(TX.rollback(), GameDataPOJO.class)
+                    .orElseThrow(() -> new KirvesGameException("Unable to recreate game from rollback state"));
+            inMemoryGames.put(id, new Game(pojo));
+            throw new TransactionException(e.getType(), "Ending transaction failed");
         }
         saveGame(id, game);
         return game;
@@ -192,8 +223,7 @@ public class KirvesService {
 
     private void saveGame(Long id, Game game) throws KirvesGameException {
         KirvesGameDB gameDB = this.getGameDB(id);
-        gameDB.gameData = JsonUtil.getJson(game.toPojo())
-                .orElseThrow(() -> new KirvesGameException("Unable to convert KirvesGame to gameData"));
+        gameDB.gameData = game.toJson();
         gameDB.players = game.getNumberOfPlayers();
         gameDB.canJoin = game.getCanJoin();
         this.kirvesGameRepo.save(gameDB);

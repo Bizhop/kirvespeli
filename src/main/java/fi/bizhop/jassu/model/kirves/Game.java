@@ -11,6 +11,7 @@ import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.ScorePOJO;
 import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
+import fi.bizhop.jassu.util.JsonUtil;
 import fi.bizhop.jassu.util.RandomUtil;
 
 import java.util.*;
@@ -74,7 +75,7 @@ public class Game {
         setDealer(player);
     }
 
-    public GameDataPOJO toPojo() {
+    public String toJson() throws KirvesGameException {
         this.data.players = this.players.stream().map(Player::toPojo).collect(toList());
         this.data.deck = this.deck.getCardsOut();
         this.data.turn = this.turn == null ? null : this.turn.getUserEmail();
@@ -85,7 +86,8 @@ public class Game {
         this.data.cutCard = this.cutCard == null ? null : this.cutCard.toString();
         this.data.secondCutCard = this.secondCutCard == null ? null : this.secondCutCard.toString();
 
-        return this.data;
+        return JsonUtil.getJson(this.data)
+                .orElseThrow(() -> new KirvesGameException("Unable to convert data to json"));
     }
 
     public GameOut out() throws KirvesGameException {

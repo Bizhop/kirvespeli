@@ -13,4 +13,8 @@ public class TestUserUtil {
     public static User getTestUser(String email) {
         return new User(email, "");
     }
+
+    public static User getTestUser() {
+        return new User(TEST_USER_EMAIL, "");
+    }
 }
