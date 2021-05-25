@@ -186,7 +186,7 @@ public class KirvesService {
                     throw new KirvesGameException("Et voi mennä pakkaan nyt (FOLD)");
                 }
             }
-        } catch (KirvesGameException e) {
+        } catch (Exception e) {
             this.inMemoryGames.put(id, new Game(this.TX.rollback()));
             throw e;
         }
