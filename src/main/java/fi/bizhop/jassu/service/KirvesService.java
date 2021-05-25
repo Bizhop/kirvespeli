@@ -45,7 +45,7 @@ public class KirvesService {
     public Long newGameForAdmin(User admin) throws CardException, KirvesGameException {
         Game game = new Game(admin);
         LOG.info("Created new game");
-        UserDB adminDB = userService.get(admin);
+        UserDB adminDB = this.userService.get(admin);
         KirvesGameDB db = new KirvesGameDB();
         db.admin = adminDB;
         db.active = true;
@@ -82,7 +82,7 @@ public class KirvesService {
     }
 
     public Game getGame(Long id) throws KirvesGameException, CardException {
-        Game fromMemory = inMemoryGames.get(id);
+        Game fromMemory = this.inMemoryGames.get(id);
         if(fromMemory != null) {
             return fromMemory;
         }
@@ -90,7 +90,7 @@ public class KirvesService {
         GameDataPOJO pojo = JsonUtil.getJavaObject(game.gameData, GameDataPOJO.class)
                 .orElseThrow(() -> new KirvesGameException("Unable to convert gameData to KirvesGame"));
         Game deserializedGame = new Game(pojo);
-        inMemoryGames.put(id, deserializedGame);
+        this.inMemoryGames.put(id, deserializedGame);
         return deserializedGame;
     }
 
@@ -99,24 +99,20 @@ public class KirvesService {
                 .orElseThrow(() -> new KirvesGameException(String.format("Peliä ei löytynyt, id=%d", id)));
     }
 
-    private void sleep(long delay) {
+    private void sleep(long delay) throws InterruptedException {
         if(delay > 0) {
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                LOG.warn("Thread error when trying to delay. This message should never be displayed outside unit testing, very rarely even there");
-            }
+            Thread.sleep(delay);
         }
     }
 
     //Use delay only for testing transaction timeout
-    public Game action(Long id, GameIn in, User user, long delay) throws KirvesGameException, CardException, TransactionException {
+    public Game action(Long id, GameIn in, User user, long delay) throws KirvesGameException, CardException, TransactionException, InterruptedException {
         Game game = this.getGame(id);
         try {
             this.TX.begin(user, game.toJson());
         } catch (TransactionException e) {
             if(e.getType() == TIMEOUT) {
-                this.TX.rollback();
+                this.inMemoryGames.put(id, new Game(this.TX.rollback()));
                 this.TX.begin(user, game.toJson());
             } else {
                 throw e;
@@ -191,20 +187,16 @@ public class KirvesService {
                 }
             }
         } catch (KirvesGameException e) {
-            GameDataPOJO pojo = JsonUtil.getJavaObject(TX.rollback(), GameDataPOJO.class)
-                    .orElseThrow(() -> new KirvesGameException("Unable to recreate game from rollback state"));
-            inMemoryGames.put(id, new Game(pojo));
+            this.inMemoryGames.put(id, new Game(this.TX.rollback()));
             throw e;
         }
         try {
-            TX.end();
+            this.TX.end();
         } catch (TransactionException e) {
             //ending transaction failed, probably for timeout. Log and rollback;
             LOG.warn(String.format("Ending transaction failed (id=%d, user=%s, message=%s), rolling back", id, user.getEmail(), e.getMessage()));
-            GameDataPOJO pojo = JsonUtil.getJavaObject(TX.rollback(), GameDataPOJO.class)
-                    .orElseThrow(() -> new KirvesGameException("Unable to recreate game from rollback state"));
-            inMemoryGames.put(id, new Game(pojo));
-            throw new TransactionException(e.getType(), "Ending transaction failed");
+            this.inMemoryGames.put(id, new Game(this.TX.rollback()));
+            throw new TransactionException(e.getType(), "Ending transaction failed, rolled back to previous state");
         }
         saveGame(id, game);
         return game;
@@ -214,7 +206,7 @@ public class KirvesService {
         KirvesGameDB game = this.getGameDB(id);
         if(me.getEmail().equals(game.admin.email)) {
             game.active = false;
-            kirvesGameRepo.save(game);
+            this.kirvesGameRepo.save(game);
             LOG.info(String.format("Inactivated game id=%d", id));
         } else {
             throw new KirvesGameException(String.format("Et voi poistaa peliä, %s ei ole pelin omistaja (gameId=%d)", me.getNickname(), id));

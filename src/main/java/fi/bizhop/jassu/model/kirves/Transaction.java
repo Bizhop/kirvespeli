@@ -2,6 +2,8 @@ package fi.bizhop.jassu.model.kirves;
 
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
+import fi.bizhop.jassu.util.JsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,9 +40,11 @@ public class Transaction {
         if(!this.lockUser.equals(user)) throw new TransactionException(LOCK, "You don't have lock");
     }
 
-    public synchronized String rollback() {
+    public synchronized GameDataPOJO rollback() throws TransactionException {
+        LOG.info(String.format("Perform rollback. User with lock was %s", this.lockUser.getEmail()));
         this.lockUser = null;
-        String response = this.rollbackState;
+        GameDataPOJO response = JsonUtil.getJavaObject(this.rollbackState, GameDataPOJO.class)
+                .orElseThrow(() -> new TransactionException(INTERNAL, "Unable to convert rollbackState to GameDataPOJO"));
         this.rollbackState = null;
         this.startTime = 0;
         return response;
