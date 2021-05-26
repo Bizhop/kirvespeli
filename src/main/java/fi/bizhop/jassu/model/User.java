@@ -32,7 +32,7 @@ public class User {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public void setEmail(String email) {
@@ -40,7 +40,7 @@ public class User {
     }
 
     public String getJwt() {
-        return jwt;
+        return this.jwt;
     }
 
     public void setJwt(String jwt) {
@@ -48,7 +48,7 @@ public class User {
     }
 
     public BigDecimal getMoney() {
-        return money;
+        return this.money;
     }
 
     public void setMoney(BigDecimal money) {

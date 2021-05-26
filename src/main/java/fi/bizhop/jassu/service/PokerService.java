@@ -30,7 +30,7 @@ public class PokerService {
     }
 
     public PokerGame newGame() throws CardException {
-        return newGameForPlayer("test@example.com");
+        return this.newGameForPlayer("test@example.com");
     }
 
     public PokerGame newGameForPlayer(String email) throws CardException {
@@ -38,12 +38,12 @@ public class PokerService {
         this.userService.modifyMoney(wager.negate(), email);
         PokerGame game = new PokerGame(wager);
         game.setPlayer(email);
-        games.put(sequence++, game);
+        this.games.put(this.sequence++, game);
         return game;
     }
 
     public PokerGame getGame(Long id, String email) throws PokerGameException {
-        PokerGame game = games.get(id);
+        PokerGame game = this.games.get(id);
         if(game == null) {
             throw new PokerGameException(String.format("No game with id: %d", id));
         }
@@ -56,26 +56,26 @@ public class PokerService {
     }
 
     public List<PokerGame> getGames(String email) {
-        return games.values().stream()
+        return this.games.values().stream()
                 .filter(game -> email.equals(game.getPlayer()))
                 .filter(PokerGame::active)
                 .collect(Collectors.toList());
     }
 
     public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException, CardException {
-        PokerGame game = games.get(id);
+        PokerGame game = this.games.get(id);
         if(!email.equals(game.getPlayer())) {
             throw new PokerGameException("Not your game");
         }
         if(game.getAvailableActions().contains(in.action)) {
             if(in.action == STAY) {
-                game.stay(userService);
+                game.stay(this.userService);
             }
             else if(in.action == HOLD) {
                 game.hold(in.parameters);
             }
             else if(in.action == DOUBLE_HIGH || in.action == DOUBLE_LOW) {
-                game.tryDouble(in.action, userService);
+                game.tryDouble(in.action, this.userService);
             }
         }
         return game;

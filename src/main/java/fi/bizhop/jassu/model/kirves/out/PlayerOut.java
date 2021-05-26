@@ -56,7 +56,7 @@ public class PlayerOut {
     }
 
     public String getExtraCard() {
-        return extraCard;
+        return this.extraCard;
     }
 
     @Override
@@ -65,18 +65,18 @@ public class PlayerOut {
     }
 
     public String getNickname() {
-        return nickname;
+        return this.nickname;
     }
 
     public boolean isDeclaredPlayer() {
-        return declaredPlayer;
+        return this.declaredPlayer;
     }
 
     public boolean isFolded() {
-        return folded;
+        return this.folded;
     }
 
     public String getSpeak() {
-        return speak;
+        return this.speak;
     }
 }

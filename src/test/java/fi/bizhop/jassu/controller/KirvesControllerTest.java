@@ -6,6 +6,7 @@ import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.service.UserService;
+import fi.bizhop.jassu.util.TestUserUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import static fi.bizhop.jassu.util.TestUserUtil.TEST_USER_EMAIL;
 import static fi.bizhop.jassu.util.TestUserUtil.getTestUser;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -46,7 +48,7 @@ public class KirvesControllerTest extends TestBase {
     public void getGamesWithoutUserFails() throws Exception {
         RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
 
-        MvcResult result = mockMvc.perform(builder).andReturn();
+        MvcResult result = this.mockMvc.perform(builder).andReturn();
 
         assertEquals(401, result.getResponse().getStatus());
     }
@@ -55,12 +57,13 @@ public class KirvesControllerTest extends TestBase {
     public void getGamesWithUserSuccess() throws Exception {
         RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
 
-        when(authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
-        when(kirvesService.getActiveGames()).thenReturn(getTestGames());
+        when(this.authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
+        when(this.userService.get(eq(TEST_USER_EMAIL))).thenReturn(TestUserUtil.getTestUser(TEST_USER_EMAIL));
+        when(this.kirvesService.getActiveGames()).thenReturn(this.getTestGames());
 
-        MvcResult result = mockMvc.perform(builder).andReturn();
+        MvcResult result = this.mockMvc.perform(builder).andReturn();
 
-        GameBrief[] response = mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
+        GameBrief[] response = this.mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
 
         assertEquals(1, response.length);
         GameBrief brief = response[0];

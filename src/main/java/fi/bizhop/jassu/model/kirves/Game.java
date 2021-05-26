@@ -32,8 +32,8 @@ public class Game {
     private Player turn;
     private Player dealer;
     private Player firstPlayerOfRound;
-    private Card valttiCard = null;
-    private Card.Suit valtti = null;
+    private Card trumpCard = null;
+    private Card.Suit trump = null;
     private Card cutCard = null;
     private Card secondCutCard = null;
     
@@ -42,7 +42,7 @@ public class Game {
     public Game(GameDataPOJO pojo) throws CardException, KirvesGameException {
         if(pojo == null) throw new KirvesGameException("GameDataPOJO ei voi olla tyhjä (null)");
         this.data = pojo;
-        this.deck = Cards.fromAbbrs(pojo.deck);
+        this.deck = Cards.fromAbbreviations(pojo.deck);
 
         //map the players
         Player previous = null;
@@ -60,10 +60,10 @@ public class Game {
         this.turn = playersMap.get(pojo.turn);
         this.dealer = playersMap.get(pojo.dealer);
         this.firstPlayerOfRound = playersMap.get(pojo.firstPlayerOfRound);
-        this.valttiCard = Card.fromAbbr(pojo.valttiCard);
-        this.valtti = Card.Suit.fromAbbr(pojo.valtti);
-        this.cutCard = Card.fromAbbr(pojo.cutCard);
-        this.secondCutCard = Card.fromAbbr(pojo.secondCutCard);
+        this.trumpCard = Card.fromAbbreviation(pojo.trumpCard);
+        this.trump = Card.Suit.fromAbbreviation(pojo.trump);
+        this.cutCard = Card.fromAbbreviation(pojo.cutCard);
+        this.secondCutCard = Card.fromAbbreviation(pojo.secondCutCard);
     }
 
     public Game(User admin) throws CardException, KirvesGameException {
@@ -71,8 +71,8 @@ public class Game {
         this.deck = new Deck().shuffle();
         this.data.canJoin = true;
 
-        Player player = addPlayerInternal(admin.toPOJO());
-        setDealer(player);
+        Player player = this.addPlayerInternal(admin.toPOJO());
+        this.setDealer(player);
     }
 
     public String toJson() throws KirvesGameException {
@@ -81,8 +81,8 @@ public class Game {
         this.data.turn = this.turn == null ? null : this.turn.getUserEmail();
         this.data.dealer = this.dealer == null ? null : this.dealer.getUserEmail();
         this.data.firstPlayerOfRound = this.firstPlayerOfRound == null ? null : this.firstPlayerOfRound.getUserEmail();
-        this.data.valttiCard = this.valttiCard == null ? null : this.valttiCard.toString();
-        this.data.valtti = this.valtti == null ? null : this.valtti.getAbbr();
+        this.data.trumpCard = this.trumpCard == null ? null : this.trumpCard.toString();
+        this.data.trump = this.trump == null ? null : this.trump.getAbbreviation();
         this.data.cutCard = this.cutCard == null ? null : this.cutCard.toString();
         this.data.secondCutCard = this.secondCutCard == null ? null : this.secondCutCard.toString();
 
@@ -99,7 +99,7 @@ public class Game {
         List<String> myActions = new ArrayList<>();
         String myExtraCard = null;
         if(user != null) {
-            Optional<Player> me = getPlayer(user.getEmail());
+            Optional<Player> me = this.getPlayer(user.getEmail());
             if(me.isPresent()) {
                 Player player = me.get();
                 myCards = player.getHand().getCardsOut();
@@ -116,23 +116,24 @@ public class Game {
         }
 
         return new GameOut(
-                getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()),
+                this.getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()),
                 this.deck.size(),
                 this.dealer.getUserEmail(),
                 this.turn.getUserEmail(),
                 myCards,
                 myExtraCard,
                 myActions,
-                this.data.message,
+                this.getMessage(),
+                this.data.messages,
                 this.data.canJoin,
-                this.valttiCard == null ? "" : this.valttiCard.toString(),
-                this.valtti == null ? "" : this.valtti.toString(),
+                this.trumpCard == null ? "" : this.trumpCard.toString(),
+                this.trump == null ? "" : this.trump.toString(),
                 this.data.canDeclineCut,
                 this.cutCard == null ? "" : this.cutCard.toString(),
                 this.secondCutCard == null ? "" : this.secondCutCard.toString(),
                 this.players.size(),
-                getFirstCardSuit(),
-                getScoreOutput(this.data.scores),
+                this.getFirstCardSuit(),
+                this.getScoreOutput(this.data.scores),
                 this.data.scoresHistory.stream().map(this::getScoreOutput).collect(toList())
         );
     }
@@ -142,11 +143,11 @@ public class Game {
     }
 
     private String getFirstCardSuit() {
-        if(this.firstPlayerOfRound == null || this.valtti == null) return "";
+        if(this.firstPlayerOfRound == null || this.trump == null) return "";
         Card firstCard = this.firstPlayerOfRound.equals(this.turn) ? null : this.firstPlayerOfRound.getLastPlayedCard();
         if(firstCard == null) return "";
         if(firstCard.getSuit() == JOKER || firstCard.getRank() == JACK) {
-            return this.valtti.name();
+            return this.trump.name();
         } else {
             return firstCard.getSuit().name();
         }
@@ -164,7 +165,7 @@ public class Game {
         if(this.data.canJoin) {
             if (this.players.stream()
                     .noneMatch(player -> user.getEmail().equals(player.getUserEmail()))) {
-                Player player = addPlayerInternal(user.toPOJO());
+                Player player = this.addPlayerInternal(user.toPOJO());
                 this.resetActions();
                 player.setAvailableActions(List.of(CUT));
             } else {
@@ -193,56 +194,56 @@ public class Game {
     }
 
     public void deal(User user) throws CardException, KirvesGameException {
-        deal(user, null);
+        this.deal(user, null);
     }
 
     //use this method directly only when testing!
-    public void deal(User user, List<Card> possibleValttiCards) throws CardException, KirvesGameException {
+    public void deal(User user, List<Card> possibleTrumpCards) throws CardException, KirvesGameException {
         if(!this.data.canDeal) throw new KirvesGameException("Jakaminen ei onnistu");
-        List<Player> players = getPlayersStartingFrom(this.dealer.getUserEmail());
+        List<Player> players = this.getPlayersStartingFrom(this.dealer.getUserEmail());
         for(Player player : players) {
             player.getPlayedCards().clear();
             player.addCards(this.deck.deal(NUM_OF_CARD_TO_DEAL));
         }
-        if(possibleValttiCards == null) {
+        if(possibleTrumpCards == null) {
             //normal flow
-            this.valttiCard = this.deck.remove(0);
+            this.trumpCard = this.deck.remove(0);
         }
         else {
             //test flow
             while(true) {
                 Card candidate = this.deck.get(RandomUtil.getInt(this.deck.size()));
-                if(possibleValttiCards.contains(candidate)) {
-                    this.valttiCard = this.deck.removeCard(candidate);
+                if(possibleTrumpCards.contains(candidate)) {
+                    this.trumpCard = this.deck.removeCard(candidate);
                     break;
                 }
             }
         }
-        if(this.valttiCard.getSuit() == JOKER) {
-            this.valtti = this.valttiCard.getRank() == BLACK ? SPADES : HEARTS;
+        if(this.trumpCard.getSuit() == JOKER) {
+            this.trump = this.trumpCard.getRank() == BLACK ? SPADES : HEARTS;
         } else {
-            this.valtti = this.valttiCard.getSuit();
+            this.trump = this.trumpCard.getSuit();
         }
         //yhteinen tai väkyri
         if(     players.stream().anyMatch(player -> player.getExtraCard() != null) ||
-                this.valttiCard.getSuit() == JOKER || this.valttiCard.getRank() == JACK
+                this.trumpCard.getSuit() == JOKER || this.trumpCard.getRank() == JACK
         ) {
-            this.dealer.setExtraCard(this.valttiCard);
+            this.dealer.setExtraCard(this.trumpCard);
             this.dealer.setDeclaredPlayer(true);
-            this.valttiCard = null;
+            this.trumpCard = null;
             this.data.forcedGame = true;
-        } else if (this.valttiCard.getRank() == TWO || this.valttiCard.getRank() == ACE) {
-            this.dealer.hideCards(this.valttiCard.getRank() == TWO ? 2 : 3);
-            this.dealer.setExtraCard(this.valttiCard);
-            this.valttiCard = null;
+        } else if (this.trumpCard.getRank() == TWO || this.trumpCard.getRank() == ACE) {
+            this.dealer.hideCards(this.trumpCard.getRank() == TWO ? 2 : 3);
+            this.dealer.setExtraCard(this.trumpCard);
+            this.trumpCard = null;
         }
         this.data.canDeal = false;
         this.cutCard = null;
         this.secondCutCard = null;
         this.data.speaking = true;
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException(String.format("'%s' ei löytynyt pelaajista", user.getNickname())));
         Player nextPlayer = player.getNext(this.players.size());
-        setCardPlayer(nextPlayer);
+        this.setCardPlayer(nextPlayer);
         this.firstPlayerOfRound = nextPlayer;
     }
 
@@ -259,18 +260,18 @@ public class Game {
                 Card secondAfterCut = second != null ? this.deck.removeCard(second) : this.deck.remove(RandomUtil.getInt(this.deck.size()));
                 this.secondCutCard = secondAfterCut;
                 if (secondAfterCut.getRank() == JACK || secondAfterCut.getSuit() == JOKER) {
-                    this.data.message = String.format("\nUusi nosto, %s voi kieltäytyä nostamasta", cutter.getNickname());
+                    this.data.messages.add(String.format("Uusi nosto, %s voi kieltäytyä nostamasta", cutter.getNickname()));
                     this.data.canDeclineCut = true;
                     return;
                 }
-                Player cutterPlayer = getPlayer(cutter.getEmail()).orElseThrow(() -> new KirvesGameException("Nostajaa ei löydy pelaajista"));
+                Player cutterPlayer = this.getPlayer(cutter.getEmail()).orElseThrow(() -> new KirvesGameException("Nostajaa ei löydy pelaajista"));
                 cutterPlayer.setExtraCard(this.cutCard);
                 this.data.forcedGame = true;
             }
         } else {
-            this.data.message = String.format("%s kieltäytyi nostosta", cutter.getNickname());
+            this.data.messages.add(String.format("%s kieltäytyi nostosta", cutter.getNickname()));
         }
-        getPlayersStartingFrom(this.dealer.getUserEmail()).forEach(player -> {
+        this.getPlayersStartingFrom(this.dealer.getUserEmail()).forEach(player -> {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
             player.getPlayedCards().clear();
@@ -284,112 +285,112 @@ public class Game {
     }
 
     public void cut(User cutter, boolean decline) throws CardException, KirvesGameException {
-        cut(cutter, decline, null, null);
+        this.cut(cutter, decline, null, null);
     }
 
     public void aceOrTwoDecision(User user, boolean keepExtraCard) throws KirvesGameException {
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         if(keepExtraCard) {
             this.data.speaking = false;
         } else {
-            this.valttiCard = player.getExtraCard();
+            this.trumpCard = player.getExtraCard();
             player.setExtraCard(null);
         }
         player.moveInvisibleCardsToHand();
-        setCardPlayer(this.dealer.getNext(this.players.size()));
+        this.setCardPlayer(this.dealer.getNext(this.players.size()));
     }
 
     public void discard(User user, int index) throws KirvesGameException, CardException {
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.discard(index);
         //anyone discarding is always declared player
         player.setDeclaredPlayer(true);
-        setCardPlayer(this.dealer.getNext(this.players.size()));
+        this.setCardPlayer(this.dealer.getNext(this.players.size()));
     }
 
     public void speak(User user, Speak speak) throws KirvesGameException {
         if(speak == null) throw new KirvesGameException("Puhe ei voi olla tyhjä (null)");
 
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         if(speak == KEEP) {
             player.setDeclaredPlayer(true);
             player.setSpeak(KEEP);
             this.data.speaking = false;
-            setCardPlayer(this.firstPlayerOfRound);
+            this.setCardPlayer(this.firstPlayerOfRound);
         } else {
             player.setSpeak(speak);
             Player next = player.getNext(this.players.size());
             if(this.firstPlayerOfRound.equals(next)) {
-                Optional<Player> changer = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
+                Optional<Player> changer = this.getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail()).stream()
                         .filter(s -> s.getSpeak() == CHANGE)
                         .findFirst();
                 if(changer.isPresent()) {
                     player.resetAvailableActions();
                     changer.get().setAvailableActions(List.of(SPEAK_SUIT));
                 } else {
-                    startNextRound();
+                    this.startNextRound();
                 }
             } else {
-                setCardPlayer(next);
+                this.setCardPlayer(next);
             }
         }
     }
 
     public void speakSuit(User user, Card.Suit suit) throws KirvesGameException {
-        if(suit == null) throw new KirvesGameException("Valtti ei voi olla tyhjä (null)");
-        if(suit == this.valtti) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
+        if(suit == null) throw new KirvesGameException("Valttimaa ei voi olla tyhjä (null)");
+        if(suit == this.trump) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
 
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.setDeclaredPlayer(true);
-        this.valtti = suit;
-        this.valttiCard = null;
+        this.trump = suit;
+        this.trumpCard = null;
         this.data.speaking = false;
-        setCardPlayer(this.firstPlayerOfRound);
+        this.setCardPlayer(this.firstPlayerOfRound);
     }
 
     public void playCard(User user, int index) throws KirvesGameException, CardException {
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.playCard(index);
-        setCardPlayer(player.getNext(this.players.size()));
-        determinePossibleRoundWinner();
+        this.setCardPlayer(player.getNext(this.players.size()));
+        this.determinePossibleRoundWinner();
     }
 
     public void fold(User user) throws KirvesGameException {
-        Player player = getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.fold();
         if(this.firstPlayerOfRound.equals(player)) {
             this.firstPlayerOfRound = player.getNext(this.players.size());
         }
-        setCardPlayer(player.getNext(this.players.size()));
-        determinePossibleRoundWinner();
-        this.data.message = String.format("%s meni pakkaan", user.getNickname());
+        this.setCardPlayer(player.getNext(this.players.size()));
+        this.determinePossibleRoundWinner();
+        this.data.messages.add(String.format("%s meni pakkaan", user.getNickname()));
     }
 
     private void determinePossibleRoundWinner() throws KirvesGameException {
-        List<Player> players = getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
+        List<Player> players = this.getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
         if(players.size() == 0) throw new KirvesGameException("Virhe: 0 pelaajaa jäljellä");
         if(players.size() == 1) {
             Player winner = players.get(0);
-            handleScoring(Set.of(winner.getUserEmail()));
+            this.handleScoring(Set.of(winner.getUserEmail()));
         } else if(this.turn.equals(this.firstPlayerOfRound)) {
             List<Card> playedCards = players.stream()
                     .map(Player::getLastPlayedCard)
                     .collect(toList());
 
-            Card winningCard = winningCard(playedCards, this.valtti);
+            Card winningCard = winningCard(playedCards, this.trump);
             Player roundWinner = players.stream()
                     .filter(playerItem -> winningCard.equals(playerItem.getLastPlayedCard()))
                     .findFirst().orElseThrow(() -> new KirvesGameException("Voittokorttia ei löytynyt pelatuista korteista"));
             roundWinner.addRoundWon();
 
             if(roundWinner.cardsInHand() != 0) {
-                setCardPlayer(roundWinner);
+                this.setCardPlayer(roundWinner);
                 this.firstPlayerOfRound = roundWinner;
             }
             else {
                 Player handWinner = determineHandWinner(players);
                 Set<String> winners = determineScoringWinners(players, handWinner);
-                handleScoring(winners);
+                this.handleScoring(winners);
             }
         }
     }
@@ -417,24 +418,24 @@ public class Game {
     }
 
     private void handleScoring(Set<String> winners) throws KirvesGameException {
-        this.data.message = String.format("Voittajat: %s", String.join(",", winners));
+        this.data.messages.add(String.format("Voittajat: %s", String.join(",", winners)));
         for(String winner : winners) {
-            Player player = getPlayer(winner).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+            Player player = this.getPlayer(winner).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
             ScorePOJO previousScore = this.data.scores.get(player.getUserEmail());
             previousScore.score++;
             if(previousScore.score == 3) {
                 player.inactivate();
             }
         }
-        startNextRound();
-        if(getNumberOfPlayers(true) < 2) {
+        this.startNextRound();
+        if(this.getNumberOfPlayers(true) < 2) {
             this.data.scoresHistory.add(this.data.scores);
-            this.data.scores = new HashMap<>();
+            this.data.scores.clear();
             this.players.forEach(player -> {
                 player.activate();
                 this.data.scores.put(player.getUserEmail(), new ScorePOJO(player.getUserNickname(), 0));
             });
-            setDealer(this.dealer);
+            this.setDealer(this.dealer);
         }
     }
 
@@ -442,14 +443,14 @@ public class Game {
         this.players.stream()
                 .filter(Player::isFolded)
                 .forEach(Player::activate);
-        setDealer(this.dealer.getNext(this.players.size()));
+        this.setDealer(this.dealer.getNext(this.players.size()));
     }
 
     private List<Player> getPlayersStartingFrom(String userEmail) throws KirvesGameException {
         if(userEmail == null) {
             return this.players;
         }
-        Player item = getPlayer(userEmail).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        Player item = this.getPlayer(userEmail).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         return getPlayersStartingFrom(item, userEmail, this.players.size());
     }
 
@@ -473,7 +474,7 @@ public class Game {
 
     private void setCardPlayer(Player player) throws KirvesGameException {
         this.resetActions();
-        Optional<Player> needsToDiscard = getPlayersStartingFrom(player.getUserEmail()).stream()
+        Optional<Player> needsToDiscard = this.getPlayersStartingFrom(player.getUserEmail()).stream()
                 .filter(item -> item.getExtraCard() != null)
                 .findFirst();
         if(this.dealer.hasInvisibleCards()) {
@@ -493,23 +494,23 @@ public class Game {
                 this.turn.setAvailableActions(List.of(SPEAK));
             }
             else {
-                this.turn.setAvailableActions(canFold(this.turn, this.valtti, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
+                this.turn.setAvailableActions(canFold(this.turn, this.trump, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
             }
         }
     }
 
-    public static boolean canFold(Player player, Card.Suit valtti, int numberOfPlayers) {
-        if(numberOfPlayers < 2 || valtti == null || player.isDeclaredPlayer()) return false;
+    public static boolean canFold(Player player, Card.Suit trump, int numberOfPlayers) {
+        if(numberOfPlayers < 2 || trump == null || player.isDeclaredPlayer()) return false;
         if(player.cardsInHand() == 5) return true;
-        return player.getHand().hasValtti(valtti);
+        return player.getHand().hasTrump(trump);
     }
 
     private void setDealer(Player dealer) throws KirvesGameException {
-        getPlayersStartingFrom(dealer.getUserEmail()).forEach(Player::clearHand);
+        this.getPlayersStartingFrom(dealer.getUserEmail()).forEach(Player::clearHand);
         this.dealer = dealer;
         this.data.canDeal = false;
-        this.valttiCard = null;
-        this.valtti = null;
+        this.trumpCard = null;
+        this.trump = null;
         this.data.speaking = false;
         this.data.forcedGame = false;
         this.data.canDeclineCut = false;
@@ -558,12 +559,12 @@ public class Game {
         }
     }
 
-    public static Card winningCard(List<Card> playedCards, Card.Suit valtti) {
+    public static Card winningCard(List<Card> playedCards, Card.Suit trump) {
         int leader = 0;
         for(int i = 1; i < playedCards.size(); i++) {
             Card leaderCard = playedCards.get(leader);
             Card candidate = playedCards.get(i);
-            if(candidateWins(leaderCard, candidate, valtti)) {
+            if(candidateWins(leaderCard, candidate, trump)) {
                 leader = i;
             }
         }
@@ -584,30 +585,26 @@ public class Game {
                 .findFirst();
     }
 
-    private static boolean candidateWins(Card leader, Card candidate, Card.Suit valtti) {
+    private static boolean candidateWins(Card leader, Card candidate, Card.Suit trump) {
         int leaderRank = getConvertedRank(leader);
         int candidateRank = getConvertedRank(candidate);
-        Card.Suit leaderSuit = leader.getSuit().equals(JOKER) || leader.getRank().equals(JACK) ? valtti : leader.getSuit();
-        Card.Suit candidateSuit = candidate.getSuit().equals(JOKER) || candidate.getRank().equals(JACK) ? valtti : candidate.getSuit();
+        Card.Suit leaderSuit = leader.getSuit() == JOKER || leader.getRank() == JACK ? trump : leader.getSuit();
+        Card.Suit candidateSuit = candidate.getSuit() == JOKER || candidate.getRank() == JACK ? trump : candidate.getSuit();
 
-        if(candidateSuit.equals(valtti) && !leaderSuit.equals(valtti)) {
+        if(candidateSuit == trump && leaderSuit != trump) {
             return true;
         }
-        else return candidateSuit.equals(leaderSuit) &&
+        else return candidateSuit == leaderSuit &&
                 candidateRank > leaderRank;
     }
 
     private static int getConvertedRank(Card card) {
-        if(card.getRank().equals(JACK)) {
+        if(card.getRank() == JACK) {
             switch (card.getSuit()) {
-                case DIAMONDS:
-                    return 15;
-                case HEARTS:
-                    return 16;
-                case SPADES:
-                    return 17;
-                case CLUBS:
-                    return 18;
+                case DIAMONDS: return 15;
+                case HEARTS: return 16;
+                case SPADES: return 17;
+                case CLUBS: return 18;
             }
         }
         return card.getRank().getValue();
@@ -617,27 +614,29 @@ public class Game {
         return this.players.stream().anyMatch(player -> user.getEmail().equals(player.getUserEmail()));
     }
 
+    //Get last message. Kept for backwards compatibility (message refactored to messages list)
     public String getMessage() {
-        return this.data.message;
+        if(this.data.messages.isEmpty()) return "";
+        return this.data.messages.get(this.data.messages.size() - 1);
     }
 
     public Card getCutCard() {
         return this.cutCard;
     }
 
-    public Card.Suit getValtti() {
-        return this.valtti;
+    public Card.Suit getTrump() {
+        return this.trump;
     }
 
     public Card getExtraCard(User user) {
         if(user == null) return null;
-        return getPlayer(user.getEmail())
+        return this.getPlayer(user.getEmail())
                 .map(Player::getExtraCard)
                 .orElse(null);
     }
 
     public int getNumberOfPlayers() {
-        return getNumberOfPlayers(false);
+        return this.getNumberOfPlayers(false);
     }
 
     private int getNumberOfPlayers(boolean onlyActive) {
@@ -676,8 +675,8 @@ public class Game {
                 && this.turn.equals(other.turn)
                 && this.dealer.equals(other.dealer)
                 && (this.firstPlayerOfRound == null || this.firstPlayerOfRound.equals(other.firstPlayerOfRound))
-                && this.valttiCard == other.valttiCard
-                && this.valtti == other.valtti
+                && this.trumpCard == other.trumpCard
+                && this.trump == other.trump
                 && (this.cutCard == null || this.cutCard.equals(other.cutCard))
                 && (this.secondCutCard == null || this.secondCutCard.equals(other.secondCutCard));
     }

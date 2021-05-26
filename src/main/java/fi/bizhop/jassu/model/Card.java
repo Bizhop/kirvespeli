@@ -12,34 +12,34 @@ public class Card implements Comparable<Card> {
     private final Suit SUIT;
     private final Rank RANK;
 
-    private static final Map<String, Suit> SUITS_BY_ABBR =
-            Arrays.stream(Suit.values()).collect(toMap(Suit::getAbbr, Function.identity()));
-    private static final Map<String, Rank> RANKS_BY_ABBR =
-            Arrays.stream(Rank.values()).collect(toMap(Rank::getAbbr, Function.identity()));;
+    private static final Map<String, Suit> SUITS_BY_ABBREVIATION =
+            Arrays.stream(Suit.values()).collect(toMap(Suit::getAbbreviation, Function.identity()));
+    private static final Map<String, Rank> RANKS_BY_ABBREVIATION =
+            Arrays.stream(Rank.values()).collect(toMap(Rank::getAbbreviation, Function.identity()));
 
 
     public Suit getSuit() {
-        return SUIT;
+        return this.SUIT;
     }
 
     public Rank getRank() {
-        return RANK;
+        return this.RANK;
     }
 
     public Card(Suit suit, Rank rank) throws CardException {
-        if(suit == Suit.JOKER && rank.value < 15) {
+        if(suit == Suit.JOKER && rank.VALUE < 15) {
             throw new CardException("Joker must be rank 15 or 16");
         }
         this.SUIT = suit;
         this.RANK = rank;
     }
 
-    public static Card fromAbbr(String abbr) throws CardException {
-        if(abbr == null || abbr.isEmpty()) return null;
-        if(abbr.length() != 2) throw new CardException("Invalid abbr");
-        Suit suit = SUITS_BY_ABBR.get(abbr.substring(1));
-        Rank rank = RANKS_BY_ABBR.get(abbr.substring(0, 1));
-        if(suit == null || rank == null) throw new CardException("Invalid abbr");
+    public static Card fromAbbreviation(String abbreviation) throws CardException {
+        if(abbreviation == null || abbreviation.isEmpty()) return null;
+        if(abbreviation.length() != 2) throw new CardException("Invalid abbreviation");
+        Suit suit = SUITS_BY_ABBREVIATION.get(abbreviation.substring(1));
+        Rank rank = RANKS_BY_ABBREVIATION.get(abbreviation.substring(0, 1));
+        if(suit == null || rank == null) throw new CardException("Invalid abbreviation");
         return new Card(suit, rank);
     }
 
@@ -61,7 +61,7 @@ public class Card implements Comparable<Card> {
 
     @Override
     public String toString() {
-        return this.RANK.abbr + this.SUIT.abbr;
+        return this.RANK.ABBREVIATION + this.SUIT.ABBREVIATION;
     }
 
     public enum Suit {
@@ -71,23 +71,23 @@ public class Card implements Comparable<Card> {
         SPADES(4, "S"),
         JOKER(5, "J");
 
-        private final int value;
-        private final String abbr;
+        private final int VALUE;
+        private final String ABBREVIATION;
 
-        Suit(int value, String abbr) {
-            this.value = value;
-            this.abbr = abbr;
+        Suit(int value, String abbreviation) {
+            this.VALUE = value;
+            this.ABBREVIATION = abbreviation;
         }
 
-        public static Suit fromAbbr(String abbr) {
-            if(abbr == null || abbr.isEmpty()) return null;
-            return SUITS_BY_ABBR.get(abbr);
+        public static Suit fromAbbreviation(String abbreviation) {
+            if(abbreviation == null || abbreviation.isEmpty()) return null;
+            return SUITS_BY_ABBREVIATION.get(abbreviation);
         }
 
         public int getValue() {
-            return this.value;
+            return this.VALUE;
         }
-        public String getAbbr() { return this.abbr; }
+        public String getAbbreviation() { return this.ABBREVIATION; }
     }
 
     public enum Rank {
@@ -111,17 +111,17 @@ public class Card implements Comparable<Card> {
         BLACK(19, "B"),
         RED(20, "R");
 
-        private final int value;
-        private final String abbr;
+        private final int VALUE;
+        private final String ABBREVIATION;
 
-        Rank(int value, String abbr) {
-            this.value = value;
-            this.abbr = abbr;
+        Rank(int value, String abbreviation) {
+            this.VALUE = value;
+            this.ABBREVIATION = abbreviation;
         }
 
         public int getValue() {
-            return value;
+            return this.VALUE;
         }
-        public String getAbbr() { return this.abbr; }
+        public String getAbbreviation() { return this.ABBREVIATION; }
     }
 }

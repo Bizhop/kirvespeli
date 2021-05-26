@@ -12,6 +12,6 @@ public class MessageService {
     }
 
     public void send(String topic, String message) {
-        simpMessagingTemplate.convertAndSend(topic, message);
+        this.simpMessagingTemplate.convertAndSend(topic, message);
     }
 }

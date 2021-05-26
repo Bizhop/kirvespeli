@@ -6,6 +6,7 @@ import java.util.Map;
 public class GameOut {
     private List<PlayerOut> players;
     private String message;
+    private List<String> messages;
     private int cardsInDeck;
     private String turn;
     private String dealer;
@@ -14,8 +15,8 @@ public class GameOut {
     private List<String> myAvailableActions;
     private boolean canJoin;
     private boolean canDeclineCut;
-    private String valttiKortti;
-    private String valtti;
+    private String trumpCard;
+    private String trump;
     private String cutCard;
     private String secondCutCard;
     private Long id;
@@ -34,9 +35,10 @@ public class GameOut {
                    String myExtraCard,
                    List<String> myAvailableActions,
                    String message,
+                   List<String> messages,
                    boolean canJoin,
-                   String valttiKortti,
-                   String valtti,
+                   String trumpCard,
+                   String trump,
                    boolean canDeclineCut,
                    String cutCard,
                    String secondCutCard,
@@ -52,9 +54,10 @@ public class GameOut {
         this.myExtraCard = myExtraCard;
         this.myAvailableActions = myAvailableActions;
         this.message = message;
+        this.messages = messages;
         this.canJoin = canJoin;
-        this.valttiKortti = valttiKortti;
-        this.valtti = valtti;
+        this.trumpCard = trumpCard;
+        this.trump = trump;
         this.canDeclineCut = canDeclineCut;
         this.cutCard = cutCard;
         this.secondCutCard = secondCutCard;
@@ -65,63 +68,63 @@ public class GameOut {
     }
 
     public List<PlayerOut> getPlayers() {
-        return players;
+        return this.players;
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
-    public int getCardsInDeck() { return cardsInDeck; }
+    public int getCardsInDeck() { return this.cardsInDeck; }
 
     public String getTurn() {
-        return turn;
+        return this.turn;
     }
 
     public String getDealer() {
-        return dealer;
+        return this.dealer;
     }
 
     public List<String> getMyCardsInHand() {
-        return myCardsInHand;
+        return this.myCardsInHand;
     }
 
     public boolean getCanJoin() {
-        return canJoin;
+        return this.canJoin;
     }
 
-    public String getValtti() { return valtti; }
+    public String getTrump() { return this.trump; }
 
-    public String getValttiKortti() {
-        return valttiKortti;
+    public String getTrumpCard() {
+        return this.trumpCard;
     }
 
     public int getNumOfPlayedRounds() {
-        if(players == null) {
+        if(this.players == null) {
             return 0;
         }
 
-        return players.stream().mapToInt(playerOut -> playerOut.getRoundsWon().size()).sum();
+        return this.players.stream().mapToInt(playerOut -> playerOut.getRoundsWon().size()).sum();
     }
 
     public List<String> getMyAvailableActions() {
-        return myAvailableActions;
+        return this.myAvailableActions;
     }
 
     public String getMyExtraCard() {
-        return myExtraCard;
+        return this.myExtraCard;
     }
 
     public boolean isCanDeclineCut() {
-        return canDeclineCut;
+        return this.canDeclineCut;
     }
 
     public String getCutCard() {
-        return cutCard;
+        return this.cutCard;
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public GameOut setId(Long id) {
@@ -130,22 +133,26 @@ public class GameOut {
     }
 
     public Integer getPlayersTotal() {
-        return playersTotal;
+        return this.playersTotal;
     }
 
     public String getFirstCardSuit() {
-        return firstCardSuit;
+        return this.firstCardSuit;
     }
 
     public Map<String, Integer> getScores() {
-        return scores;
+        return this.scores;
     }
 
     public List<Map<String, Integer>> getScoresHistory() {
-        return scoresHistory;
+        return this.scoresHistory;
     }
 
     public String getSecondCutCard() {
-        return secondCutCard;
+        return this.secondCutCard;
+    }
+
+    public List<String> getMessages() {
+        return this.messages;
     }
 }

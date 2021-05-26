@@ -35,23 +35,23 @@ public class KirvesServiceTest {
 
     @Before
     public void setup() {
-        this.kirvesService = new KirvesService(null, kirvesGameRepo);
+        this.kirvesService = new KirvesService(null, this.kirvesGameRepo);
     }
 
     @Test
-    public void testInMemoryGames() throws CardException, KirvesGameException, IOException {
-        when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+    public void testInMemoryGames() throws CardException, KirvesGameException, IOException, TransactionException {
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
 
         this.kirvesService.getGame(0L);
         this.kirvesService.getGame(0L);
 
         //verify that db was called just once
-        verify(kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
+        verify(this.kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
     }
 
     @Test
     public void testTransactionSuccess() throws IOException, TransactionException, CardException, KirvesGameException, InterruptedException {
-        when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
 
         User user = getTestUser();
 
@@ -62,7 +62,7 @@ public class KirvesServiceTest {
         Game output = this.kirvesService.action(0L, input, user, 0);
 
         //verify data changed
-        KirvesGameDB originalDB = getTestGameDB();
+        KirvesGameDB originalDB = this.getTestGameDB();
         GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
         assertNotNull(originalPojo);
 
@@ -72,8 +72,8 @@ public class KirvesServiceTest {
     }
 
     @Test
-    public void testTransactionTimeout() throws IOException, CardException, KirvesGameException, InterruptedException {
-        when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+    public void testTransactionTimeout() throws IOException, CardException, KirvesGameException, InterruptedException, TransactionException {
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
 
         User user = getTestUser();
 
@@ -85,14 +85,14 @@ public class KirvesServiceTest {
             this.kirvesService.action(0L, input, user, 6 * 1000);
         } catch (TransactionException e) {
             //verify data didn't change
-            KirvesGameDB originalDB = getTestGameDB();
+            KirvesGameDB originalDB = this.getTestGameDB();
             GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
             assertNotNull(originalPojo);
 
             //make sure you get the inMemoryGame by checking the call wasn't made on DB
-            verify(kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
+            verify(this.kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
             Game game = this.kirvesService.getGame(0L);
-            verify(kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
+            verify(this.kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
 
             String json = game.toJson();
             GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
@@ -106,7 +106,7 @@ public class KirvesServiceTest {
 
     @Test
     public void testTransactionLock() throws IOException, InterruptedException {
-        when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
 
         Thread p1Thread = new Thread(() -> {
             User user = getTestUser();

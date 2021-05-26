@@ -12,25 +12,25 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class UserController {
-    final UserService userService;
-    final AuthService authService;
+    final UserService USER_SERVICE;
+    final AuthService AUTH_SERVICE;
 
     public UserController(UserService userService, AuthService authService) {
-        this.userService = userService;
-        this.authService = authService;
+        this.USER_SERVICE = userService;
+        this.AUTH_SERVICE = authService;
     }
 
     @RequestMapping(value = "/api/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody User update(   @RequestBody UserIn userIn,
                                         HttpServletRequest request,
                                         HttpServletResponse response) throws UserException {
-        String email = this.authService.getEmailFromJWT(request);
+        String email = this.AUTH_SERVICE.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            return userService.updateUser(email, userIn);
+            return this.USER_SERVICE.updateUser(email, userIn);
         }
     }
 }

@@ -18,7 +18,7 @@ import static fi.bizhop.jassu.model.poker.PokerHand.Type;
 
 public class PokerGame {
 
-    private Cards deck;
+    private final Cards deck;
     private Cards hand;
     private BigDecimal money;
     private List<Action> availableActions = List.of(Action.HOLD);
@@ -58,21 +58,20 @@ public class PokerGame {
     public List<Action> getAvailableActions() { return this.availableActions; }
 
     public String getPlayer() {
-        return player;
+        return this.player;
     }
 
     public void setPlayer(String player) {
         this.player = player;
     }
 
-    public PokerGame deal() throws CardException {
+    public void deal() throws CardException {
         this.hand = this.deck.deal(5);
-        this.evaluation = PokerHandEvaluator.evaluate(hand);
-        return this;
+        this.evaluation = PokerHandEvaluator.evaluate(this.hand);
     }
 
     public void stay(UserService userService) {
-        if(doubles == 0) {
+        if(this.doubles == 0) {
             this.money = this.money.multiply(multipliers.get(this.evaluation.type));
         }
         userService.modifyMoney(this.money, this.player);
@@ -92,8 +91,8 @@ public class PokerGame {
     }
 
     public void tryDouble(Action action, UserService userService) throws CardException {
-        if(doubles < 5) {
-            if(doubles == 0) {
+        if(this.doubles < 5) {
+            if(this.doubles == 0) {
                 this.hand.clear();
             }
             Card doubleCard = this.deck.deal(1).first();
@@ -104,9 +103,9 @@ public class PokerGame {
             }
             if((action == Action.DOUBLE_HIGH && doubleValue > 7) || action == Action.DOUBLE_LOW && doubleValue < 7 ) {
                 this.money = this.money.multiply(BigDecimal.valueOf(2));
-                doubles++;
-                if(doubles > 4) {
-                    stay(userService);
+                this.doubles++;
+                if(this.doubles > 4) {
+                    this.stay(userService);
                 }
             }
             else {
@@ -115,19 +114,19 @@ public class PokerGame {
             }
         }
         else {
-            stay(userService);
+            this.stay(userService);
         }
     }
 
     public void hold(List<Integer> parameters) throws CardException {
         this.hand.hold(parameters, this.getDeck());
-        this.evaluation = PokerHandEvaluator.evaluate(hand);
+        this.evaluation = PokerHandEvaluator.evaluate(this.hand);
         this.money = this.money.multiply(multipliers.get(this.evaluation.type));
         this.availableActions = this.money.equals(BigDecimal.valueOf(0)) ? new ArrayList<>() : List.of(Action.STAY, Action.DOUBLE_HIGH, Action.DOUBLE_LOW);
     }
 
     public PokerHand getEvaluation() {
-        return evaluation;
+        return this.evaluation;
     }
 
     public enum Action {

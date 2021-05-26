@@ -177,6 +177,7 @@ public class PokerHandEvaluator {
     }
 
     //return highest straight card value or 0 if not present
+    @SuppressWarnings("UnusedAssignment")
     public static int checkStraight(Cards cards) {
         final int MIN_HAND = 5;
         if(cards.size() < MIN_HAND) {

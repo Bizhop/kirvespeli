@@ -93,8 +93,8 @@
   "turn": "piispve@gmail.com",
   "dealer": "kirves.peli@gmail.com",
   "firstPlayerOfRound": "kirves.peli@gmail.com",
-  "valttiCard": "6H",
-  "valtti": "H",
+  "trumpCard": "6H",
+  "trump": "H",
   "cutCard": null,
   "scores": {
     "esko.ruuskanen68@gmail.com": { "nickname": "Alappo", "score":  3},
@@ -120,7 +120,7 @@
   ],
   "canJoin": false,
   "canDeal": false,
-  "message": "",
+  "messages": [],
   "forcedGame": false,
   "canDeclineCut": false,
   "speaking": false

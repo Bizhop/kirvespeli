@@ -15,13 +15,13 @@ public class Lottery {
     }
 
     public double doubleOrNothing(double wager) {
-        return anythingGoes(wager, 50);
+        return this.anythingGoes(wager, 50);
     }
 
     public double anythingGoes(double wager, int probability) {
         try {
             if(RandomUtil.win(probability)) {
-                return wager / probability * RETURN_PERCENTAGE;
+                return wager / probability * this.RETURN_PERCENTAGE;
             }
             else {
                 return 0.0d;

@@ -7,7 +7,7 @@ public class GameIn {
     public Game.Action action;
     public int index;
     public boolean keepExtraCard;
-    public Card.Suit valtti;
+    public Card.Suit suit;
     public boolean declineCut;
     public Game.Speak speak;
 }

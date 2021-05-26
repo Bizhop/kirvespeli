@@ -2,7 +2,6 @@ package fi.bizhop.jassu.util;
 
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
-import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,14 +16,14 @@ public class Transaction {
     private long startTime = 0;
 
     public synchronized void begin(User user, String rollbackState) throws TransactionException {
-        if(lockUser != null) {
-            if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
-            if(System.currentTimeMillis() > startTime + TX_TIMEOUT) {
-                LOG.warn(String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
+        if(this.lockUser != null) {
+            if(this.startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
+            if(System.currentTimeMillis() > this.startTime + TX_TIMEOUT) {
+                LOG.warn(String.format("Transaction has timed out for user: %s", this.lockUser.getEmail()));
                 throw new TransactionException(TIMEOUT);
             }
             else {
-                throw new TransactionException(LOCK, String.format("Transaction is locked for %s", lockUser.getEmail()));
+                throw new TransactionException(LOCK, String.format("Transaction is locked for %s", this.lockUser.getEmail()));
             }
         }
         this.lockUser = user;
@@ -33,9 +32,9 @@ public class Transaction {
     }
 
     public synchronized void check(User user) throws TransactionException {
-        if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
+        if(this.startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
         if(this.lockUser == null) throw new TransactionException(LOCK, "No lock when checking");
-        if(System.currentTimeMillis() > startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
+        if(System.currentTimeMillis() > this.startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", this.lockUser.getEmail()));
         if(!this.lockUser.equals(user)) throw new TransactionException(LOCK, "You don't have lock");
     }
 
@@ -51,9 +50,9 @@ public class Transaction {
     }
 
     public synchronized void end() throws TransactionException {
-        if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
+        if(this.startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
         if(this.lockUser == null) throw new TransactionException(LOCK, "No lock when ending");
-        if(System.currentTimeMillis() > startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
+        if(System.currentTimeMillis() > this.startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", this.lockUser.getEmail()));
         this.lockUser = null;
         this.rollbackState = null;
         this.startTime = 0;

@@ -18,14 +18,14 @@ import java.util.Optional;
 public class UserService {
     private static final Logger LOG = LogManager.getLogger(UserService.class);
 
-    final UserRepo userRepo;
+    final UserRepo USER_REPO;
 
     public UserService(UserRepo userRepo) {
-        this.userRepo = userRepo;
+        this.USER_REPO = userRepo;
     }
 
     public User get(String email) {
-        Optional<UserDB> user = userRepo.findByEmail(email);
+        Optional<UserDB> user = this.USER_REPO.findByEmail(email);
         if(user.isPresent()) {
             return new User(user.get());
         }
@@ -37,17 +37,17 @@ public class UserService {
 
     public void add(User user) {
         UserDB userDB = new UserDB(user);
-        userRepo.save(userDB);
+        this.USER_REPO.save(userDB);
     }
 
     /**
      * Modify users money. Use negative values to subtract
      */
     public void modifyMoney(BigDecimal value, String email) {
-        userRepo.findByEmail(email)
+        this.USER_REPO.findByEmail(email)
                 .ifPresent(u -> {
                     u.money = u.money.add(value);
-                    this.userRepo.save(u);
+                    this.USER_REPO.save(u);
                 });
     }
 
@@ -56,12 +56,12 @@ public class UserService {
     }
 
     public User updateUser(String email, UserIn userIn) throws UserException {
-        UserDB user = userRepo.findByEmail(email).orElse(null);
+        UserDB user = this.USER_REPO.findByEmail(email).orElse(null);
         if(user == null) throw new UserException("Käyttäjän tallennus epäonnistui");
 
         user.nickname = userIn.nickname;
         try {
-            UserDB updated = this.userRepo.save(user);
+            UserDB updated = this.USER_REPO.save(user);
             return new User(updated);
         } catch (DataIntegrityViolationException e) {
             throw new UserException("Nickname on jo käytössä");
@@ -71,6 +71,6 @@ public class UserService {
     }
 
     public UserDB get(User admin) {
-        return userRepo.findByEmail(admin.getEmail()).orElseThrow();
+        return this.USER_REPO.findByEmail(admin.getEmail()).orElseThrow();
     }
 }
