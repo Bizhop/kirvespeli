@@ -242,7 +242,6 @@ public class Game {
         Player nextPlayer = player.getNext(this.players.size());
         setCardPlayer(nextPlayer);
         this.firstPlayerOfRound = nextPlayer;
-        players.forEach(Player::resetWonRounds);
     }
 
     //use this method directly only when testing!
@@ -274,6 +273,7 @@ public class Game {
             player.resetAvailableActions();
             player.getPlayedCards().clear();
             player.setSpeak(null);
+            player.resetWonRounds();
         });
         this.dealer.setAvailableActions(List.of(DEAL));
         this.turn = this.dealer;
@@ -360,6 +360,7 @@ public class Game {
         }
         setCardPlayer(player.getNext(this.players.size()));
         determinePossibleRoundWinner();
+        this.data.message = String.format("%s meni pakkaan", user.getNickname());
     }
 
     private void determinePossibleRoundWinner() throws KirvesGameException {
