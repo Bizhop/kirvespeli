@@ -141,7 +141,7 @@ public class KirvesController {
             User me = this.userService.get(email);
             response.setStatus(HttpServletResponse.SC_OK);
             try {
-                GameOut out = this.kirvesService.action(id, in, me, 0).out(me);
+                GameOut out = this.kirvesService.action(id, in, me).out(me);
                 refresh(id);
                 return out;
             } catch (KirvesGameException e) {

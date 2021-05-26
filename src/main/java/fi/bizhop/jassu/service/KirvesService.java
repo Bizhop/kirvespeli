@@ -104,6 +104,10 @@ public class KirvesService {
         }
     }
 
+    public Game action(Long id, GameIn in, User user) throws CardException, TransactionException, InterruptedException, KirvesGameException {
+        return this.action(id, in, user, 0);
+    }
+
     //Use delay only for testing transaction timeout
     public Game action(Long id, GameIn in, User user, long delay) throws KirvesGameException, CardException, TransactionException, InterruptedException {
         if(in.action == null) throw new KirvesGameException("Toiminto ei voi olla tyhjä (null)");
