@@ -40,7 +40,7 @@ public class Game {
     private final GameDataPOJO data;
 
     public Game(GameDataPOJO pojo) throws CardException, KirvesGameException {
-        if(pojo == null) throw new KirvesGameException("Game data can't be null");
+        if(pojo == null) throw new KirvesGameException("GameDataPOJO ei voi olla tyhjä (null)");
         this.data = pojo;
         this.deck = Cards.fromAbbrs(pojo.deck);
 
@@ -87,7 +87,7 @@ public class Game {
         this.data.secondCutCard = this.secondCutCard == null ? null : this.secondCutCard.toString();
 
         return JsonUtil.getJson(this.data)
-                .orElseThrow(() -> new KirvesGameException("Unable to convert data to json"));
+                .orElseThrow(() -> new KirvesGameException("Muunnos GameDataPOJO -> json ei onnistunut"));
     }
 
     public GameOut out() throws KirvesGameException {
@@ -110,6 +110,8 @@ public class Game {
                 if(extraCard != null) {
                     myExtraCard = extraCard.toString();
                 }
+            } else {
+                user = null;
             }
         }
 

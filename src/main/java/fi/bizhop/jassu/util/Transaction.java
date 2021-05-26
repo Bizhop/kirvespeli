@@ -1,9 +1,8 @@
-package fi.bizhop.jassu.model.kirves;
+package fi.bizhop.jassu.util;
 
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
-import fi.bizhop.jassu.util.JsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +18,7 @@ public class Transaction {
 
     public synchronized void begin(User user, String rollbackState) throws TransactionException {
         if(lockUser != null) {
-            if(startTime == 0) throw new TransactionException(INTERNAL);
+            if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
             if(System.currentTimeMillis() > startTime + TX_TIMEOUT) {
                 LOG.warn(String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
                 throw new TransactionException(TIMEOUT);
@@ -34,24 +33,25 @@ public class Transaction {
     }
 
     public synchronized void check(User user) throws TransactionException {
-        if(startTime == 0) throw new TransactionException(INTERNAL);
+        if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
         if(this.lockUser == null) throw new TransactionException(LOCK, "No lock when checking");
         if(System.currentTimeMillis() > startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
         if(!this.lockUser.equals(user)) throw new TransactionException(LOCK, "You don't have lock");
     }
 
-    public synchronized GameDataPOJO rollback() throws TransactionException {
+    public synchronized <T> T rollback(Class<T> type) throws TransactionException {
+        if(this.rollbackState == null) throw new TransactionException(INTERNAL, "Unable to rollback, rollbackState is null");
         LOG.info(String.format("Perform rollback. User with lock was %s", this.lockUser.getEmail()));
         this.lockUser = null;
-        GameDataPOJO response = JsonUtil.getJavaObject(this.rollbackState, GameDataPOJO.class)
-                .orElseThrow(() -> new TransactionException(INTERNAL, "Unable to convert rollbackState to GameDataPOJO"));
+        T response = JsonUtil.getJavaObject(this.rollbackState, type)
+                .orElseThrow(() -> new TransactionException(INTERNAL, String.format("Unable to convert rollbackState to %s", type.getSimpleName())));
         this.rollbackState = null;
         this.startTime = 0;
         return response;
     }
 
     public synchronized void end() throws TransactionException {
-        if(startTime == 0) throw new TransactionException(INTERNAL);
+        if(startTime == 0) throw new TransactionException(INTERNAL, "No startTime set on transaction");
         if(this.lockUser == null) throw new TransactionException(LOCK, "No lock when ending");
         if(System.currentTimeMillis() > startTime + TX_TIMEOUT) throw new TransactionException(TIMEOUT, String.format("Transaction has timed out for user: %s", lockUser.getEmail()));
         this.lockUser = null;

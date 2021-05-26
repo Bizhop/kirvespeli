@@ -8,7 +8,7 @@ import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.Game;
-import fi.bizhop.jassu.model.kirves.Transaction;
+import fi.bizhop.jassu.util.Transaction;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
@@ -61,33 +61,25 @@ public class KirvesService {
 
     public List<GameBrief> getActiveGames() {
         List<KirvesGameDB> activeGames = this.kirvesGameRepo.findByActiveTrue();
-        if(activeGames != null) {
-            return activeGames.stream().map(GameBrief::new).collect(toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return activeGames == null
+                ? Collections.emptyList()
+                : activeGames.stream().map(GameBrief::new).collect(toList());
     }
 
-    public void joinGame(Long id, String email) throws KirvesGameException, CardException {
-        User player = this.userService.get(email);
-        if(player == null) {
-            throw new KirvesGameException("Tunnusta ei löytynyt");
-        } else {
-            Game game = this.getGame(id);
-            game.addPlayer(player);
-            this.saveGame(id, game);
-            LOG.info(String.format("Added player email=%s to game id=%d", player.getEmail(), id));
-        }
+    public void joinGame(Long id, User user) throws KirvesGameException, CardException {
+        Game game = this.getGame(id);
+        game.addPlayer(user);
+        this.saveGame(id, game);
+        LOG.info(String.format("Added player email=%s to game id=%d", user.getEmail(), id));
     }
 
     public Game getGame(Long id) throws KirvesGameException, CardException {
         Game fromMemory = this.inMemoryGames.get(id);
-        if(fromMemory != null) {
-            return fromMemory;
-        }
+        if(fromMemory != null) return fromMemory;
+
         KirvesGameDB game = this.getGameDB(id);
         GameDataPOJO pojo = JsonUtil.getJavaObject(game.gameData, GameDataPOJO.class)
-                .orElseThrow(() -> new KirvesGameException("Unable to convert gameData to KirvesGame"));
+                .orElseThrow(() -> new KirvesGameException("Muunnos json -> GameDataPOJO ei onnistunut"));
         Game deserializedGame = new Game(pojo);
         this.inMemoryGames.put(id, deserializedGame);
         return deserializedGame;
@@ -116,7 +108,7 @@ public class KirvesService {
             this.TX.begin(user, game.toJson());
         } catch (TransactionException e) {
             if(e.getType() == TIMEOUT) {
-                this.inMemoryGames.put(id, new Game(this.TX.rollback()));
+                this.inMemoryGames.put(id, new Game(this.TX.rollback(GameDataPOJO.class)));
                 this.TX.begin(user, game.toJson());
             } else {
                 throw e;
@@ -127,7 +119,7 @@ public class KirvesService {
         try {
             this.action(in, user, game);
         } catch (Exception e) {
-            this.inMemoryGames.put(id, new Game(this.TX.rollback()));
+            this.inMemoryGames.put(id, new Game(this.TX.rollback(GameDataPOJO.class)));
             throw e;
         }
         try {
@@ -135,7 +127,7 @@ public class KirvesService {
         } catch (TransactionException e) {
             //ending transaction failed, probably for timeout. Log and rollback;
             LOG.warn(String.format("Ending transaction failed (id=%d, user=%s, message=%s), rolling back", id, user.getEmail(), e.getMessage()));
-            this.inMemoryGames.put(id, new Game(this.TX.rollback()));
+            this.inMemoryGames.put(id, new Game(this.TX.rollback(GameDataPOJO.class)));
             throw new TransactionException(e.getType(), "Transaktion päättäminen epäonnistui. Edellinen tilanne palautettu.");
         }
         this.saveGame(id, game);
@@ -158,15 +150,21 @@ public class KirvesService {
         }
     }
 
-    public void inactivateGame(Long id, User me) throws KirvesGameException {
+    public void inactivateGame(Long id, User me) throws KirvesGameException, TransactionException {
+        this.TX.begin(me, null);
+        this.TX.check(me);
+
         KirvesGameDB game = this.getGameDB(id);
         if(me.getEmail().equals(game.admin.email)) {
             game.active = false;
             this.kirvesGameRepo.save(game);
+            this.inMemoryGames.remove(id);
             LOG.info(String.format("Inactivated game id=%d", id));
         } else {
             throw new KirvesGameException(String.format("Et voi poistaa peliä, %s ei ole pelin omistaja (gameId=%d)", me.getNickname(), id));
         }
+
+        this.TX.end();
     }
 
     private void saveGame(Long id, Game game) throws KirvesGameException {

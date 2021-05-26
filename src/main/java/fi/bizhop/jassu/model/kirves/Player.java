@@ -148,7 +148,7 @@ public class Player {
 
     public void discard(int index) throws KirvesGameException, CardException {
         if(extraCard == null) {
-            throw new KirvesGameException("Cannot discard without extra card");
+            throw new KirvesGameException("DISCARD ei onnistu: ei ylimääräistä korttia");
         }
         this.hand.remove(index);
         this.hand.add(this.extraCard);
