@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class GameOut {
     private List<PlayerOut> players;
-    private String message;
     private List<String> messages;
     private int cardsInDeck;
     private String turn;
@@ -24,6 +23,10 @@ public class GameOut {
     private String firstCardSuit;
     private Map<String, Integer> scores;
     private List<Map<String, Integer>> scoresHistory;
+
+    //TODO: remove when frontend is handling message as list
+    @Deprecated
+    private String message;
 
     public GameOut() {}
 
@@ -71,6 +74,8 @@ public class GameOut {
         return this.players;
     }
 
+    //TODO: remove when frontend is handling message as list
+    @Deprecated
     public String getMessage() {
         return this.message;
     }

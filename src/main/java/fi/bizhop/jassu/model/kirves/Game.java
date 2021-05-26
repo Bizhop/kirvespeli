@@ -123,7 +123,7 @@ public class Game {
                 myCards,
                 myExtraCard,
                 myActions,
-                this.getMessage(),
+                this.data.messages.isEmpty() ? "" : this.data.messages.get(this.data.messages.size() - 1),
                 this.data.messages,
                 this.data.canJoin,
                 this.trumpCard == null ? "" : this.trumpCard.toString(),
@@ -612,12 +612,6 @@ public class Game {
 
     public boolean hasPlayer(User user) {
         return this.players.stream().anyMatch(player -> user.getEmail().equals(player.getUserEmail()));
-    }
-
-    //Get last message. Kept for backwards compatibility (message refactored to messages list)
-    public String getMessage() {
-        if(this.data.messages.isEmpty()) return "";
-        return this.data.messages.get(this.data.messages.size() - 1);
     }
 
     public Card getCutCard() {
