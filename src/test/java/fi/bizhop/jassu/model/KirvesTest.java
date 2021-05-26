@@ -387,8 +387,7 @@ public class KirvesTest {
     public void testFoldingEndsRound() throws CardException, KirvesGameException {
         Game game = getTestGame(List.of(TEST_USERS.get(0), TEST_USERS.get(1)));
 
-        User cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
-        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.cut(TEST_USERS.get(1), false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
         game.speak(TEST_USERS.get(1), KEEP);
         game.playCard(TEST_USERS.get(1), 0);
@@ -396,7 +395,7 @@ public class KirvesTest {
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
         game.fold(TEST_USERS.get(0));
 
-        assertEquals("Voittajat: test1@example.com", game.getMessage());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), CUT));
     }
 
     @Test
