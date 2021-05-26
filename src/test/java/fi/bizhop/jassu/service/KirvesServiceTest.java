@@ -50,7 +50,7 @@ public class KirvesServiceTest {
     }
 
     @Test
-    public void testTransactionSuccess() throws IOException, TransactionException, CardException, KirvesGameException {
+    public void testTransactionSuccess() throws IOException, TransactionException, CardException, KirvesGameException, InterruptedException {
         when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         User user = getTestUser();
@@ -72,7 +72,7 @@ public class KirvesServiceTest {
     }
 
     @Test
-    public void testTransactionTimeout() throws IOException, CardException, KirvesGameException {
+    public void testTransactionTimeout() throws IOException, CardException, KirvesGameException, InterruptedException {
         when(kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         User user = getTestUser();
