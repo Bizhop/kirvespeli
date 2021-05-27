@@ -18,16 +18,16 @@ public class AuthService {
     }
 
     public User login(HttpServletRequest request) {
-        String userEmail = getEmail(request);
+        String userEmail = this.getEmail(request);
         if(userEmail == null) {
             return null;
         }
         else {
-            User user = userService.get(userEmail);
+            User user = this.userService.get(userEmail);
             if(user == null) {
                 String jwt = JWTAuth.getJwt(userEmail);
                 user = new User(userEmail, jwt);
-                userService.add(user);
+                this.userService.add(user);
             }
             else {
                 String token = request.getHeader(HEADER_STRING);

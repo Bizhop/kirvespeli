@@ -40,7 +40,7 @@ public class PokerGameOut {
     }
 
     public List<String> getHand() {
-        return hand;
+        return this.hand;
     }
 
     public void setHand(List<String> hand) {
@@ -48,7 +48,7 @@ public class PokerGameOut {
     }
 
     public List<Action> getAvailableActions() {
-        return availableActions;
+        return this.availableActions;
     }
 
     public void setAvailableActions(List<Action> availableActions) {
@@ -56,7 +56,7 @@ public class PokerGameOut {
     }
 
     public BigDecimal getMoney() {
-        return money;
+        return this.money;
     }
 
     public void setMoney(BigDecimal money) {
@@ -64,7 +64,7 @@ public class PokerGameOut {
     }
 
     public String getHandValue() {
-        return handValue;
+        return this.handValue;
     }
 
     public void setHandValue(String handValue) {
@@ -72,7 +72,7 @@ public class PokerGameOut {
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     public void setMessage(String message) {
@@ -80,7 +80,7 @@ public class PokerGameOut {
     }
 
     public BigDecimal getUserMoney() {
-        return userMoney;
+        return this.userMoney;
     }
 
     public void setUserMoney(BigDecimal userMoney) {
@@ -88,7 +88,7 @@ public class PokerGameOut {
     }
 
     public List<MultiplierOut> getMultipliersTable() {
-        return multipliersTable;
+        return this.multipliersTable;
     }
 
     public void setMultipliersTable(List<MultiplierOut> multipliersTable) {

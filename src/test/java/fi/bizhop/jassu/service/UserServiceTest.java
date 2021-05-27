@@ -25,17 +25,17 @@ public class UserServiceTest {
 
     @Before
     public void setup() {
-        this.userService = new UserService(userRepo);
+        this.userService = new UserService(this.userRepo);
     }
 
     @Test
     public void testUserObject() {
-        when(userRepo.findByEmail(eq(TEST_USER_EMAIL))).thenReturn(Optional.of(getTestUserDB(TEST_USER_EMAIL)));
+        when(this.userRepo.findByEmail(eq(TEST_USER_EMAIL))).thenReturn(Optional.of(getTestUserDB(TEST_USER_EMAIL)));
 
-        User user = userService.get(TEST_USER_EMAIL);
+        User user = this.userService.get(TEST_USER_EMAIL);
         assertEquals(TEST_USER_EMAIL, user.getEmail());
 
-        User noUser = userService.get("other@example.com");
+        User noUser = this.userService.get("other@example.com");
         assertNull(noUser);
     }
 }

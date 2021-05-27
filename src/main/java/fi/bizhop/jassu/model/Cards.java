@@ -21,14 +21,14 @@ public class Cards {
         this.cards = cards;
     }
 
-    public static Cards fromAbbrs(List<String> abbrs) {
-        if(abbrs == null) return new Cards();
-        List<Card> cards = abbrs.stream()
-                .map(abbr -> {
+    public static Cards fromAbbreviations(List<String> abbreviations) {
+        if(abbreviations == null) return new Cards();
+        List<Card> cards = abbreviations.stream()
+                .map(abbreviation -> {
                     try {
-                        return Card.fromAbbr(abbr);
+                        return Card.fromAbbreviation(abbreviation);
                     } catch (CardException e) {
-                        LOG.warn(String.format("Unable to get card from abbr: %s", abbr));
+                        LOG.warn(String.format("Unable to get card from abbreviation: %s", abbreviation));
                         return null;
                     }
                 })
@@ -48,8 +48,8 @@ public class Cards {
     }
 
     public Cards deal(int quantity) throws CardException {
-        if(quantity > cards.size()) {
-            throw new CardException(String.format("Not enough cards: wanted %d, has %d", quantity, cards.size()));
+        if(quantity > this.cards.size()) {
+            throw new CardException(String.format("Not enough cards: wanted %d, has %d", quantity, this.cards.size()));
         }
         List<Card> given = new ArrayList<>();
         for(int i=0; i < quantity; i++) {
@@ -59,14 +59,14 @@ public class Cards {
     }
 
     public Card remove(int index) throws CardException {
-        if(index < 0 || index > cards.size() - 1) {
+        if(index < 0 || index > this.cards.size() - 1) {
             throw new CardException("Invalid card index");
         }
         return this.cards.remove(index);
     }
 
     public Card get(int index) throws CardException{
-        if(index < 0 || index > cards.size() - 1) {
+        if(index < 0 || index > this.cards.size() - 1) {
             throw new CardException("Invalid card index");
         }
         return this.cards.get(index);
@@ -74,8 +74,8 @@ public class Cards {
 
     @Override
     public String toString() {
-        return IntStream.range(0, cards.size())
-                .mapToObj(i -> String.format("%d:%s", i, cards.get(i).toString()))
+        return IntStream.range(0, this.cards.size())
+                .mapToObj(i -> String.format("%d:%s", i, this.cards.get(i).toString()))
                 .collect(Collectors.joining(", "));
     }
 
@@ -89,13 +89,13 @@ public class Cards {
             return 0;
         }
         this.sort();
-        return cards.get(0).getRank().getValue();
+        return this.cards.get(0).getRank().getValue();
     }
 
     //TODO: consider moving this logic to some poker specific class
     public void hold(List<Integer> params, Cards deck) throws CardException {
         //sanity check
-        if(params == null || params.size() > cards.size()) {
+        if(params == null || params.size() > this.cards.size()) {
             return;
         } else if (params.isEmpty()) {
             this.cards.clear();
@@ -103,11 +103,11 @@ public class Cards {
             return;
         }
         params.sort(Integer::compareTo);
-        if(params.get(0) < 0 || params.get(params.size() -1) > cards.size() - 1) {
+        if(params.get(0) < 0 || params.get(params.size() -1) > this.cards.size() - 1) {
             return;
         }
 
-        for(int i=0; i < cards.size(); i++) {
+        for(int i = 0; i < this.cards.size(); i++) {
             if(!params.contains(i)) {
                 this.cards.set(i, deck.deal(1).cards.get(0));
             }
@@ -160,7 +160,7 @@ public class Cards {
     }
 
     public long numOfSuit(Card.Suit suit) {
-        return cards.stream()
+        return this.cards.stream()
                 .filter(c -> c.getSuit() == suit)
                 .count();
     }
@@ -222,7 +222,7 @@ public class Cards {
         return true;
     }
 
-    public boolean hasValtti(Card.Suit valtti) {
-        return this.cards.stream().noneMatch(card -> card.getRank() == Card.Rank.JACK || List.of(valtti, Card.Suit.JOKER).contains(card.getSuit()));
+    public boolean hasTrump(Card.Suit trump) {
+        return this.cards.stream().noneMatch(card -> card.getRank() == Card.Rank.JACK || List.of(trump, Card.Suit.JOKER).contains(card.getSuit()));
     }
 }

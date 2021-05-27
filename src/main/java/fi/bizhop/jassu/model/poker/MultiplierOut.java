@@ -14,7 +14,7 @@ public class MultiplierOut implements Comparable<MultiplierOut> {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -22,7 +22,7 @@ public class MultiplierOut implements Comparable<MultiplierOut> {
     }
 
     public BigDecimal getValue() {
-        return value;
+        return this.value;
     }
 
     public void setValue(BigDecimal value) {

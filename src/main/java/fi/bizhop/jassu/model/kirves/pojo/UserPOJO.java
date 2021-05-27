@@ -12,7 +12,7 @@ public class UserPOJO {
     }
 
     public String getNickname() {
-        return nickname == null ? email : nickname;
+        return this.nickname == null ? this.email : this.nickname;
     }
 
     @Override

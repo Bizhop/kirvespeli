@@ -1,14 +1,8 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.exception.CardException;
-import fi.bizhop.jassu.model.Cards;
-import fi.bizhop.jassu.model.poker.PokerGame;
-import fi.bizhop.jassu.model.poker.PokerHand;
-import fi.bizhop.jassu.util.PokerHandEvaluator;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static fi.bizhop.jassu.model.poker.PokerHand.Type.*;
 import static org.mockito.Mockito.mock;
 
 public class PokerServiceTest {
@@ -23,38 +17,5 @@ public class PokerServiceTest {
     public void dummy() {
         PokerService service = new PokerService(userService);
         service.dummy();
-    }
-
-    //don't run this with builds (comment out next line always)
-    //@Test
-    public void testHand() throws CardException {
-        getHand(HIGH);
-        getHand(PAIR);
-        getHand(TWO_PAIRS);
-        getHand(THREE_OF_A_KIND);
-        getHand(STRAIGHT);
-        getHand(FLUSH);
-        getHand(FULL_HOUSE);
-        getHand(FOUR_OF_A_KIND);
-        getHand(STRAIGHT_FLUSH);
-    }
-
-    private void getHand(PokerHand.Type type) throws CardException {
-        PokerService service = new PokerService(userService);
-        long time = System.currentTimeMillis();
-        int reps = 0;
-        boolean run = true;
-        while(run) {
-            reps++;
-            PokerGame game = service.newGame().deal();
-            Cards hand = game.getHand();
-            PokerHand ev = PokerHandEvaluator.evaluate(hand);
-            if(ev.type == type) {
-                System.out.println(ev);
-                System.out.println(hand);
-                System.out.printf("Reps: %d, time: %dms%n", reps, System.currentTimeMillis() - time);
-                run = false;
-            }
-        }
     }
 }

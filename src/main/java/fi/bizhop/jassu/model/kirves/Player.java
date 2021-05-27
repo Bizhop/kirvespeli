@@ -24,16 +24,16 @@ public class Player {
     /**
      * Recreate player from pojo data. Links previous if available.
      *
-     * @param pojo
-     * @param previous
-     * @throws CardException
+     * @param pojo PlayerPOJO
+     * @param previous previous Player
+     * @throws CardException if extra card cannot be created from abbreviation
      */
     public Player(PlayerPOJO pojo, Player previous) throws CardException {
         this.data = pojo;
-        this.hand.add(Cards.fromAbbrs(pojo.hand));
-        this.invisibleCards.add(Cards.fromAbbrs(pojo.invisibleCards));
-        this.extraCard = Card.fromAbbr(pojo.extraCard);
-        this.playedCards.add(Cards.fromAbbrs(pojo.playedCards));
+        this.hand.add(Cards.fromAbbreviations(pojo.hand));
+        this.invisibleCards.add(Cards.fromAbbreviations(pojo.invisibleCards));
+        this.extraCard = Card.fromAbbreviation(pojo.extraCard);
+        this.playedCards.add(Cards.fromAbbreviations(pojo.playedCards));
         if(previous != null) {
             this.previous = previous;
             this.previous.setNext(this);
@@ -42,7 +42,9 @@ public class Player {
 
     /**
      * Create new player linking to previous and next players
-     * @param user
+     * @param user UserPOJO
+     * @param next next Player
+     * @param previous previous Player
      */
     public Player(UserPOJO user, Player next, Player previous) {
         this.data = new PlayerPOJO(user);
@@ -54,7 +56,7 @@ public class Player {
 
     /**
      * Create new player (first) linking only to self
-     * @param user
+     * @param user UserPOJO
      */
     public Player(UserPOJO user) {
         this.data = new PlayerPOJO(user);
@@ -69,7 +71,7 @@ public class Player {
     }
 
     public String getUserNickname() {
-        return this.getUser() == null ? "" : getUser().getNickname();
+        return this.getUser() == null ? "" : this.getUser().getNickname();
     }
 
     public UserPOJO getUser() {
@@ -122,7 +124,7 @@ public class Player {
     }
 
     public Card getExtraCard() {
-        return extraCard;
+        return this.extraCard;
     }
 
     public Card getLastPlayedCard() {
@@ -147,8 +149,8 @@ public class Player {
     }
 
     public void discard(int index) throws KirvesGameException, CardException {
-        if(extraCard == null) {
-            throw new KirvesGameException("Cannot discard without extra card");
+        if(this.extraCard == null) {
+            throw new KirvesGameException("DISCARD ei onnistu: ei ylimääräistä korttia");
         }
         this.hand.remove(index);
         this.hand.add(this.extraCard);
@@ -205,7 +207,7 @@ public class Player {
     }
 
     public boolean isDeclaredPlayer() {
-        return data.declaredPlayer;
+        return this.data.declaredPlayer;
     }
 
     public void setDeclaredPlayer(boolean declaredPlayer) {
@@ -217,7 +219,7 @@ public class Player {
     }
 
     public boolean isInGame() {
-        return data.inGame;
+        return this.data.inGame;
     }
 
     public void activate() {

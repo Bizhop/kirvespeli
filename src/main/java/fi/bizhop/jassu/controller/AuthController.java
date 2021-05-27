@@ -19,8 +19,8 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/api/auth", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody User auth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        User user = authService.login(request);
+    public @ResponseBody User auth(HttpServletRequest request, HttpServletResponse response) {
+        User user = this.authService.login(request);
         if(user == null) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return null;
