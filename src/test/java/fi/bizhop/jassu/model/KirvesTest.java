@@ -500,21 +500,21 @@ public class KirvesTest {
         p1.setPrevious(p4);
         p4.setNext(p1);
 
-        Set<String> declaredPlayerWins = Game.determineScoringWinners(List.of(p1, p2, p3), p1);
+        Set<Player> declaredPlayerWins = Game.determineScoringWinners(List.of(p1, p2, p3), p1);
         assertEquals(1, declaredPlayerWins.size());
-        assertTrue(declaredPlayerWins.contains("first"));
+        assertTrue(declaredPlayerWins.contains(p1));
 
-        Set<String> declaredPlayerLoses = Game.determineScoringWinners(List.of(p1,p2,p3), p2);
+        Set<Player> declaredPlayerLoses = Game.determineScoringWinners(List.of(p1,p2,p3), p2);
         assertEquals(2, declaredPlayerLoses.size());
-        assertTrue(declaredPlayerLoses.containsAll(List.of("second", "third")));
+        assertTrue(declaredPlayerLoses.containsAll(List.of(p2, p3)));
 
-        Set<String> yhteinenDeclaredPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p1);
+        Set<Player> yhteinenDeclaredPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p1);
         assertEquals(3, yhteinenDeclaredPlayerWins.size());
-        assertTrue(yhteinenDeclaredPlayerWins.containsAll(List.of("first", "second", "third")));
+        assertTrue(yhteinenDeclaredPlayerWins.containsAll(List.of(p1,p2,p3)));
 
-        Set<String> yhteinenOtherPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p2);
+        Set<Player> yhteinenOtherPlayerWins = Game.determineScoringWinners(List.of(p1,p2,p3,p4), p2);
         assertEquals(2, yhteinenOtherPlayerWins.size());
-        assertTrue(yhteinenOtherPlayerWins.containsAll(List.of("second", "third")));
+        assertTrue(yhteinenOtherPlayerWins.containsAll(List.of(p2,p3)));
     }
 
     @Test
