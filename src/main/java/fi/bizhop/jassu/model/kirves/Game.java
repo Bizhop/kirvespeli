@@ -430,7 +430,7 @@ public class Game {
         }
         this.startNextRound();
         if(this.getNumberOfPlayers(true) < 2) {
-            this.data.scoresHistory.add(this.data.scores);
+            this.data.scoresHistory.add(new HashMap<>(this.data.scores));
             this.data.scores.clear();
             this.players.forEach(player -> {
                 player.activate();
