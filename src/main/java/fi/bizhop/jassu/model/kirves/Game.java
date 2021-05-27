@@ -371,7 +371,7 @@ public class Game {
         if(players.size() == 0) throw new KirvesGameException("Virhe: 0 pelaajaa jäljellä");
         if(players.size() == 1) {
             Player winner = players.get(0);
-            this.handleScoring(Set.of(winner.getUserEmail()));
+            this.handleScoring(Set.of(winner));
         } else if(this.turn.equals(this.firstPlayerOfRound)) {
             List<Card> playedCards = players.stream()
                     .map(Player::getLastPlayedCard)
@@ -389,18 +389,18 @@ public class Game {
             }
             else {
                 Player handWinner = determineHandWinner(players);
-                Set<String> winners = determineScoringWinners(players, handWinner);
+                Set<Player> winners = determineScoringWinners(players, handWinner);
                 this.handleScoring(winners);
             }
         }
     }
 
-    public static Set<String> determineScoringWinners(List<Player> players, Player handWinner) {
-        Set<String> winners = new HashSet<>();
+    public static Set<Player> determineScoringWinners(List<Player> players, Player handWinner) {
+        Set<Player> winners = new HashSet<>();
         for(Player player : players) {
             //case: player is handWinner
             if(player.equals(handWinner)) {
-                winners.add(player.getUserEmail());
+                winners.add(player);
             } else {
                 //case: other player didn't win as declared player
                 if(!player.isDeclaredPlayer()) {
@@ -408,7 +408,7 @@ public class Game {
                     otherPlayers.remove(player);
                     for (Player other : otherPlayers) {
                         if (other.isDeclaredPlayer() && !other.equals(handWinner)) {
-                            winners.add(player.getUserEmail());
+                            winners.add(player);
                         }
                     }
                 }
@@ -417,14 +417,15 @@ public class Game {
         return winners;
     }
 
-    private void handleScoring(Set<String> winners) throws KirvesGameException {
-        this.data.messages.add(String.format("Voittajat: %s", String.join(",", winners)));
-        for(String winner : winners) {
-            Player player = this.getPlayer(winner).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
-            ScorePOJO previousScore = this.data.scores.get(player.getUserEmail());
+    private void handleScoring(Set<Player> winners) throws KirvesGameException {
+        String label = winners.size() == 1 ? "Voittaja" : "Voittajat";
+        List<String> winnerNicks = winners.stream().map(Player::getUserNickname).collect(toList());
+        this.data.messages.add(String.format("%s: %s", label, String.join(",", winnerNicks)));
+        for(Player winner : winners) {
+            ScorePOJO previousScore = this.data.scores.get(winner.getUserEmail());
             previousScore.score++;
             if(previousScore.score == 3) {
-                player.inactivate();
+                winner.inactivate();
             }
         }
         this.startNextRound();
