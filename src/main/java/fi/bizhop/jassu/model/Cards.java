@@ -222,7 +222,7 @@ public class Cards {
         return true;
     }
 
-    public boolean hasTrump(Card.Suit trump) {
+    public boolean hasNoTrumpCard(Card.Suit trump) {
         return this.cards.stream().noneMatch(card -> card.getRank() == Card.Rank.JACK || List.of(trump, Card.Suit.JOKER).contains(card.getSuit()));
     }
 }
