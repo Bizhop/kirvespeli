@@ -495,15 +495,21 @@ public class Game {
                 this.turn.setAvailableActions(List.of(SPEAK));
             }
             else {
-                this.turn.setAvailableActions(canFold(this.turn, this.trump, this.getNumberOfPlayers(true)) ? List.of(PLAY_CARD, FOLD) : List.of(PLAY_CARD));
+                this.turn.setAvailableActions(List.of(PLAY_CARD));
+
+                //set folding possibility to players
+                int numOfActivePlayers = this.getNumberOfPlayers(true);
+                this.getPlayersStartingFrom(player.getUserEmail()).stream()
+                        .filter(p -> canFold(p, this.firstPlayerOfRound, this.trump, numOfActivePlayers))
+                        .forEach(p -> p.addAvailableAction(FOLD));
             }
         }
     }
 
-    public static boolean canFold(Player player, Card.Suit trump, int numberOfPlayers) {
-        if(numberOfPlayers < 2 || trump == null || player.isDeclaredPlayer()) return false;
-        if(player.cardsInHand() == 5) return true;
-        return player.getHand().hasTrump(trump);
+    public static boolean canFold(Player player, Player firstPlayerOfRound, Card.Suit trump, int numberOfPlayers) {
+        if(numberOfPlayers < 2 || trump == null) return false;
+        if(player.cardsInHand() == 5) return !player.equals(firstPlayerOfRound);
+        return player.getHand().hasNoTrumpCard(trump);
     }
 
     private void setDealer(Player dealer) throws KirvesGameException {

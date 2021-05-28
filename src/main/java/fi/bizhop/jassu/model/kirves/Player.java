@@ -123,6 +123,11 @@ public class Player {
         this.data.availableActions.addAll(availableActions);
     }
 
+    public void addAvailableAction(Game.Action action) {
+        if(action == null) return;
+        this.data.availableActions.add(action);
+    }
+
     public Card getExtraCard() {
         return this.extraCard;
     }

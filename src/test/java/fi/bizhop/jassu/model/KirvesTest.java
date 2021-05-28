@@ -593,27 +593,39 @@ public class KirvesTest {
 
     @Test
     public void testCanFold() throws CardException {
-        PlayerPOJO pojo = new PlayerPOJO();
-        pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
-        Player player = new Player(pojo, null);
+        PlayerPOJO p1pojo = new PlayerPOJO();
+        p1pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
+        p1pojo.user = new UserPOJO("p1", "p1");
+
+        PlayerPOJO p2pojo = new PlayerPOJO();
+        p2pojo.hand = List.of("4C", "7C", "TC", "KS", "AS");
+        p2pojo.user = new UserPOJO("p2", "p2");
+
+        Player p1 = new Player(p1pojo, null);
+        Player p2 = new Player(p2pojo, p1);
+        p1.setPrevious(p2);
+        p2.setNext(p1);
 
         //should be able to fold: no cards played
-        assertTrue(Game.canFold(player, DIAMONDS, 4));
+        assertTrue(Game.canFold(p1, p2, DIAMONDS, 4));
 
-        pojo.hand = List.of("3H", "4S", "6C", "TH");
-        player = new Player(pojo, null);
+        p1pojo.hand = List.of("3H", "4S", "6C", "TH");
+        p1 = new Player(p1pojo, null);
 
         //should be able to fold: cards played, no valtti in hand
-        assertTrue(Game.canFold(player, DIAMONDS, 4));
+        assertTrue(Game.canFold(p1, p2, DIAMONDS, 4));
 
         //should not be able to fold: cards played, valtti in hand
-        assertFalse(Game.canFold(player, HEARTS, 4));
+        assertFalse(Game.canFold(p1, p2, HEARTS, 4));
 
-        //should not be able to fold: declared player
-        pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
-        pojo.declaredPlayer = true;
-        player = new Player(pojo, null);
-        assertFalse(Game.canFold(player, HEARTS, 4));
+        //should be able to fold: declared player
+        p1pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
+        p1pojo.declaredPlayer = true;
+        p1 = new Player(p1pojo, null);
+        assertTrue(Game.canFold(p1, p2, HEARTS, 4));
+
+        //should not be able to fold: first player of round
+        assertFalse(Game.canFold(p2, p2, HEARTS, 4));
     }
 
     @Test
