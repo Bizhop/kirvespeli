@@ -607,25 +607,28 @@ public class KirvesTest {
         p2.setNext(p1);
 
         //should be able to fold: no cards played
-        assertTrue(Game.canFold(p1, p2, DIAMONDS, 4));
+        assertTrue(Game.canFold(p1, p2, p2, DIAMONDS, 4));
+
+        //should not able to fold: situation is not "between rounds"
+        assertFalse(Game.canFold(p1, p2, p1, DIAMONDS, 4));
 
         p1pojo.hand = List.of("3H", "4S", "6C", "TH");
         p1 = new Player(p1pojo, null);
 
         //should be able to fold: cards played, no valtti in hand
-        assertTrue(Game.canFold(p1, p2, DIAMONDS, 4));
+        assertTrue(Game.canFold(p1, p2, p2, DIAMONDS, 4));
 
         //should not be able to fold: cards played, valtti in hand
-        assertFalse(Game.canFold(p1, p2, HEARTS, 4));
+        assertFalse(Game.canFold(p1, p2, p2, HEARTS, 4));
 
         //should be able to fold: declared player
         p1pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
         p1pojo.declaredPlayer = true;
         p1 = new Player(p1pojo, null);
-        assertTrue(Game.canFold(p1, p2, HEARTS, 4));
+        assertTrue(Game.canFold(p1, p2, p2, HEARTS, 4));
 
-        //should not be able to fold: first player of round
-        assertFalse(Game.canFold(p2, p2, HEARTS, 4));
+        //should not be able to fold: you are first player of round
+        assertFalse(Game.canFold(p2, p2, p2, HEARTS, 4));
     }
 
     @Test
