@@ -500,14 +500,15 @@ public class Game {
                 //set folding possibility to players
                 int numOfActivePlayers = this.getNumberOfPlayers(true);
                 this.getPlayersStartingFrom(player.getUserEmail()).stream()
-                        .filter(p -> canFold(p, this.firstPlayerOfRound, this.trump, numOfActivePlayers))
+                        .filter(p -> canFold(p, this.firstPlayerOfRound, this.turn, this.trump, numOfActivePlayers))
                         .forEach(p -> p.addAvailableAction(FOLD));
             }
         }
     }
 
-    public static boolean canFold(Player player, Player firstPlayerOfRound, Card.Suit trump, int numberOfPlayers) {
+    public static boolean canFold(Player player, Player firstPlayerOfRound, Player turn, Card.Suit trump, int numberOfPlayers) {
         if(numberOfPlayers < 2 || trump == null) return false;
+        if(!firstPlayerOfRound.equals(turn)) return false;
         if(player.cardsInHand() == 5) return !player.equals(firstPlayerOfRound);
         return player.getHand().hasNoTrumpCard(trump);
     }
