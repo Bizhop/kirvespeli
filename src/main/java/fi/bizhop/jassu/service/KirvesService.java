@@ -7,11 +7,14 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.ActionLog;
+import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
+import fi.bizhop.jassu.util.Pair;
 import fi.bizhop.jassu.util.TransactionHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static fi.bizhop.jassu.exception.TransactionException.Type.TIMEOUT;
+import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -33,6 +37,7 @@ public class KirvesService {
     private final KirvesGameRepo GAME_REPO;
 
     private final Map<Long, Game> IN_MEMORY_GAMES = new ConcurrentHashMap<>();
+    private final Map<Pair<Long, Long>, ActionLog> IN_MEMORY_ACTION_LOGS = new ConcurrentHashMap<>();
 
     private final TransactionHandler TRANSACTION_HANDLER = new TransactionHandler();
 
@@ -119,7 +124,7 @@ public class KirvesService {
         }
         this.sleep(delay);
         try {
-            this.action(in, user, game);
+            this.executeAction(in, user, game, id);
         } catch (Exception e) {
             this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
             throw e;
@@ -136,7 +141,7 @@ public class KirvesService {
         }
     }
 
-    private void action(GameIn in, User user, Game game) throws KirvesGameException, CardException {
+    private void executeAction(GameIn in, User user, Game game, Long id) throws KirvesGameException, CardException {
         if(!game.userHasActionAvailable(user, in.action)) {
             throw new KirvesGameException(String.format("Toiminto %s ei ole mahdollinen nyt", in.action));
         }
@@ -149,6 +154,11 @@ public class KirvesService {
             case SPEAK: game.speak(user, in.speak); break;
             case SPEAK_SUIT: game.speakSuit(user, in.suit); break;
             case DISCARD: game.discard(user, in.index); break;
+        }
+        if(List.of(PLAY_CARD, FOLD, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD).contains(in.action)) {
+            this.addActionLogItem(in, user, game, id);
+        } else if(in.action == DEAL) {
+            this.initializeActionLog(in, user, game, id);
         }
     }
 
@@ -175,5 +185,29 @@ public class KirvesService {
         gameDB.canJoin = game.getCanJoin();
         this.GAME_REPO.save(gameDB);
         this.IN_MEMORY_GAMES.put(id, game);
+    }
+
+    private void initializeActionLog(GameIn in, User user, Game game, Long id) throws KirvesGameException {
+        Long newHandId = game.incrementHandId();
+
+        ActionLog actionLog = new ActionLog(game.toJson());
+        actionLog.addItem(ActionLogItem.of(user, in));
+        this.IN_MEMORY_ACTION_LOGS.put(
+                Pair.of(id, newHandId), actionLog);
+
+        LOG.info(String.format("Action log initialized for gameId: %d, handId: %d", id, newHandId));
+    }
+
+    private void addActionLogItem(GameIn in, User user, Game game, Long id) throws KirvesGameException {
+        ActionLog actionLog = this.IN_MEMORY_ACTION_LOGS.get(Pair.of(id, game.getCurrentHandId()));
+        if(actionLog == null) throw new KirvesGameException(String.format("Action log not found for gameId: %d handId %d", id, game.getCurrentHandId()));
+
+        actionLog.addItem(ActionLogItem.of(user, in));
+    }
+
+    public ActionLog getActionLog(Long id, Long handId) throws KirvesGameException {
+        ActionLog actionLog = this.IN_MEMORY_ACTION_LOGS.get(Pair.of(id, handId));
+        if(actionLog == null) throw new KirvesGameException(String.format("Action log not found for gameId: %d handId %d", id, handId));
+        return actionLog;
     }
 }

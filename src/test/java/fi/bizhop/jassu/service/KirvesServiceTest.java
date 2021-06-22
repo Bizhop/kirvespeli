@@ -6,6 +6,8 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.ActionLog;
+import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static fi.bizhop.jassu.model.kirves.Game.Action.CUT;
+import static fi.bizhop.jassu.model.kirves.Game.Action.DEAL;
 import static fi.bizhop.jassu.util.TestUserUtil.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -123,7 +126,7 @@ public class KirvesServiceTest {
         });
 
         Thread p2Thread = new Thread(() -> {
-            User user = getTestUser("other@example.com");
+            User user = getTestUser("other@mock.com");
 
             try {
                 this.kirvesService.action(0L, new GameIn(), user, 0);
@@ -135,6 +138,35 @@ public class KirvesServiceTest {
         p1Thread.start();
         Thread.sleep(1000);
         p2Thread.start();
+    }
+
+    @Test
+    public void testActionLog() throws IOException, CardException, TransactionException, InterruptedException, KirvesGameException {
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
+
+        User user1 = getTestUser();
+        User user2 = getTestUser("other@mock.com");
+
+        GameIn cut = new GameIn();
+        cut.action = CUT;
+        cut.declineCut = false;
+
+        this.kirvesService.action(0L, cut, user1);
+        Thread.sleep(1000);
+
+        GameIn deal = new GameIn();
+        deal.action = DEAL;
+
+        this.kirvesService.action(0L, deal, user2);
+
+        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L);
+
+        assertNotNull(actionLog.getInitialState());
+
+        assertEquals(1, actionLog.getItems().size());
+        ActionLogItem item = actionLog.getItems().get(0);
+        assertEquals("other@mock.com", item.getUser().getEmail());
+        assertEquals(DEAL, item.getInput().action);
     }
 
     private KirvesGameDB getTestGameDB() throws IOException {
