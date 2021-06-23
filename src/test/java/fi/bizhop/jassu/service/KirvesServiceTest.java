@@ -1,9 +1,6 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.db.ActionLogRepo;
-import fi.bizhop.jassu.db.KirvesGameDB;
-import fi.bizhop.jassu.db.KirvesGameRepo;
-import fi.bizhop.jassu.db.UserDB;
+import fi.bizhop.jassu.db.*;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
@@ -19,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -42,11 +40,14 @@ public class KirvesServiceTest {
     ActionLogRepo actionLogRepo;
 
     @MockBean
+    ActionLogItemRepo actionLogItemRepo;
+
+    @MockBean
     UserService userService;
 
     @Before
     public void setup() {
-        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo);
+        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo);
     }
 
     @Test
@@ -151,11 +152,13 @@ public class KirvesServiceTest {
     @Test
     public void testActionLog() throws IOException, CardException, TransactionException, InterruptedException, KirvesGameException {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+        when(this.actionLogRepo.findById(eq("0-0"))).thenReturn(Optional.of(getTestActionLog("0-0")));
 
         User user1 = getTestUser();
         User user2 = getTestUser("other@mock.com");
 
-        when(this.userService.getByEmails(any())).thenReturn(getUsersByEmailsResponse(user1, user2));
+        when(this.userService.get(eq(user1))).thenReturn(new UserDB(user1));
+        when(this.userService.get(eq(user2))).thenReturn(new UserDB(user2));
 
         GameIn cut = new GameIn();
         cut.action = CUT;
@@ -189,7 +192,11 @@ public class KirvesServiceTest {
         } else if(game.userHasActionAvailable(user1, DISCARD)) {
             nextAction.action = DISCARD;
             nextAction.index = 0;
-        } else if(game.userHasActionAvailable(user2, ACE_OR_TWO_DECISION)) {
+        } else if(game.userHasActionAvailable(user1, CUT)) {
+            nextAction.action = CUT;
+            nextAction.declineCut = true;
+        }
+        else if(game.userHasActionAvailable(user2, ACE_OR_TWO_DECISION)) {
             nextAction.action = ACE_OR_TWO_DECISION;
             nextAction.keepExtraCard = true;
             nextUser = user2;
@@ -215,10 +222,10 @@ public class KirvesServiceTest {
         assertEquals(nextUser.getEmail(), item.getUser().getEmail());
         assertEquals(nextAction.action, item.getInput().action);
 
-        //verify that db save was called twice
-        verify(this.actionLogRepo, times(2)).save(any());
-        //verify that db read wasn't called (used in memory store)
-        verify(this.actionLogRepo, times(0)).findById(any());
+        //verify that action log was saved once
+        verify(this.actionLogRepo, times(1)).save(any());
+        //verify that action log item was saved twice
+        verify(this.actionLogItemRepo, times(2)).save(any());
     }
 
     @Test
@@ -227,10 +234,7 @@ public class KirvesServiceTest {
         ActionLogItem item = ActionLogItem.of(getTestUser(), new GameIn());
         actionLog.addItem(item);
 
-        Map<String, UserDB> usersByEmail = new HashMap<>();
-        usersByEmail.put(TEST_USER_EMAIL, getTestUserDB(TEST_USER_EMAIL));
-
-        when(this.actionLogRepo.findById(any())).thenReturn(Optional.ofNullable(actionLog.getDB("0-0", usersByEmail)));
+        when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(getTestActionLog("0-0")));
 
         ActionLog response = this.kirvesService.getActionLog(0L, 0L);
         System.out.println(response);
@@ -251,11 +255,19 @@ public class KirvesServiceTest {
         return db;
     }
 
-    private static List<UserDB> getUsersByEmailsResponse(User... users) {
-        if(users == null || users.length == 0) return new ArrayList<>();
+    private static ActionLogDB getTestActionLog(String key) {
+        ActionLogDB db = new ActionLogDB();
+        db.key = key;
+        db.initialState = "INITIAL STATE";
 
-        return Arrays.stream(users)
-                .map(UserDB::new)
-                .collect(toList());
+        ActionLogItemDB item = new ActionLogItemDB();
+        item.actionLog = db;
+        item.user = getTestUserDB(TEST_USER_EMAIL);
+        item.input = "{\"action\":\"DEAL\",\"index\":0,\"keepExtraCard\":false,\"suit\":null,\"declineCut\":false,\"speak\":null}";
+
+        db.items = new ArrayList<>();
+        db.items.add(item);
+
+        return db;
     }
 }

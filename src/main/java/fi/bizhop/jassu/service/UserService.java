@@ -74,8 +74,4 @@ public class UserService {
     public UserDB get(User user) {
         return this.USER_REPO.findByEmail(user.getEmail()).orElseThrow();
     }
-
-    public List<UserDB> getByEmails(List<String> emails) {
-        return this.USER_REPO.findByEmailIn(emails);
-    }
 }

@@ -3,6 +3,8 @@ package fi.bizhop.jassu.db;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+import static javax.persistence.CascadeType.ALL;
+
 @Entity
 @Table(name = "action_log_items")
 public class ActionLogItemDB {

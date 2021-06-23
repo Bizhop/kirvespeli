@@ -34,24 +34,12 @@ public class ActionLog {
     public static ActionLog of(ActionLogDB db) throws KirvesGameException {
         List<ActionLogItem> items = new ArrayList<>();
         if(db.items == null || db.items.isEmpty()) throw new KirvesGameException("ActionLogDB.items was null or empty");
-        for(ActionLogItemDB itemDB : db.items) {
-            items.add(ActionLogItem.of(itemDB));
-        }
         ActionLog actionLog = new ActionLog(db.initialState);
+        for(ActionLogItemDB itemDB : db.items) {
+            actionLog.addItem(ActionLogItem.of(itemDB));
+        }
         actionLog.addItems(items);
         return actionLog;
-    }
-
-    public ActionLogDB getDB(String key, Map<String, UserDB> users) throws KirvesGameException {
-        ActionLogDB db = new ActionLogDB();
-        db.key = key;
-        db.initialState = this.INITIAL_STATE;
-        db.items = new ArrayList<>();
-        for(ActionLogItem item : this.ITEMS) {
-            UserDB user = users.get(item.getUser().getEmail());
-            db.items.add(item.getDB(user));
-        }
-        return db;
     }
 
     @Override

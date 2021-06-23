@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.model.kirves;
 
+import fi.bizhop.jassu.db.ActionLogDB;
 import fi.bizhop.jassu.db.ActionLogItemDB;
 import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.exception.KirvesGameException;
@@ -35,14 +36,15 @@ public class ActionLogItem {
         return new ActionLogItem(user, input);
     }
 
-    public ActionLogItemDB getDB(UserDB userDB) throws KirvesGameException {
+    public ActionLogItemDB getDB(UserDB userDB, ActionLogDB actionLogDB) throws KirvesGameException {
         if(userDB == null || userDB.email == null) throw new KirvesGameException("Invalid user (null or email null)");
         if(!userDB.email.equals(this.USER.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)");
 
-        ActionLogItemDB db = new ActionLogItemDB();
-        db.user = userDB;
-        db.input = JsonUtil.getJson(this.INPUT).orElseThrow(() -> new KirvesGameException("Unable to convert GameIn to json"));
-        return db;
+        ActionLogItemDB logItemDB = new ActionLogItemDB();
+        logItemDB.user = userDB;
+        logItemDB.input = JsonUtil.getJson(this.INPUT).orElseThrow(() -> new KirvesGameException("Unable to convert GameIn to json"));
+        logItemDB.actionLog = actionLogDB;
+        return logItemDB;
     }
 
     @Override
