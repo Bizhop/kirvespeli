@@ -653,6 +653,13 @@ public class Game {
         return this.data.canJoin;
     }
 
+    public Long getCurrentHandId() { return this.data.currentHandId; }
+
+    public Long incrementHandId() {
+        this.data.currentHandId = this.data.currentHandId == null ? 0L : this.data.currentHandId + 1L;
+        return this.data.currentHandId;
+    }
+
     public enum Action {
         DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD
     }

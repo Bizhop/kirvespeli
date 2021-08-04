@@ -3,6 +3,7 @@ package fi.bizhop.jassu.controller;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.ActionLog;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
@@ -128,6 +129,18 @@ public class KirvesController {
             throw createTransactionResponseStatus(e);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/api/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ActionLog getActionLog(@PathVariable Long id, @PathVariable Long handId, HttpServletRequest request, HttpServletResponse response) {
+        User user = this.authorizeAndAuthenticate(request);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        try {
+            return this.KIRVES_SERVICE.getActionLog(id, handId);
+        } catch (KirvesGameException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

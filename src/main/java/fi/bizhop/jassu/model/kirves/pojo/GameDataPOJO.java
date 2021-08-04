@@ -23,6 +23,7 @@ public class GameDataPOJO {
     public boolean forcedGame = false;
     public boolean canDeclineCut = false;
     public boolean speaking = false;
+    public Long currentHandId = null;
 
     public GameDataPOJO() {}
 
@@ -30,6 +31,7 @@ public class GameDataPOJO {
     public boolean equals(Object o) {
         if(!(o instanceof GameDataPOJO)) return false;
         GameDataPOJO other = (GameDataPOJO) o;
+        if(this.currentHandId != null && other.currentHandId == null) return false;
 
         return this.scores.equals(other.scores)
                 && this.scoresHistory.equals(other.scoresHistory)
@@ -38,6 +40,7 @@ public class GameDataPOJO {
                 && this.canDeal == other.canDeal
                 && this.forcedGame == other.forcedGame
                 && this.canDeclineCut == other.canDeclineCut
-                && this.speaking == other.speaking;
+                && this.speaking == other.speaking
+                && (this.currentHandId == null || this.currentHandId.equals(other.currentHandId));
     }
 }

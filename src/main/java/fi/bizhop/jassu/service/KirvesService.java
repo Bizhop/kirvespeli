@@ -1,12 +1,12 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.db.KirvesGameDB;
-import fi.bizhop.jassu.db.KirvesGameRepo;
-import fi.bizhop.jassu.db.UserDB;
+import fi.bizhop.jassu.db.*;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.ActionLog;
+import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
@@ -18,11 +18,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static fi.bizhop.jassu.exception.TransactionException.Type.TIMEOUT;
+import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -32,13 +34,19 @@ public class KirvesService {
     private final UserService USER_SERVICE;
     private final KirvesGameRepo GAME_REPO;
 
+    private final ActionLogRepo ACTION_LOG_REPO;
+    private final ActionLogItemRepo ACTION_LOG_ITEM_REPO;
+
     private final Map<Long, Game> IN_MEMORY_GAMES = new ConcurrentHashMap<>();
+    private final Map<String, ActionLog> IN_MEMORY_ACTION_LOGS = new HashMap<>();
 
     private final TransactionHandler TRANSACTION_HANDLER = new TransactionHandler();
 
-    public KirvesService(UserService userService, KirvesGameRepo gameRepo) {
+    public KirvesService(UserService userService, KirvesGameRepo gameRepo, ActionLogRepo actionLogRepo, ActionLogItemRepo actionLogItemRepo) {
         this.USER_SERVICE = userService;
         this.GAME_REPO = gameRepo;
+        this.ACTION_LOG_REPO = actionLogRepo;
+        this.ACTION_LOG_ITEM_REPO = actionLogItemRepo;
     }
 
     public Long init(User admin) throws CardException, KirvesGameException, TransactionException {
@@ -70,7 +78,7 @@ public class KirvesService {
     public void joinGame(Long id, User user) throws KirvesGameException, CardException, TransactionException {
         Game game = this.getGame(id);
         game.addPlayer(user);
-        this.saveGame(id, game);
+        this.saveGame(id, game, null, user);
         LOG.info(String.format("Added player email=%s to game id=%d", user.getEmail(), id));
     }
 
@@ -119,14 +127,14 @@ public class KirvesService {
         }
         this.sleep(delay);
         try {
-            this.action(in, user, game);
+            this.executeAction(in, user, game, id);
         } catch (Exception e) {
             this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
             throw e;
         }
         try {
             this.TRANSACTION_HANDLER.end(id);
-            this.saveGame(id, game);
+            this.saveGame(id, game, in, user);
             return game;
         } catch (TransactionException e) {
             //ending transaction failed, probably for timeout. Log and rollback;
@@ -136,7 +144,7 @@ public class KirvesService {
         }
     }
 
-    private void action(GameIn in, User user, Game game) throws KirvesGameException, CardException {
+    private void executeAction(GameIn in, User user, Game game, Long id) throws KirvesGameException, CardException {
         if(!game.userHasActionAvailable(user, in.action)) {
             throw new KirvesGameException(String.format("Toiminto %s ei ole mahdollinen nyt", in.action));
         }
@@ -168,12 +176,73 @@ public class KirvesService {
         this.TRANSACTION_HANDLER.end(id);
     }
 
-    private void saveGame(Long id, Game game) throws KirvesGameException {
+    private void saveGame(Long id, Game game, GameIn in, User user) throws KirvesGameException {
         KirvesGameDB gameDB = this.getGameDB(id);
         gameDB.gameData = game.toJson();
         gameDB.players = game.getNumberOfPlayers();
         gameDB.canJoin = game.getCanJoin();
         this.GAME_REPO.save(gameDB);
         this.IN_MEMORY_GAMES.put(id, game);
+
+        if(in != null) {
+            if (List.of(PLAY_CARD, FOLD, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD).contains(in.action)) {
+                Long handId = game.getCurrentHandId();
+                ActionLogItem actionLogItem = this.saveActionLogItem(in, user, id, handId, null);
+                this.IN_MEMORY_ACTION_LOGS.get(this.actionLogKey(id, handId)).addItem(actionLogItem);
+            } else if (in.action == DEAL) {
+                this.initializeActionLog(in, user, game, id);
+            }
+        }
+    }
+
+    private void initializeActionLog(GameIn in, User user, Game game, Long gameId) throws KirvesGameException {
+        Long handId = game.incrementHandId();
+
+        String initialState = game.toJson();
+        String key = this.actionLogKey(gameId, handId);
+
+        ActionLog actionLog = new ActionLog(initialState);
+
+        ActionLogDB actionLogDB = new ActionLogDB();
+        actionLogDB.key = key;
+        actionLogDB.initialState = initialState;
+
+        actionLogDB = this.ACTION_LOG_REPO.save(actionLogDB);
+        ActionLogItem actionLogItem = this.saveActionLogItem(in, user, gameId, handId, actionLogDB);
+        
+        actionLog.addItem(actionLogItem);
+        this.IN_MEMORY_ACTION_LOGS.put(this.actionLogKey(gameId, handId), actionLog);
+        LOG.info(String.format("Action log initialized for gameId: %d, handId: %d", gameId, handId));
+    }
+
+    private ActionLogItem saveActionLogItem(GameIn in, User user, Long gameId, Long handId, ActionLogDB actionLogDB) throws KirvesGameException {
+        String key = this.actionLogKey(gameId, handId);
+        if(actionLogDB == null) {
+            actionLogDB = this.ACTION_LOG_REPO.findById(key).orElseThrow();
+        }
+
+        ActionLogItem actionLogItem = ActionLogItem.of(user, in);
+
+        UserDB userDB = this.USER_SERVICE.get(user);
+        ActionLogItemDB actionLogItemDB = actionLogItem.getDB(userDB, actionLogDB);
+        this.ACTION_LOG_ITEM_REPO.save(actionLogItemDB);
+
+        return actionLogItem;
+    }
+
+    public ActionLog getActionLog(Long gameId, Long handId) throws KirvesGameException {
+        ActionLog actionLog = this.IN_MEMORY_ACTION_LOGS.get(this.actionLogKey(gameId, handId));
+        if(actionLog == null) {
+            String key = this.actionLogKey(gameId, handId);
+            ActionLogDB actionLogDB = this.ACTION_LOG_REPO.findById(key)
+                    .orElseThrow(() -> new KirvesGameException(String.format("Action log not found for gameId: %d handId: %d", gameId, handId)));
+            actionLog = ActionLog.of(actionLogDB);
+            this.IN_MEMORY_ACTION_LOGS.put(key, actionLog);
+        }
+        return actionLog;
+    }
+
+    private String actionLogKey(Long gameId, Long handId) {
+        return String.format("%d-%d", gameId, handId);
     }
 }

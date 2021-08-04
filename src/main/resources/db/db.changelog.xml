@@ -69,4 +69,28 @@
 	<changeSet id="setUserNicknameUnique" author="Ville">
 		<addUniqueConstraint tableName="users" columnNames="nickname" />
 	</changeSet>
+	<changeSet id="createActionLogTables" author="Ville">
+		<createTable tableName="action_logs">
+			<column name="key" type="TEXT">
+				<constraints primaryKey="true" primaryKeyName="action_log_pkey" />
+			</column>
+			<column name="initial_state" type="TEXT">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		<createTable tableName="action_log_items">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="action_log_item_pkey" />
+			</column>
+			<column name="user_id" type="INT">
+				<constraints nullable="false" foreignKeyName="fk_action_log_item_user" references="users(id)" />
+			</column>
+			<column name="action_log_id" type="TEXT">
+				<constraints nullable="false" foreignKeyName="fk_action_log_item_action_log" references="action_logs(key)" />
+			</column>
+			<column name="input" type="TEXT">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
 </databaseChangeLog>

@@ -1,11 +1,12 @@
 package fi.bizhop.jassu.service;
 
-import fi.bizhop.jassu.db.KirvesGameDB;
-import fi.bizhop.jassu.db.KirvesGameRepo;
+import fi.bizhop.jassu.db.*;
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
+import fi.bizhop.jassu.model.kirves.ActionLog;
+import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
@@ -15,14 +16,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.*;
 
-import static fi.bizhop.jassu.model.kirves.Game.Action.CUT;
+import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static fi.bizhop.jassu.util.TestUserUtil.*;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -33,14 +36,23 @@ public class KirvesServiceTest {
 
     KirvesService kirvesService;
 
+    @MockBean
+    ActionLogRepo actionLogRepo;
+
+    @MockBean
+    ActionLogItemRepo actionLogItemRepo;
+
+    @MockBean
+    UserService userService;
+
     @Before
     public void setup() {
-        this.kirvesService = new KirvesService(null, this.kirvesGameRepo);
+        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo);
     }
 
     @Test
     public void testInMemoryGames() throws CardException, KirvesGameException, IOException, TransactionException {
-        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         this.kirvesService.getGame(0L);
         this.kirvesService.getGame(0L);
@@ -51,7 +63,7 @@ public class KirvesServiceTest {
 
     @Test
     public void testTransactionSuccess() throws IOException, TransactionException, CardException, KirvesGameException, InterruptedException {
-        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         User user = getTestUser();
 
@@ -62,7 +74,7 @@ public class KirvesServiceTest {
         Game output = this.kirvesService.action(0L, input, user, 0);
 
         //verify data changed
-        KirvesGameDB originalDB = this.getTestGameDB();
+        KirvesGameDB originalDB = getTestGameDB();
         GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
         assertNotNull(originalPojo);
 
@@ -73,7 +85,7 @@ public class KirvesServiceTest {
 
     @Test
     public void testTransactionTimeout() throws IOException, CardException, KirvesGameException, InterruptedException, TransactionException {
-        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         User user = getTestUser();
 
@@ -85,7 +97,7 @@ public class KirvesServiceTest {
             this.kirvesService.action(0L, input, user, 6 * 1000);
         } catch (TransactionException e) {
             //verify data didn't change
-            KirvesGameDB originalDB = this.getTestGameDB();
+            KirvesGameDB originalDB = getTestGameDB();
             GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
             assertNotNull(originalPojo);
 
@@ -106,7 +118,7 @@ public class KirvesServiceTest {
 
     @Test
     public void testTransactionLock() throws IOException, InterruptedException {
-        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(this.getTestGameDB()));
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
         Thread p1Thread = new Thread(() -> {
             User user = getTestUser();
@@ -123,7 +135,7 @@ public class KirvesServiceTest {
         });
 
         Thread p2Thread = new Thread(() -> {
-            User user = getTestUser("other@example.com");
+            User user = getTestUser("other@mock.com");
 
             try {
                 this.kirvesService.action(0L, new GameIn(), user, 0);
@@ -137,7 +149,102 @@ public class KirvesServiceTest {
         p2Thread.start();
     }
 
-    private KirvesGameDB getTestGameDB() throws IOException {
+    @Test
+    public void testActionLog() throws IOException, CardException, TransactionException, InterruptedException, KirvesGameException {
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
+        when(this.actionLogRepo.findById(eq("0-0"))).thenReturn(Optional.of(getTestActionLog("0-0")));
+
+        User user1 = getTestUser();
+        User user2 = getTestUser("other@mock.com");
+
+        when(this.userService.get(eq(user1))).thenReturn(new UserDB(user1));
+        when(this.userService.get(eq(user2))).thenReturn(new UserDB(user2));
+
+        GameIn cut = new GameIn();
+        cut.action = CUT;
+        cut.declineCut = false;
+
+        this.kirvesService.action(0L, cut, user1);
+        Thread.sleep(1000);
+
+        GameIn deal = new GameIn();
+        deal.action = DEAL;
+
+        Game game = this.kirvesService.action(0L, deal, user2);
+
+        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L);
+        System.out.println(actionLog);
+        System.out.println("----------");
+
+        assertNotNull(actionLog.getInitialState());
+
+        assertEquals(1, actionLog.getItems().size());
+        ActionLogItem item = actionLog.getItems().get(0);
+        assertEquals("other@mock.com", item.getUser().getEmail());
+        assertEquals(DEAL, item.getInput().action);
+
+        GameIn nextAction = new GameIn();
+        User nextUser = user1;
+
+        if(game.userHasActionAvailable(user1, SPEAK)) {
+            nextAction.action = SPEAK;
+            nextAction.speak = Game.Speak.KEEP;
+        } else if(game.userHasActionAvailable(user1, DISCARD)) {
+            nextAction.action = DISCARD;
+            nextAction.index = 0;
+        } else if(game.userHasActionAvailable(user1, CUT)) {
+            nextAction.action = CUT;
+            nextAction.declineCut = true;
+        }
+        else if(game.userHasActionAvailable(user2, ACE_OR_TWO_DECISION)) {
+            nextAction.action = ACE_OR_TWO_DECISION;
+            nextAction.keepExtraCard = true;
+            nextUser = user2;
+        } else if(game.userHasActionAvailable(user2, DISCARD)) {
+            nextAction.action = DISCARD;
+            nextAction.index = 0;
+            nextUser = user2;
+        }
+
+        System.out.println("Next action: " + nextAction.action);
+        System.out.println("Next user: " + nextUser.getEmail());
+
+        this.kirvesService.action(0L, nextAction, nextUser);
+
+        actionLog = this.kirvesService.getActionLog(0L, 0L);
+        System.out.println(actionLog);
+        System.out.println("----------");
+
+        assertNotNull(actionLog.getInitialState());
+
+        assertEquals(2, actionLog.getItems().size());
+        item = actionLog.getItems().get(1);
+        assertEquals(nextUser.getEmail(), item.getUser().getEmail());
+        assertEquals(nextAction.action, item.getInput().action);
+
+        //verify that action log was saved once
+        verify(this.actionLogRepo, times(1)).save(any());
+        //verify that action log item was saved twice
+        verify(this.actionLogItemRepo, times(2)).save(any());
+    }
+
+    @Test
+    public void testActionLogCache() throws KirvesGameException {
+        ActionLog actionLog = new ActionLog("INITIAL STATE");
+        ActionLogItem item = ActionLogItem.of(getTestUser(), new GameIn());
+        actionLog.addItem(item);
+
+        when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(getTestActionLog("0-0")));
+
+        ActionLog response = this.kirvesService.getActionLog(0L, 0L);
+        System.out.println(response);
+
+        this.kirvesService.getActionLog(0L,0L);
+
+        verify(this.actionLogRepo, times(1)).findById(any());
+    }
+
+    private static KirvesGameDB getTestGameDB() throws IOException {
         KirvesGameDB db = new KirvesGameDB();
         db.id = 0L;
         db.admin = getTestUserDB(TEST_USER_EMAIL);
@@ -145,6 +252,22 @@ public class KirvesServiceTest {
         db.active = true;
         db.players = 4;
         db.gameData = FileUtils.readFileToString(new File("src/test/resources/testData.json"), "UTF-8");
+        return db;
+    }
+
+    private static ActionLogDB getTestActionLog(String key) {
+        ActionLogDB db = new ActionLogDB();
+        db.key = key;
+        db.initialState = "INITIAL STATE";
+
+        ActionLogItemDB item = new ActionLogItemDB();
+        item.actionLog = db;
+        item.user = getTestUserDB(TEST_USER_EMAIL);
+        item.input = "{\"action\":\"DEAL\",\"index\":0,\"keepExtraCard\":false,\"suit\":null,\"declineCut\":false,\"speak\":null}";
+
+        db.items = new ArrayList<>();
+        db.items.add(item);
+
         return db;
     }
 }

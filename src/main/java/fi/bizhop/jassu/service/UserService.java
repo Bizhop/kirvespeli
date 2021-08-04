@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -70,7 +71,7 @@ public class UserService {
         }
     }
 
-    public UserDB get(User admin) {
-        return this.USER_REPO.findByEmail(admin.getEmail()).orElseThrow();
+    public UserDB get(User user) {
+        return this.USER_REPO.findByEmail(user.getEmail()).orElseThrow();
     }
 }
