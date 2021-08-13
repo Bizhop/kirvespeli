@@ -1,0 +1,124 @@
+{
+  "players": [
+    {
+      "hand": [
+        "QH",
+        "TC"
+      ],
+      "invisibleCards": [
+        "KD",
+        "JD",
+        "KH"
+      ],
+      "extraCard": "AS",
+      "playedCards": [],
+      "next": "other@mock.com",
+      "previous": "other@mock.com",
+      "user": {
+        "email": "user@mock.com",
+        "nickname": "User"
+      },
+      "roundsWon": [],
+      "availableActions": [
+        "ACE_OR_TWO_DECISION"
+      ],
+      "declaredPlayer": false,
+      "inGame": true,
+      "folded": false,
+      "speak": null
+    },
+    {
+      "hand": [
+        "KS",
+        "3D",
+        "KC",
+        "TS",
+        "6S"
+      ],
+      "invisibleCards": [],
+      "extraCard": null,
+      "playedCards": [],
+      "next": "user@mock.com",
+      "previous": "user@mock.com",
+      "user": {
+        "email": "other@mock.com",
+        "nickname": "Other"
+      },
+      "roundsWon": [],
+      "availableActions": [],
+      "declaredPlayer": false,
+      "inGame": true,
+      "folded": false,
+      "speak": null
+    }
+  ],
+  "deck": [
+    "9C",
+    "2S",
+    "5D",
+    "5H",
+    "9S",
+    "3S",
+    "9H",
+    "2D",
+    "5C",
+    "2C",
+    "JH",
+    "JC",
+    "BJ",
+    "JS",
+    "8H",
+    "6D",
+    "QC",
+    "3C",
+    "7C",
+    "8D",
+    "6H",
+    "4H",
+    "7S",
+    "AD",
+    "QD",
+    "AC",
+    "AH",
+    "4C",
+    "3H",
+    "2H",
+    "TH",
+    "5S",
+    "9D",
+    "6C",
+    "4D",
+    "8S",
+    "TD",
+    "8C",
+    "7H",
+    "4S",
+    "7D",
+    "RJ"
+  ],
+  "turn": "user@mock.com",
+  "dealer": "user@mock.com",
+  "firstPlayerOfRound": "other@mock.com",
+  "trumpCard": null,
+  "trump": "S",
+  "cutCard": null,
+  "secondCutCard": null,
+  "scores": {
+    "user@mock.com": {
+      "nickname": "User",
+      "score": 0
+    },
+    "other@mock.com": {
+      "nickname": "Other",
+      "score": 0
+    }
+  },
+  "scoresHistory": [],
+  "canJoin": false,
+  "canDeal": false,
+  "messages": [],
+  "forcedGame": false,
+  "canDeclineCut": false,
+  "speaking": true,
+  "currentHandId": 0
+}

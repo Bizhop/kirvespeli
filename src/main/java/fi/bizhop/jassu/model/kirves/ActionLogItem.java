@@ -9,20 +9,22 @@ import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.util.JsonUtil;
 
 public class ActionLogItem {
-    private final User USER;
-    private final GameIn INPUT;
+    private User user;
+    private GameIn input;
 
-    private ActionLogItem(User user, GameIn input) {
-        this.USER = user;
-        this.INPUT = input;
+    public ActionLogItem() {}
+
+    public ActionLogItem(User user, GameIn input) {
+        this.user = user;
+        this.input = input;
     }
 
     public User getUser() {
-        return this.USER;
+        return this.user;
     }
 
     public GameIn getInput() {
-        return this.INPUT;
+        return this.input;
     }
 
     public static ActionLogItem of(User user, GameIn input) {
@@ -38,11 +40,11 @@ public class ActionLogItem {
 
     public ActionLogItemDB getDB(UserDB userDB, ActionLogDB actionLogDB) throws KirvesGameException {
         if(userDB == null || userDB.email == null) throw new KirvesGameException("Invalid user (null or email null)");
-        if(!userDB.email.equals(this.USER.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)");
+        if(!userDB.email.equals(this.user.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)");
 
         ActionLogItemDB logItemDB = new ActionLogItemDB();
         logItemDB.user = userDB;
-        logItemDB.input = JsonUtil.getJson(this.INPUT).orElseThrow(() -> new KirvesGameException("Unable to convert GameIn to json"));
+        logItemDB.input = JsonUtil.getJson(this.input).orElseThrow(() -> new KirvesGameException("Unable to convert GameIn to json"));
         logItemDB.actionLog = actionLogDB;
         return logItemDB;
     }
@@ -52,10 +54,10 @@ public class ActionLogItem {
         StringBuilder sb = new StringBuilder();
 
         sb.append(" User: ");
-        sb.append(this.USER.getEmail());
+        sb.append(this.user.getEmail());
         sb.append("\n");
         sb.append(" Input: ");
-        sb.append(JsonUtil.getJson(this.INPUT).orElse("unknown"));
+        sb.append(JsonUtil.getJson(this.input).orElse("unknown"));
 
         return sb.toString();
     }

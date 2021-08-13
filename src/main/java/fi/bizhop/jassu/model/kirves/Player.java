@@ -28,7 +28,7 @@ public class Player {
      * @param previous previous Player
      * @throws CardException if extra card cannot be created from abbreviation
      */
-    public Player(PlayerPOJO pojo, Player previous) throws CardException {
+    public Player(PlayerPOJO pojo, Player previous) {
         this.data = pojo;
         this.hand.add(Cards.fromAbbreviations(pojo.hand));
         this.invisibleCards.add(Cards.fromAbbreviations(pojo.invisibleCards));

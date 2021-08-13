@@ -24,14 +24,7 @@ public class Cards {
     public static Cards fromAbbreviations(List<String> abbreviations) {
         if(abbreviations == null) return new Cards();
         List<Card> cards = abbreviations.stream()
-                .map(abbreviation -> {
-                    try {
-                        return Card.fromAbbreviation(abbreviation);
-                    } catch (CardException e) {
-                        LOG.warn(String.format("Unable to get card from abbreviation: %s", abbreviation));
-                        return null;
-                    }
-                })
+                .map(Card::fromAbbreviation)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return new Cards(cards);
