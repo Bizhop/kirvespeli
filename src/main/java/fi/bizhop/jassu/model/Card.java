@@ -1,6 +1,8 @@
 package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
 
 public class Card implements Comparable<Card> {
+    private static final Logger LOG = LogManager.getLogger(Card.class);
+
     private final Suit SUIT;
     private final Rank RANK;
 
@@ -34,13 +38,24 @@ public class Card implements Comparable<Card> {
         this.RANK = rank;
     }
 
-    public static Card fromAbbreviation(String abbreviation) throws CardException {
+    public static Card fromAbbreviation(String abbreviation) {
         if(abbreviation == null || abbreviation.isEmpty()) return null;
-        if(abbreviation.length() != 2) throw new CardException("Invalid abbreviation");
+        if(abbreviation.length() != 2) {
+            LOG.warn("Unable to get card from abbreviation: {}", abbreviation);
+            return null;
+        }
         Suit suit = SUITS_BY_ABBREVIATION.get(abbreviation.substring(1));
         Rank rank = RANKS_BY_ABBREVIATION.get(abbreviation.substring(0, 1));
-        if(suit == null || rank == null) throw new CardException("Invalid abbreviation");
-        return new Card(suit, rank);
+        if(suit == null || rank == null) {
+            LOG.warn("Unable to get card from abbreviation: {}", abbreviation);
+            return null;
+        }
+        try {
+            return new Card(suit, rank);
+        } catch (CardException e) {
+            LOG.warn("Card exception caught when creating card from abbreviation", e);
+            return null;
+        }
     }
 
     @Override

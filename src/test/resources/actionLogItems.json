@@ -1,0 +1,196 @@
+{
+  "items": [
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "ACE_OR_TWO_DECISION",
+        "index": 0,
+        "keepExtraCard": true,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "DISCARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "other@mock.com",
+        "jwt": null,
+        "nickname": "Other",
+        "money": 97
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "other@mock.com",
+        "jwt": null,
+        "nickname": "Other",
+        "money": 97
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "other@mock.com",
+        "jwt": null,
+        "nickname": "Other",
+        "money": 97
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "other@mock.com",
+        "jwt": null,
+        "nickname": "Other",
+        "money": 97
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "other@mock.com",
+        "jwt": null,
+        "nickname": "Other",
+        "money": 97
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    },
+    {
+      "user": {
+        "email": "user@mock.com",
+        "jwt": null,
+        "nickname": "User",
+        "money": 118
+      },
+      "input": {
+        "action": "PLAY_CARD",
+        "index": 0,
+        "keepExtraCard": false,
+        "suit": null,
+        "declineCut": false,
+        "speak": null
+      }
+    }
+  ]
+}

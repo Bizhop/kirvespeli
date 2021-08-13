@@ -16,16 +16,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static fi.bizhop.jassu.util.TestUserUtil.*;
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -229,25 +231,58 @@ public class KirvesServiceTest {
     }
 
     @Test
-    public void testActionLogCache() throws KirvesGameException {
-        ActionLog actionLog = new ActionLog("INITIAL STATE");
-        ActionLogItem item = ActionLogItem.of(getTestUser(), new GameIn());
-        actionLog.addItem(item);
-
+    public void testActionLogCache() throws KirvesGameException, IOException {
         when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(getTestActionLog("0-0")));
 
-        ActionLog response = this.kirvesService.getActionLog(0L, 0L);
-        System.out.println(response);
+        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L);
+        System.out.println(actionLog);
 
         this.kirvesService.getActionLog(0L,0L);
 
         verify(this.actionLogRepo, times(1)).findById(any());
     }
 
+    @Test
+    public void testReplay() throws IOException, KirvesGameException, CardException {
+        var actionLogDB = getTestActionLog("0-0");
+        var itemsJson = FileUtils.readFileToString(new File("src/test/resources/actionLogItems.json"), "UTF-8");
+        var actionLogItems = JsonUtil.getJavaObject(itemsJson, ActionLogItems.class).orElseThrow();
+        var itemDBs = actionLogItems.items.stream()
+                .map(item -> {
+                    var user = getTestUserDB(item.getUser().getEmail());
+                    try {
+                        return item.getDB(user, actionLogDB);
+                    } catch (KirvesGameException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        actionLogDB.items.addAll(itemDBs);
+        when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(actionLogDB));
+
+        var replay = this.kirvesService.getReplay(0L, 0L, 0);
+
+        assertEquals(2, replay.getNumberOfPlayers());
+
+        var replay2 = this.kirvesService.getReplay(0L,0L,4);
+        var player = replay2.getPlayer(TEST_USER_EMAIL).orElseThrow();
+        var player2 = replay2.getPlayer("other@mock.com").orElseThrow();
+
+        assertEquals(4, player.cardsInHand());
+        assertEquals(4, player2.cardsInHand());
+
+        try {
+            this.kirvesService.getReplay(0L, 0L, 15);
+        } catch (Exception e) {
+            assertEquals(e.getMessage(), "gameId: 0 handId: 0 has no ActionLogItem for index 15");
+        }
+    }
+
     private static KirvesGameDB getTestGameDB() throws IOException {
         KirvesGameDB db = new KirvesGameDB();
         db.id = 0L;
-        db.admin = getTestUserDB(TEST_USER_EMAIL);
+        db.admin = getTestUserDB();
         db.canJoin = true;
         db.active = true;
         db.players = 4;
@@ -255,10 +290,10 @@ public class KirvesServiceTest {
         return db;
     }
 
-    private static ActionLogDB getTestActionLog(String key) {
+    private static ActionLogDB getTestActionLog(String key) throws IOException {
         ActionLogDB db = new ActionLogDB();
         db.key = key;
-        db.initialState = "INITIAL STATE";
+        db.initialState = FileUtils.readFileToString(new File("src/test/resources/actionLogInitialState.json"), "UTF-8");
 
         ActionLogItemDB item = new ActionLogItemDB();
         item.actionLog = db;
@@ -269,5 +304,11 @@ public class KirvesServiceTest {
         db.items.add(item);
 
         return db;
+    }
+
+    static class ActionLogItems {
+        public List<ActionLogItem> items;
+
+        public ActionLogItems() {}
     }
 }

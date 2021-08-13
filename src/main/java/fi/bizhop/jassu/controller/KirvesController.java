@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.controller;
 
+import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
@@ -134,12 +135,25 @@ public class KirvesController {
 
     @RequestMapping(value = "/api/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody ActionLog getActionLog(@PathVariable Long id, @PathVariable Long handId, HttpServletRequest request, HttpServletResponse response) {
-        User user = this.authorizeAndAuthenticate(request);
+        this.authorizeAndAuthenticate(request);
 
         response.setStatus(HttpServletResponse.SC_OK);
         try {
             return this.KIRVES_SERVICE.getActionLog(id, handId);
         } catch (KirvesGameException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/api/kirves/{id}/{handId}/{actionLogItemIndex}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody GameOut getReplay(@PathVariable Long id, @PathVariable Long handId, @PathVariable long actionLogItemIndex, HttpServletRequest request, HttpServletResponse response) {
+        this.authorizeAndAuthenticate(request);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        try {
+            var game = this.KIRVES_SERVICE.getReplay(id, handId, actionLogItemIndex);
+            return game.out();
+        } catch (KirvesGameException | CardException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

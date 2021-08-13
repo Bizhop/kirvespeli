@@ -39,7 +39,7 @@ public class Game {
     
     private final GameDataPOJO data;
 
-    public Game(GameDataPOJO pojo) throws CardException, KirvesGameException {
+    public Game(GameDataPOJO pojo) throws KirvesGameException {
         if(pojo == null) throw new KirvesGameException("GameDataPOJO ei voi olla tyhjä (null)");
         this.data = pojo;
         this.deck = Cards.fromAbbreviations(pojo.deck);

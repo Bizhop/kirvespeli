@@ -10,6 +10,10 @@ public class TestUserUtil {
         return new UserDB(getTestUser(email));
     }
 
+    public static UserDB getTestUserDB() {
+        return new UserDB(getTestUser(TEST_USER_EMAIL));
+    }
+
     public static User getTestUser(String email) {
         return new User(email, "");
     }

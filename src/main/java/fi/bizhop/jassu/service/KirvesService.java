@@ -127,7 +127,7 @@ public class KirvesService {
         }
         this.sleep(delay);
         try {
-            this.executeAction(in, user, game, id);
+            this.executeAction(in, user, game);
         } catch (Exception e) {
             this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
             throw e;
@@ -144,7 +144,7 @@ public class KirvesService {
         }
     }
 
-    private void executeAction(GameIn in, User user, Game game, Long id) throws KirvesGameException, CardException {
+    private void executeAction(GameIn in, User user, Game game) throws KirvesGameException, CardException {
         if(!game.userHasActionAvailable(user, in.action)) {
             throw new KirvesGameException(String.format("Toiminto %s ei ole mahdollinen nyt", in.action));
         }
@@ -240,6 +240,25 @@ public class KirvesService {
             this.IN_MEMORY_ACTION_LOGS.put(key, actionLog);
         }
         return actionLog;
+    }
+
+    public Game getReplay(Long gameId, Long handId, long actionLogItemIndex) throws KirvesGameException, CardException {
+        var actionLog = this.getActionLog(gameId, handId);
+        if(actionLogItemIndex >= actionLog.getItems().size()) {
+            throw new KirvesGameException(String.format("gameId: %d handId: %d has no ActionLogItem for index %d", gameId, handId, actionLogItemIndex));
+        }
+
+        var pojo = JsonUtil.getJavaObject(actionLog.getInitialState(), GameDataPOJO.class)
+                .orElseThrow(() -> new KirvesGameException("Muunnos json -> GameDataPOJO ei onnistunut"));
+        var game = new Game(pojo);
+
+        //start iteration from index 1, skippind DEAL
+        for(int i = 1; i <= actionLogItemIndex; i++) {
+            var item = actionLog.getItems().get(i);
+            this.executeAction(item.getInput(), item.getUser(), game);
+        }
+
+        return game;
     }
 
     private String actionLogKey(Long gameId, Long handId) {
