@@ -1,14 +1,15 @@
 package fi.bizhop.jassu.service;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 
 public class PokerServiceTest {
     static UserService userService;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         userService = mock(UserService.class);
     }

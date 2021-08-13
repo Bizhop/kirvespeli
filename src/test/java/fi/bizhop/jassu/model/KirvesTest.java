@@ -10,7 +10,7 @@ import fi.bizhop.jassu.model.kirves.pojo.PlayerPOJO;
 import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static fi.bizhop.jassu.model.kirves.Game.Speak.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class KirvesTest {
     static final List<User> TEST_USERS;
@@ -445,7 +445,7 @@ public class KirvesTest {
     }
 
     @Test
-    public void testHandWinner() throws CardException, KirvesGameException {
+    public void testHandWinner() throws KirvesGameException {
         PlayerPOJO firstTwoPOJO = new PlayerPOJO();
         firstTwoPOJO.user = new UserPOJO("firstTwo", "firstTwo");
         firstTwoPOJO.roundsWon.addAll(List.of(0, 1));
@@ -477,7 +477,7 @@ public class KirvesTest {
     }
     
     @Test
-    public void testScoringWinnersLogic() throws CardException {
+    public void testScoringWinnersLogic() {
         PlayerPOJO pojo1 = new PlayerPOJO();
         pojo1.user = new UserPOJO("first", "first");
         pojo1.declaredPlayer = true;
@@ -592,7 +592,7 @@ public class KirvesTest {
     }
 
     @Test
-    public void testCanFold() throws CardException {
+    public void testCanFold() {
         PlayerPOJO p1pojo = new PlayerPOJO();
         p1pojo.hand = List.of("3H", "4S", "6C", "TH", "JD");
         p1pojo.user = new UserPOJO("p1", "p1");
@@ -632,7 +632,7 @@ public class KirvesTest {
     }
 
     @Test
-    public void testGame18Bug() throws IOException, CardException, KirvesGameException {
+    public void testGame18Bug() throws IOException, KirvesGameException {
         String json = FileUtils.readFileToString(new File("src/test/resources/game18.json"), "UTF-8");
         GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
 

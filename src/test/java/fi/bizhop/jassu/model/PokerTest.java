@@ -2,15 +2,15 @@ package fi.bizhop.jassu.model;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PokerTest {
     @Test
