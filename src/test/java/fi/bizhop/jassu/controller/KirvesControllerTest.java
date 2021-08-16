@@ -49,7 +49,6 @@ public class KirvesControllerTest extends TestBase {
         RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
 
         MvcResult result = this.mockMvc.perform(builder).andReturn();
-
         assertEquals(401, result.getResponse().getStatus());
     }
 
@@ -62,6 +61,7 @@ public class KirvesControllerTest extends TestBase {
         when(this.kirvesService.getActiveGames()).thenReturn(this.getTestGames());
 
         MvcResult result = this.mockMvc.perform(builder).andReturn();
+        assertEquals(200, result.getResponse().getStatus());
 
         GameBrief[] response = this.mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
 
