@@ -7,12 +7,12 @@ import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.service.UserService;
 import fi.bizhop.jassu.util.TestUserUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -23,12 +23,12 @@ import java.util.List;
 
 import static fi.bizhop.jassu.util.TestUserUtil.TEST_USER_EMAIL;
 import static fi.bizhop.jassu.util.TestUserUtil.getTestUser;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(value = KirvesController.class)
 public class KirvesControllerTest extends TestBase {
 

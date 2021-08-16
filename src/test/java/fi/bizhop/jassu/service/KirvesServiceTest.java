@@ -12,26 +12,23 @@ import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static fi.bizhop.jassu.util.TestUserUtil.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class KirvesServiceTest {
     @MockBean
     KirvesGameRepo kirvesGameRepo;
@@ -47,7 +44,9 @@ public class KirvesServiceTest {
     @MockBean
     UserService userService;
 
-    @Before
+    Map<Integer, Exception> threadExceptions = new HashMap<>();
+
+    @BeforeEach
     public void setup() {
         this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo);
     }
@@ -132,7 +131,7 @@ public class KirvesServiceTest {
             try {
                 this.kirvesService.action(0L, input, user, 3 * 1000);
             } catch (Exception e) {
-                fail();
+                this.threadExceptions.put(1, e);
             }
         });
 
@@ -140,15 +139,25 @@ public class KirvesServiceTest {
             User user = getTestUser("other@mock.com");
 
             try {
-                this.kirvesService.action(0L, new GameIn(), user, 0);
+                var input = new GameIn();
+                input.action = CUT;
+                input.declineCut = false;
+
+                this.kirvesService.action(0L, input, user, 0);
             } catch (Exception e) {
-                assertTrue(e instanceof TransactionException);
+                this.threadExceptions.put(2, e);
             }
         });
 
         p1Thread.start();
         Thread.sleep(1000);
         p2Thread.start();
+
+        p1Thread.join();
+        p2Thread.join();
+
+        assertNull(this.threadExceptions.get(1));
+        assertTrue(this.threadExceptions.get(2) instanceof TransactionException);
     }
 
     @Test

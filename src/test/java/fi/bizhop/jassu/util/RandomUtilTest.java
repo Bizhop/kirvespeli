@@ -1,9 +1,10 @@
 package fi.bizhop.jassu.util;
 
 import fi.bizhop.jassu.exception.ProbabilityException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RandomUtilTest {
 
