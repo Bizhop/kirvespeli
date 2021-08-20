@@ -38,17 +38,20 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void stayWithNoWinning() throws CardException {
-//        var hand = Cards.fromAbbreviations(List.of(""));
-        var game = this.pokerService.newGameForPlayer(getTestUser());
+    public void stayWithHighCardZeroMoney() throws CardException {
+        var hand = Cards.fromAbbreviations(List.of("KH", "QS", "JH", "TC", "6S"));
+        var game = this.pokerService.newGameForPlayer(getTestUser(), hand);
 
         game.stay(this.userService);
+        assertEquals(BigDecimal.ZERO, game.getMoney());
+    }
 
-        var hand = game.getEvaluation();
-        if(List.of(INVALID, HIGH, PAIR).contains(hand.type)) {
-            assertEquals(BigDecimal.ZERO, game.getMoney());
-        } else {
-            assertTrue(game.getMoney().compareTo(BigDecimal.ZERO) > 0);
-        }
+    @Test
+    public void stayWithTwoPairDoubleMoney() throws CardException {
+        var hand = Cards.fromAbbreviations(List.of("KH", "KS", "JH", "JC", "6S"));
+        var game = this.pokerService.newGameForPlayer(getTestUser(), hand);
+
+        game.stay(this.userService);
+        assertEquals(BigDecimal.valueOf(2), game.getMoney());
     }
 }
