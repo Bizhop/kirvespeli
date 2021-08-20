@@ -7,6 +7,8 @@ import java.util.List;
 import static fi.bizhop.jassu.model.poker.PokerGame.Action;
 
 public class PokerGameOut {
+    private Long id;
+    private String player;
     private List<String> hand;
     private String handValue;
     private BigDecimal money;
@@ -18,20 +20,23 @@ public class PokerGameOut {
 
     public PokerGameOut() {}
 
-    public PokerGameOut(PokerGame game) {
-        this.setInitialValues(game, BigDecimal.valueOf(0));
+    public PokerGameOut(PokerGame game, Long id) {
+        this.setInitialValues(game, id);
+        this.userMoney = BigDecimal.ZERO;
     }
 
-    public PokerGameOut(PokerGame game, BigDecimal userMoney) {
-        this.setInitialValues(game, userMoney);
+    public PokerGameOut(PokerGame game, Long id, BigDecimal userMoney) {
+        this.setInitialValues(game, id);
+        this.userMoney = userMoney;
     }
 
-    private void setInitialValues(PokerGame game, BigDecimal userMoney) {
+    private void setInitialValues(PokerGame game, Long id) {
+        this.id = id;
+        this.player = game.getPlayer();
         this.handValue = game.getEvaluation().toString();
         this.hand = game.getHand().getCardsOut();
         this.availableActions = game.getAvailableActions();
         this.money = game.getMoney();
-        this.userMoney = userMoney;
         this.multipliersTable = PokerGame.getMultiplierTable();
     }
 
@@ -93,5 +98,21 @@ public class PokerGameOut {
 
     public void setMultipliersTable(List<MultiplierOut> multipliersTable) {
         this.multipliersTable = multipliersTable;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(String player) {
+        this.player = player;
     }
 }

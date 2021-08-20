@@ -26,8 +26,7 @@ public class PokerController {
     @RequestMapping(value = "/poker/deal", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody PokerGameOut deal(@ParameterUser User user) {
         try {
-            PokerGame game = this.POKER_SERVICE.newGameForPlayer(user);
-            return new PokerGameOut(game, user.getMoney());
+            return this.POKER_SERVICE.newGameForPlayer(user);
         } catch (CardException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
@@ -36,7 +35,7 @@ public class PokerController {
     @RequestMapping(value = "/poker/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody PokerGameOut getGame(@PathVariable Long id, @ParameterUser User user) {
         try {
-            return new PokerGameOut(this.POKER_SERVICE.getGame(id, user), user.getMoney());
+            return this.POKER_SERVICE.getGame(id, user);
         } catch (PokerGameException e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -44,15 +43,13 @@ public class PokerController {
 
     @RequestMapping(value = "/poker", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<PokerGameOut> getGames(@ParameterUser User user) {
-        return this.POKER_SERVICE.getGames(user).stream()
-                .map(PokerGameOut::new)
-                .collect(Collectors.toList());
+        return this.POKER_SERVICE.getGames(user);
     }
 
     @RequestMapping(value = "/poker/{id}", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public @ResponseBody PokerGameOut action(@RequestBody PokerGameIn in, @PathVariable Long id, @ParameterUser User user) {
         try {
-            return new PokerGameOut(this.POKER_SERVICE.action(id, in, user), user.getMoney());
+            return this.POKER_SERVICE.action(id, in, user);
         } catch (PokerGameException e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         } catch (CardException e) {
