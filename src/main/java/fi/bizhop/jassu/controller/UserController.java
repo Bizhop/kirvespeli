@@ -20,7 +20,7 @@ public class UserController {
         this.AUTH_SERVICE = authService;
     }
 
-    @RequestMapping(value = "/api/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody User update(   @RequestBody UserIn userIn,
                                         HttpServletRequest request,
                                         HttpServletResponse response) throws UserException {

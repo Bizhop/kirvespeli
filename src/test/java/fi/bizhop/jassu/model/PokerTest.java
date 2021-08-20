@@ -4,198 +4,107 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.util.PokerHandEvaluator;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static fi.bizhop.jassu.model.Card.Rank.*;
-import static fi.bizhop.jassu.model.Card.Suit.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PokerTest {
     @Test
     public void testPair() throws CardException {
-        List<Card> pair = new ArrayList<>();
-        pair.add(new Card(SPADES, ACE));
-        pair.add(new Card(HEARTS, ACE));
-        Cards hand = new Cards(pair);
-        assertTrue(PokerHandEvaluator.checkPair(hand) > 0);
+        Cards pair = Cards.fromAbbreviations(List.of("7S", "7H"));
+        assertEquals(7, PokerHandEvaluator.checkPair(pair));
 
-        List<Card> notPair = new ArrayList<>();
-        notPair.add(new Card(SPADES, ACE));
-        notPair.add(new Card(SPADES, TWO));
-        Cards hand2 = new Cards(notPair);
-        assertFalse(PokerHandEvaluator.checkPair(hand2) > 0);
+        Cards notPair = Cards.fromAbbreviations(List.of("AS", "2S"));
+        assertEquals(0, PokerHandEvaluator.checkPair(notPair));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkPair(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkPair(deck));
     }
 
     @Test
     public void testThree() throws CardException {
-        List<Card> three = new ArrayList<>();
-        three.add(new Card(SPADES, ACE));
-        three.add(new Card(HEARTS, ACE));
-        three.add(new Card(CLUBS, ACE));
-        Cards hand = new Cards(three);
-        assertTrue(PokerHandEvaluator.checkThreeOfAKind(hand) > 0);
+        Cards three = Cards.fromAbbreviations(List.of("9S", "9H", "9C"));
+        assertEquals(9, PokerHandEvaluator.checkThreeOfAKind(three));
 
-        List<Card> notThree = new ArrayList<>();
-        notThree.add(new Card(SPADES, ACE));
-        notThree.add(new Card(HEARTS, ACE));
-        notThree.add(new Card(CLUBS, TWO));
-        Cards hand2 = new Cards(notThree);
-        assertFalse(PokerHandEvaluator.checkThreeOfAKind(hand2) > 0);
+        Cards notThree = Cards.fromAbbreviations(List.of("AS", "AH", "2C"));
+        assertEquals(0, PokerHandEvaluator.checkThreeOfAKind(notThree));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkThreeOfAKind(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkThreeOfAKind(deck));
     }
 
     @Test
     public void testTwoPair() throws CardException {
-        List<Card> twoPair = new ArrayList<>();
-        twoPair.add(new Card(SPADES, ACE));
-        twoPair.add(new Card(HEARTS, ACE));
-        twoPair.add(new Card(SPADES, KING));
-        twoPair.add(new Card(HEARTS, KING));
-        Cards hand = new Cards(twoPair);
-        assertTrue(PokerHandEvaluator.checkTwoPair(hand) > 0);
+        Cards twoPair = Cards.fromAbbreviations(List.of("TS", "TH", "5S", "5H"));
+        assertEquals(10, PokerHandEvaluator.checkTwoPair(twoPair));
 
-        List<Card> notTwoPair = new ArrayList<>();
-        notTwoPair.add(new Card(SPADES, ACE));
-        notTwoPair.add(new Card(HEARTS, ACE));
-        notTwoPair.add(new Card(SPADES, KING));
-        notTwoPair.add(new Card(HEARTS, SEVEN));
-        Cards hand2 = new Cards(notTwoPair);
-        assertFalse(PokerHandEvaluator.checkTwoPair(hand2) > 0);
+        Cards notTwoPair = Cards.fromAbbreviations(List.of("AS", "AH", "KS", "7H"));
+        assertEquals(0, PokerHandEvaluator.checkTwoPair(notTwoPair));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkTwoPair(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkTwoPair(deck));
     }
 
     @Test
     public void testStraight() throws CardException {
-        List<Card> straight = new ArrayList<>();
-        straight.add(new Card(HEARTS, KING));
-        straight.add(new Card(SPADES, QUEEN));
-        straight.add(new Card(HEARTS, JACK));
-        straight.add(new Card(CLUBS, TEN));
-        straight.add(new Card(SPADES, NINE));
-        Cards hand = new Cards(straight);
-        assertTrue(PokerHandEvaluator.checkStraight(hand) > 0);
+        Cards straight = Cards.fromAbbreviations(List.of("KH", "QS", "JH", "TC", "9S"));
+        assertEquals(13, PokerHandEvaluator.checkStraight(straight));
 
-        List<Card> specialStraight = new ArrayList<>();
-        specialStraight.add(new Card(SPADES, ACE));
-        specialStraight.add(new Card(HEARTS, TWO));
-        specialStraight.add(new Card(SPADES, THREE));
-        specialStraight.add(new Card(HEARTS, FOUR));
-        specialStraight.add(new Card(CLUBS, FIVE));
-        Cards hand2 = new Cards(specialStraight);
-        assertTrue(PokerHandEvaluator.checkStraight(hand2) > 0);
+        Cards specialStraight = Cards.fromAbbreviations(List.of("AH", "2S", "3H", "4C", "5S"));
+        assertEquals(5, PokerHandEvaluator.checkStraight(specialStraight));
 
-        List<Card> notStraight = new ArrayList<>();
-        notStraight.add(new Card(HEARTS, KING));
-        notStraight.add(new Card(SPADES, QUEEN));
-        notStraight.add(new Card(HEARTS, JACK));
-        notStraight.add(new Card(CLUBS, TEN));
-        notStraight.add(new Card(SPADES, SIX));
-        Cards hand3 = new Cards(notStraight);
-        assertFalse(PokerHandEvaluator.checkStraight(hand3) > 0);
+        Cards notStraight = Cards.fromAbbreviations(List.of("KH", "QS", "JH", "TC", "6S"));
+        assertEquals(0, PokerHandEvaluator.checkStraight(notStraight));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkStraight(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkStraight(deck));
     }
 
     @Test
     public void testFullHouse() throws CardException {
-        List<Card> fullHouse = new ArrayList<>();
-        fullHouse.add(new Card(SPADES, ACE));
-        fullHouse.add(new Card(HEARTS, ACE));
-        fullHouse.add(new Card(CLUBS, ACE));
-        fullHouse.add(new Card(DIAMONDS, KING));
-        fullHouse.add(new Card(HEARTS, KING));
-        Cards hand = new Cards(fullHouse);
-        assertTrue(PokerHandEvaluator.checkFullHouse(hand) > 0);
+        Cards fullHouse = Cards.fromAbbreviations(List.of("8S", "8H", "8C", "KD", "KH"));
+        assertEquals(8, PokerHandEvaluator.checkFullHouse(fullHouse));
 
-        List<Card> notFullHouse = new ArrayList<>();
-        notFullHouse.add(new Card(SPADES, ACE));
-        notFullHouse.add(new Card(HEARTS, ACE));
-        notFullHouse.add(new Card(CLUBS, TWO));
-        notFullHouse.add(new Card(CLUBS, SEVEN));
-        notFullHouse.add(new Card(CLUBS, FIVE));
-        Cards hand2 = new Cards(notFullHouse);
-        assertFalse(PokerHandEvaluator.checkFullHouse(hand2) > 0);
+        Cards notFullHouse = Cards.fromAbbreviations(List.of("AS", "AH", "2C", "7C", "5C"));
+        assertEquals(0, PokerHandEvaluator.checkFullHouse(notFullHouse));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkFullHouse(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkFullHouse(deck));
     }
 
     @Test
     public void testFour() throws CardException {
-        List<Card> four = new ArrayList<>();
-        four.add(new Card(SPADES, ACE));
-        four.add(new Card(HEARTS, ACE));
-        four.add(new Card(CLUBS, ACE));
-        four.add(new Card(DIAMONDS, ACE));
-        Cards hand = new Cards(four);
-        assertTrue(PokerHandEvaluator.checkFourOfAKind(hand) > 0);
+        Cards four = Cards.fromAbbreviations(List.of("6S", "6H", "6C", "6D"));
+        assertEquals(6, PokerHandEvaluator.checkFourOfAKind(four));
 
-        List<Card> notFour = new ArrayList<>();
-        notFour.add(new Card(SPADES, ACE));
-        notFour.add(new Card(HEARTS, ACE));
-        notFour.add(new Card(CLUBS, TWO));
-        Cards hand2 = new Cards(notFour);
-        assertFalse(PokerHandEvaluator.checkFourOfAKind(hand2) > 0);
+        Cards notFour = Cards.fromAbbreviations(List.of("AS", "AH", "AC", "2D"));
+        assertEquals(0, PokerHandEvaluator.checkFourOfAKind(notFour));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkFourOfAKind(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkFourOfAKind(deck));
     }
 
     @Test
     public void testStraightFlush() throws CardException {
-        List<Card> straightFlush = new ArrayList<>();
-        straightFlush.add(new Card(SPADES, ACE));
-        straightFlush.add(new Card(SPADES, KING));
-        straightFlush.add(new Card(SPADES, QUEEN));
-        straightFlush.add(new Card(SPADES, JACK));
-        straightFlush.add(new Card(SPADES, TEN));
-        Cards hand = new Cards(straightFlush);
-        assertTrue(PokerHandEvaluator.checkStraightFlush(hand) > 0);
+        Cards straightFlush = Cards.fromAbbreviations(List.of("9S", "8S", "QS", "JS", "TS"));
+        assertEquals(12, PokerHandEvaluator.checkStraightFlush(straightFlush));
 
-        List<Card> notStraightFlush = new ArrayList<>();
-        notStraightFlush.add(new Card(SPADES, ACE));
-        notStraightFlush.add(new Card(HEARTS, ACE));
-        notStraightFlush.add(new Card(CLUBS, TWO));
-        notStraightFlush.add(new Card(CLUBS, SEVEN));
-        notStraightFlush.add(new Card(CLUBS, FIVE));
-        Cards hand2 = new Cards(notStraightFlush);
-        assertFalse(PokerHandEvaluator.checkStraightFlush(hand2) > 0);
+        Cards notStraightFlush = Cards.fromAbbreviations(List.of("AS", "AH", "AC", "2D", "6S"));
+        assertEquals(0, PokerHandEvaluator.checkStraightFlush(notStraightFlush));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkStraightFlush(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkStraightFlush(deck));
     }
 
     @Test
     public void testFlush() throws CardException {
-        List<Card> flush = new ArrayList<>();
-        flush.add(new Card(SPADES, ACE));
-        flush.add(new Card(SPADES, QUEEN));
-        flush.add(new Card(SPADES, EIGHT));
-        flush.add(new Card(SPADES, SEVEN));
-        flush.add(new Card(SPADES, TWO));
-        Cards hand = new Cards(flush);
-        assertTrue(PokerHandEvaluator.checkFlush(hand) > 0);
+        Cards flush = Cards.fromAbbreviations(List.of("5S", "JS", "8S", "7S", "2S"));
+        assertEquals(11, PokerHandEvaluator.checkFlush(flush));
 
-        List<Card> notFlush = new ArrayList<>();
-        notFlush.add(new Card(SPADES, ACE));
-        notFlush.add(new Card(HEARTS, QUEEN));
-        notFlush.add(new Card(SPADES, EIGHT));
-        notFlush.add(new Card(CLUBS, SEVEN));
-        notFlush.add(new Card(DIAMONDS, TWO));
-        Cards hand2 = new Cards(notFlush);
-        assertFalse(PokerHandEvaluator.checkFlush(hand2) > 0);
+        Cards notFlush = Cards.fromAbbreviations(List.of("AS", "QH", "8S", "7C", "2D"));
+        assertEquals(0, PokerHandEvaluator.checkFlush(notFlush));
 
         Cards deck = new StandardDeck();
-        assertTrue(PokerHandEvaluator.checkFlush(deck) > 0);
+        assertEquals(14, PokerHandEvaluator.checkFlush(deck));
     }
 }

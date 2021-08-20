@@ -218,4 +218,14 @@ public class Cards {
     public boolean hasNoTrumpCard(Card.Suit trump) {
         return this.cards.stream().noneMatch(card -> card.getRank() == Card.Rank.JACK || List.of(trump, Card.Suit.JOKER).contains(card.getSuit()));
     }
+
+    public Cards giveCards(Cards hand) throws CardException {
+        if(hand == null) return new Cards();
+        if(this.cards.containsAll(hand.cards)) {
+            this.cards.removeAll(hand.getCards());
+            return hand;
+        } else {
+            throw new CardException("All wanted cards don't exist");
+        }
+    }
 }

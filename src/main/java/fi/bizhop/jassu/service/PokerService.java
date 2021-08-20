@@ -2,6 +2,8 @@ package fi.bizhop.jassu.service;
 
 import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.PokerGameException;
+import fi.bizhop.jassu.model.Cards;
+import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.poker.PokerGame;
 import fi.bizhop.jassu.model.poker.PokerGameIn;
 import org.apache.logging.log4j.LogManager;
@@ -30,24 +32,31 @@ public class PokerService {
     }
 
     public PokerGame newGame() throws CardException {
-        return this.newGameForPlayer("test@example.com");
+        return this.newGameForPlayer(new User("test@example.com",""));
     }
 
-    public PokerGame newGameForPlayer(String email) throws CardException {
+
+    public PokerGame newGameForPlayer(User user) throws CardException {
+        return this.newGameForPlayer(user, null);
+    }
+
+    //use this directly for testing only
+    public PokerGame newGameForPlayer(User user, Cards hand) throws CardException {
         BigDecimal wager = BigDecimal.valueOf(1);
-        this.userService.modifyMoney(wager.negate(), email);
+        this.userService.modifyMoney(wager.negate(), user.getEmail());
         PokerGame game = new PokerGame(wager);
-        game.setPlayer(email);
+        game.setPlayer(user.getEmail());
+        game.deal(hand);
         this.games.put(this.sequence++, game);
         return game;
     }
 
-    public PokerGame getGame(Long id, String email) throws PokerGameException {
+    public PokerGame getGame(Long id, User user) throws PokerGameException {
         PokerGame game = this.games.get(id);
         if(game == null) {
             throw new PokerGameException(String.format("No game with id: %d", id));
         }
-        else if(!email.equals(game.getPlayer())) {
+        else if(!user.getEmail().equals(game.getPlayer())) {
             throw new PokerGameException("Not your game");
         }
         else {
@@ -55,16 +64,16 @@ public class PokerService {
         }
     }
 
-    public List<PokerGame> getGames(String email) {
+    public List<PokerGame> getGames(User user) {
         return this.games.values().stream()
-                .filter(game -> email.equals(game.getPlayer()))
+                .filter(game -> user.getEmail().equals(game.getPlayer()))
                 .filter(PokerGame::active)
                 .collect(Collectors.toList());
     }
 
-    public PokerGame action(Long id, PokerGameIn in, String email) throws PokerGameException, CardException {
+    public PokerGame action(Long id, PokerGameIn in, User user) throws PokerGameException, CardException {
         PokerGame game = this.games.get(id);
-        if(!email.equals(game.getPlayer())) {
+        if(!user.getEmail().equals(game.getPlayer())) {
             throw new PokerGameException("Not your game");
         }
         if(game.getAvailableActions().contains(in.action)) {
@@ -79,9 +88,5 @@ public class PokerService {
             }
         }
         return game;
-    }
-
-    public void dummy() {
-        System.out.println("Dummy");
     }
 }

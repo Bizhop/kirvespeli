@@ -65,8 +65,10 @@ public class PokerGame {
         this.player = player;
     }
 
-    public void deal() throws CardException {
-        this.hand = this.deck.deal(5);
+    public void deal(Cards hand) throws CardException {
+        this.hand = hand == null ?
+                this.deck.deal(5) :
+                this.deck.giveCards(hand);
         this.evaluation = PokerHandEvaluator.evaluate(this.hand);
     }
 
