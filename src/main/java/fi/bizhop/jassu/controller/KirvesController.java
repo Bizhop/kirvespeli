@@ -31,7 +31,7 @@ public class KirvesController {
         this.MESSAGE_SERVICE = messageService;
     }
 
-    @RequestMapping(value = "/api/kirves", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/kirves", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody GameOut init(@ParameterUser User user) {
         try {
             Long id = this.KIRVES_SERVICE.init(user);
@@ -42,12 +42,12 @@ public class KirvesController {
     }
 
     //user is injected here to invoke resolver
-    @RequestMapping(value = "/api/kirves", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/kirves", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<GameBrief> getGames(@ParameterUser User user) {
         return this.KIRVES_SERVICE.getActiveGames();
     }
 
-    @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/kirves/{id}", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody GameOut joinGame(@PathVariable Long id, @ParameterUser User user) {
         try {
             this.KIRVES_SERVICE.joinGame(id, user);
@@ -61,7 +61,7 @@ public class KirvesController {
         }
     }
 
-    @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/kirves/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody GameOut getGame(@PathVariable Long id, @ParameterUser User user) {
         try {
             Game game = this.KIRVES_SERVICE.getGame(id);
@@ -73,7 +73,7 @@ public class KirvesController {
         }
     }
 
-    @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/kirves/{id}", method = RequestMethod.DELETE)
     public void deleteGame(@PathVariable Long id, @ParameterUser User user) {
         try {
             this.KIRVES_SERVICE.inactivateGame(id, user);
@@ -84,7 +84,7 @@ public class KirvesController {
         }
     }
 
-    @RequestMapping(value = "/api/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody GameOut action(@PathVariable Long id, @RequestBody GameIn in, @ParameterUser User user) {
         try {
             GameOut out = this.KIRVES_SERVICE.action(id, in, user).out(user);
@@ -100,7 +100,7 @@ public class KirvesController {
     }
 
     //user is injected here to invoke resolver
-    @RequestMapping(value = "/api/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody ActionLog getActionLog(@PathVariable Long id, @PathVariable Long handId, @ParameterUser User user) {
         try {
             return this.KIRVES_SERVICE.getActionLog(id, handId);
@@ -110,7 +110,7 @@ public class KirvesController {
     }
 
     //user is injected here to invoke resolver
-    @RequestMapping(value = "/api/kirves/{id}/{handId}/{actionLogItemIndex}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/kirves/{id}/{handId}/{actionLogItemIndex}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody GameOut getReplay(@PathVariable Long id, @PathVariable Long handId, @PathVariable long actionLogItemIndex, @ParameterUser User user) {
         try {
             var game = this.KIRVES_SERVICE.getReplay(id, handId, actionLogItemIndex);
