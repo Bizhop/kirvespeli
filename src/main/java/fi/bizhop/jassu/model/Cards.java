@@ -86,15 +86,16 @@ public class Cards {
     }
 
     //TODO: consider moving this logic to some poker specific class
-    public void hold(List<Integer> params, Cards deck) throws CardException {
+    public void hold(List<Integer> paramsList, Cards deck) throws CardException {
         //sanity check
-        if(params == null || params.size() > this.cards.size()) {
+        if(paramsList == null || paramsList.size() > this.cards.size()) {
             return;
-        } else if (params.isEmpty()) {
+        } else if (paramsList.isEmpty()) {
             this.cards.clear();
             this.cards.addAll(deck.deal(5).cards);
             return;
         }
+        var params = new ArrayList<>(paramsList);
         params.sort(Integer::compareTo);
         if(params.get(0) < 0 || params.get(params.size() -1) > this.cards.size() - 1) {
             return;

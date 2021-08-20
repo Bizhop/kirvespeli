@@ -2,7 +2,9 @@ package fi.bizhop.jassu.service;
 
 
 import fi.bizhop.jassu.exception.CardException;
+import fi.bizhop.jassu.exception.PokerGameException;
 import fi.bizhop.jassu.model.Cards;
+import fi.bizhop.jassu.model.poker.PokerGameIn;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,10 +14,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static fi.bizhop.jassu.model.poker.PokerHand.Type.*;
+import static fi.bizhop.jassu.model.poker.PokerGame.Action.HOLD;
 import static fi.bizhop.jassu.util.TestUserUtil.getTestUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 public class PokerServiceTest {
@@ -38,20 +39,34 @@ public class PokerServiceTest {
     }
 
     @Test
-    public void stayWithHighCardZeroMoney() throws CardException {
-        var hand = Cards.fromAbbreviations(List.of("KH", "QS", "JH", "TC", "6S"));
-        var game = this.pokerService.newGameForPlayer(getTestUser(), hand);
+    public void holdAllWithHighCardZeroMoney() throws CardException, PokerGameException {
+        var user = getTestUser();
 
-        game.stay(this.userService);
+        var hand = Cards.fromAbbreviations(List.of("KH", "QS", "JH", "TC", "6S"));
+        var id = this.pokerService.newGameForPlayer(user, hand).getId();
+
+        var input = new PokerGameIn();
+        input.action = HOLD;
+        input.parameters = List.of(0,1,2,3,4);
+
+        var game = this.pokerService.action(id, input, user);
+
         assertEquals(BigDecimal.ZERO, game.getMoney());
     }
 
     @Test
-    public void stayWithTwoPairDoubleMoney() throws CardException {
-        var hand = Cards.fromAbbreviations(List.of("KH", "KS", "JH", "JC", "6S"));
-        var game = this.pokerService.newGameForPlayer(getTestUser(), hand);
+    public void holdAllWithTwoPairDoubleMoney() throws CardException, PokerGameException {
+        var user = getTestUser();
 
-        game.stay(this.userService);
+        var hand = Cards.fromAbbreviations(List.of("KH", "KS", "JH", "JC", "6S"));
+        var id = this.pokerService.newGameForPlayer(user, hand).getId();
+
+        var input = new PokerGameIn();
+        input.action = HOLD;
+        input.parameters = List.of(0,1,2,3,4);
+
+        var game = this.pokerService.action(id, input, user);
+
         assertEquals(BigDecimal.valueOf(2), game.getMoney());
     }
 }
