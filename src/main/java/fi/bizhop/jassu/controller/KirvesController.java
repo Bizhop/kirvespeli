@@ -5,6 +5,7 @@ import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.ActionLog;
+import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
@@ -101,9 +102,9 @@ public class KirvesController {
 
     //user is injected here to invoke resolver
     @RequestMapping(value = "/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody ActionLog getActionLog(@PathVariable Long id, @PathVariable Long handId, @ParameterUser User user) {
+    public @ResponseBody List<ActionLogItem> getActionLog(@PathVariable Long id, @PathVariable Long handId, @ParameterUser User user) {
         try {
-            return this.KIRVES_SERVICE.getActionLog(id, handId);
+            return this.KIRVES_SERVICE.getActionLog(id, handId).getItems();
         } catch (KirvesGameException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

@@ -181,6 +181,7 @@ public class KirvesService {
         gameDB.gameData = game.toJson();
         gameDB.players = game.getNumberOfPlayers();
         gameDB.canJoin = game.getCanJoin();
+        gameDB.lastHandId = game.getCurrentHandId();
         this.GAME_REPO.save(gameDB);
         this.IN_MEMORY_GAMES.put(id, game);
 
@@ -188,7 +189,13 @@ public class KirvesService {
             if (List.of(PLAY_CARD, FOLD, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD).contains(in.action)) {
                 Long handId = game.getCurrentHandId();
                 ActionLogItem actionLogItem = this.saveActionLogItem(in, user, id, handId, null);
-                this.IN_MEMORY_ACTION_LOGS.get(this.actionLogKey(id, handId)).addItem(actionLogItem);
+                ActionLog inMemoryLog = this.IN_MEMORY_ACTION_LOGS.get(actionLogKey(id, handId));
+                if(inMemoryLog == null) {
+                    //log was not in memory, getting will initialize from db
+                    this.getActionLog(id, handId);
+                } else {
+                    inMemoryLog.addItem(actionLogItem);
+                }
             } else if (in.action == DEAL) {
                 this.initializeActionLog(in, user, game, id);
             }
@@ -199,7 +206,7 @@ public class KirvesService {
         Long handId = game.incrementHandId();
 
         String initialState = game.toJson();
-        String key = this.actionLogKey(gameId, handId);
+        String key = actionLogKey(gameId, handId);
 
         ActionLog actionLog = new ActionLog(initialState);
 
@@ -211,12 +218,12 @@ public class KirvesService {
         ActionLogItem actionLogItem = this.saveActionLogItem(in, user, gameId, handId, actionLogDB);
         
         actionLog.addItem(actionLogItem);
-        this.IN_MEMORY_ACTION_LOGS.put(this.actionLogKey(gameId, handId), actionLog);
+        this.IN_MEMORY_ACTION_LOGS.put(actionLogKey(gameId, handId), actionLog);
         LOG.info(String.format("Action log initialized for gameId: %d, handId: %d", gameId, handId));
     }
 
     private ActionLogItem saveActionLogItem(GameIn in, User user, Long gameId, Long handId, ActionLogDB actionLogDB) throws KirvesGameException {
-        String key = this.actionLogKey(gameId, handId);
+        String key = actionLogKey(gameId, handId);
         if(actionLogDB == null) {
             actionLogDB = this.ACTION_LOG_REPO.findById(key).orElseThrow();
         }
@@ -231,9 +238,9 @@ public class KirvesService {
     }
 
     public ActionLog getActionLog(Long gameId, Long handId) throws KirvesGameException {
-        ActionLog actionLog = this.IN_MEMORY_ACTION_LOGS.get(this.actionLogKey(gameId, handId));
+        ActionLog actionLog = this.IN_MEMORY_ACTION_LOGS.get(actionLogKey(gameId, handId));
         if(actionLog == null) {
-            String key = this.actionLogKey(gameId, handId);
+            String key = actionLogKey(gameId, handId);
             ActionLogDB actionLogDB = this.ACTION_LOG_REPO.findById(key)
                     .orElseThrow(() -> new KirvesGameException(String.format("Action log not found for gameId: %d handId: %d", gameId, handId)));
             actionLog = ActionLog.of(actionLogDB);
@@ -261,7 +268,7 @@ public class KirvesService {
         return game;
     }
 
-    private String actionLogKey(Long gameId, Long handId) {
+    private static String actionLogKey(Long gameId, Long handId) {
         return String.format("%d-%d", gameId, handId);
     }
 }

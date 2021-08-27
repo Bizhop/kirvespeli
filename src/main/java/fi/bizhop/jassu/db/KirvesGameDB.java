@@ -19,4 +19,5 @@ public class KirvesGameDB extends TimestampBase {
     public Boolean active;
     public Boolean canJoin;
     public String gameData;
+    public Long lastHandId;
 }

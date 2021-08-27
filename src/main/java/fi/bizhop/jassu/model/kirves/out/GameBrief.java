@@ -9,6 +9,7 @@ public class GameBrief {
     public Long id;
     public User admin;
     public Integer players;
+    public Long lastHandId;
     public Boolean canJoin;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
@@ -19,6 +20,7 @@ public class GameBrief {
         this.id = db.id;
         this.admin = new User(db.admin);
         this.players = db.players;
+        this.lastHandId = db.lastHandId;
         this.canJoin = db.canJoin;
         this.createdAt = db.createdAt;
         this.updatedAt = db.updatedAt;
