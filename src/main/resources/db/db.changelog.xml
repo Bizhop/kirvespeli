@@ -93,4 +93,9 @@
 			</column>
 		</createTable>
 	</changeSet>
+	<changeSet id="addLastHandIdToGame" author="Ville">
+		<addColumn tableName="games">
+			<column name="last_hand_id" type="INT" />
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
