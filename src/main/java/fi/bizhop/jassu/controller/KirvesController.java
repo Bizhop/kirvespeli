@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.*;
 import static fi.bizhop.jassu.exception.TransactionException.Type.INTERNAL;
 import static fi.bizhop.jassu.exception.TransactionException.Type.UNKNOWN;
 
@@ -56,7 +57,7 @@ public class KirvesController {
             this.refresh(id);
             return out;
         } catch (KirvesGameException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw createKirvesResponseStatus(e);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
@@ -68,7 +69,7 @@ public class KirvesController {
             Game game = this.KIRVES_SERVICE.getGame(id);
             return game.out(user).setId(id);
         } catch (KirvesGameException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw createKirvesResponseStatus(e);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
@@ -79,7 +80,7 @@ public class KirvesController {
         try {
             this.KIRVES_SERVICE.inactivateGame(id, user);
         } catch (KirvesGameException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw createKirvesResponseStatus(e);
         } catch (TransactionException e) {
             throw createTransactionResponseStatus(e);
         }
@@ -92,7 +93,7 @@ public class KirvesController {
             this.refresh(id);
             return out;
         } catch (KirvesGameException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw createKirvesResponseStatus(e);
         } catch (TransactionException e) {
             throw createTransactionResponseStatus(e);
         } catch (Exception e) {
@@ -100,24 +101,38 @@ public class KirvesController {
         }
     }
 
-    //user is injected here to invoke resolver
     @RequestMapping(value = "/kirves/{id}/{handId}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<ActionLogItem> getActionLog(@PathVariable Long id, @PathVariable Long handId, @ParameterUser User user) {
         try {
-            return this.KIRVES_SERVICE.getActionLog(id, handId).getItems();
+            return this.KIRVES_SERVICE.getActionLog(id, handId, user).getItems();
         } catch (KirvesGameException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw createKirvesResponseStatus(e);
         }
     }
 
-    //user is injected here to invoke resolver
     @RequestMapping(value = "/kirves/{id}/{handId}/{actionLogItemIndex}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody GameOut getReplay(@PathVariable Long id, @PathVariable Long handId, @PathVariable long actionLogItemIndex, @ParameterUser User user) {
+    public @ResponseBody GameOut getReplay(@PathVariable Long id, @PathVariable Long handId, @PathVariable int actionLogItemIndex, @ParameterUser User user) {
         try {
-            var game = this.KIRVES_SERVICE.getReplay(id, handId, actionLogItemIndex);
+            var game = this.KIRVES_SERVICE.getReplay(id, handId, actionLogItemIndex, user);
             return game.out();
-        } catch (KirvesGameException | CardException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (KirvesGameException e) {
+            throw createKirvesResponseStatus(e);
+        } catch (CardException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/kirves/{id}/{handId}/{actionLogItemIndex}", method = RequestMethod.POST)
+    public void restoreGame(@PathVariable Long id, @PathVariable Long handId, @PathVariable int actionLogItemIndex, @ParameterUser User user) {
+        try {
+            this.KIRVES_SERVICE.restoreGame(id, handId, actionLogItemIndex, user);
+            this.refresh(id);
+        } catch (KirvesGameException e) {
+            throw createKirvesResponseStatus(e);
+        } catch (CardException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (TransactionException e) {
+            throw createTransactionResponseStatus(e);
         }
     }
 
@@ -126,6 +141,16 @@ public class KirvesController {
             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
         return new ResponseStatusException(HttpStatus.CONFLICT, String.format("%s: %s", e.getType(), e.getMessage()));
+    }
+
+    private static ResponseStatusException createKirvesResponseStatus(KirvesGameException e) {
+        if(e.getType() == UNAUTHORIZED) {
+            return new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+        }
+        else if(e.getType() == BAD_REQUEST) {
+            return new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
     private void refresh(Long id) {

@@ -85,6 +85,7 @@
     "8S",
     "4C"
   ],
+  "admin": "user@mock.com",
   "turn": "user@mock.com",
   "dealer": "other@mock.com",
   "firstPlayerOfRound": null,

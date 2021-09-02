@@ -15,6 +15,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -45,6 +47,9 @@ public class KirvesServiceTest {
     UserService userService;
 
     Map<Integer, Exception> threadExceptions = new HashMap<>();
+
+    @Captor
+    ArgumentCaptor<List<ActionLogItemDB>> actionLogItemsCaptor;
 
     @BeforeEach
     public void setup() {
@@ -170,6 +175,7 @@ public class KirvesServiceTest {
 
         when(this.userService.get(eq(user1))).thenReturn(new UserDB(user1));
         when(this.userService.get(eq(user2))).thenReturn(new UserDB(user2));
+        when(this.userService.get(eq(TEST_USER_EMAIL))).thenReturn(user1);
 
         GameIn cut = new GameIn();
         cut.action = CUT;
@@ -183,7 +189,7 @@ public class KirvesServiceTest {
 
         Game game = this.kirvesService.action(0L, deal, user2);
 
-        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L);
+        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L, user1);
         System.out.println(actionLog);
         System.out.println("----------");
 
@@ -222,7 +228,7 @@ public class KirvesServiceTest {
 
         this.kirvesService.action(0L, nextAction, nextUser);
 
-        actionLog = this.kirvesService.getActionLog(0L, 0L);
+        actionLog = this.kirvesService.getActionLog(0L, 0L, user1);
         System.out.println(actionLog);
         System.out.println("----------");
 
@@ -242,17 +248,66 @@ public class KirvesServiceTest {
     @Test
     public void testActionLogCache() throws KirvesGameException, IOException {
         when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(getTestActionLog("0-0")));
+        User user = getTestUser();
 
-        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L);
+        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L, user);
         System.out.println(actionLog);
 
-        this.kirvesService.getActionLog(0L,0L);
+        this.kirvesService.getActionLog(0L,0L, user);
 
         verify(this.actionLogRepo, times(1)).findById(any());
     }
 
     @Test
     public void testReplay() throws IOException, KirvesGameException, CardException {
+        this.initializeTestActionLog();
+
+        var user = getTestUser();
+        var replay = this.kirvesService.getReplay(0L, 0L, 0, user);
+
+        assertEquals(2, replay.getNumberOfPlayers());
+
+        var replay2 = this.kirvesService.getReplay(0L,0L,4, user);
+        var player = replay2.getPlayer(TEST_USER_EMAIL).orElseThrow();
+        var player2 = replay2.getPlayer("other@mock.com").orElseThrow();
+
+        assertEquals(4, player.cardsInHand());
+        assertEquals(4, player2.cardsInHand());
+
+        try {
+            this.kirvesService.getReplay(0L, 0L, 15, user);
+        } catch (Exception e) {
+            assertEquals(e.getMessage(), "gameId: 0 handId: 0 has no ActionLogItem for index 15");
+        }
+    }
+
+    @Test
+    public void testRestoreGame() throws IOException, TransactionException, CardException, KirvesGameException {
+        this.initializeTestActionLog();
+
+        var testGameDB = getTestGameDB();
+        when(this.kirvesGameRepo.save(any())).thenReturn(testGameDB);
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(any())).thenReturn(Optional.of(testGameDB));
+        var user = getTestUser();
+        var id = this.kirvesService.init(user);
+        assertEquals(0, id);
+
+        when(this.userService.get(eq(user))).thenReturn(getTestUserDB());
+        this.kirvesService.restoreGame(0L, 0L, 4, user);
+        var game = this.kirvesService.getGame(0L);
+
+        var player = game.getPlayer(TEST_USER_EMAIL).orElseThrow();
+        var player2 = game.getPlayer("other@mock.com").orElseThrow();
+
+        assertEquals(4, player.cardsInHand());
+        assertEquals(4, player2.cardsInHand());
+
+        verify(this.actionLogItemRepo, times(1)).deleteByActionLog(any());
+        verify(this.actionLogItemRepo).saveAll(this.actionLogItemsCaptor.capture());
+        assertEquals(4, this.actionLogItemsCaptor.getValue().size());
+    }
+
+    private void initializeTestActionLog() throws IOException {
         var actionLogDB = getTestActionLog("0-0");
         var itemsJson = FileUtils.readFileToString(new File("src/test/resources/actionLogItems.json"), "UTF-8");
         var actionLogItems = JsonUtil.getJavaObject(itemsJson, ActionLogItems.class).orElseThrow();
@@ -269,23 +324,6 @@ public class KirvesServiceTest {
                 .collect(Collectors.toList());
         actionLogDB.items.addAll(itemDBs);
         when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(actionLogDB));
-
-        var replay = this.kirvesService.getReplay(0L, 0L, 0);
-
-        assertEquals(2, replay.getNumberOfPlayers());
-
-        var replay2 = this.kirvesService.getReplay(0L,0L,4);
-        var player = replay2.getPlayer(TEST_USER_EMAIL).orElseThrow();
-        var player2 = replay2.getPlayer("other@mock.com").orElseThrow();
-
-        assertEquals(4, player.cardsInHand());
-        assertEquals(4, player2.cardsInHand());
-
-        try {
-            this.kirvesService.getReplay(0L, 0L, 15);
-        } catch (Exception e) {
-            assertEquals(e.getMessage(), "gameId: 0 handId: 0 has no ActionLogItem for index 15");
-        }
     }
 
     private static KirvesGameDB getTestGameDB() throws IOException {
@@ -302,11 +340,12 @@ public class KirvesServiceTest {
     private static ActionLogDB getTestActionLog(String key) throws IOException {
         ActionLogDB db = new ActionLogDB();
         db.key = key;
+        db.owner = getTestUserDB();
         db.initialState = FileUtils.readFileToString(new File("src/test/resources/actionLogInitialState.json"), "UTF-8");
 
         ActionLogItemDB item = new ActionLogItemDB();
         item.actionLog = db;
-        item.user = getTestUserDB(TEST_USER_EMAIL);
+        item.user = getTestUserDB();
         item.input = "{\"action\":\"DEAL\",\"index\":0,\"keepExtraCard\":false,\"suit\":null,\"declineCut\":false,\"speak\":null}";
 
         db.items = new ArrayList<>();

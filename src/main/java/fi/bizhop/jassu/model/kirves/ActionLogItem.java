@@ -8,6 +8,8 @@ import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.util.JsonUtil;
 
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.BAD_REQUEST;
+
 public class ActionLogItem {
     private User user;
     private GameIn input;
@@ -39,8 +41,8 @@ public class ActionLogItem {
     }
 
     public ActionLogItemDB getDB(UserDB userDB, ActionLogDB actionLogDB) throws KirvesGameException {
-        if(userDB == null || userDB.email == null) throw new KirvesGameException("Invalid user (null or email null)");
-        if(!userDB.email.equals(this.user.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)");
+        if(userDB == null || userDB.email == null) throw new KirvesGameException("Invalid user (null or email null)", BAD_REQUEST);
+        if(!userDB.email.equals(this.user.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)", BAD_REQUEST);
 
         ActionLogItemDB logItemDB = new ActionLogItemDB();
         logItemDB.user = userDB;

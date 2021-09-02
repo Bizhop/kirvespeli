@@ -98,4 +98,11 @@
 			<column name="last_hand_id" type="INT" />
 		</addColumn>
 	</changeSet>
+	<changeSet id="addOwnerUserIdToActionLog" author="Ville">
+		<addColumn tableName="action_logs">
+			<column name="owner_user_id" type="INT">
+				<constraints nullable="false" foreignKeyName="fk_action_log_owner_user" references="users(id)" />
+			</column>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>

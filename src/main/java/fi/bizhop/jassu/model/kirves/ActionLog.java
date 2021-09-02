@@ -11,10 +11,12 @@ import java.util.Map;
 
 public class ActionLog {
     private final String INITIAL_STATE;
+    private final String OWNER;
     private final List<ActionLogItem> ITEMS = new ArrayList<>();
 
-    public ActionLog(String initialState) {
+    public ActionLog(String initialState, String owner) {
         this.INITIAL_STATE = initialState;
+        this.OWNER = owner;
     }
 
     public String getInitialState() {
@@ -31,10 +33,16 @@ public class ActionLog {
 
     public void addItems(List<ActionLogItem> items) { this.ITEMS.addAll(items); }
 
+    public void removeItemsAfter(int index) {
+        if(this.ITEMS.size() > index) {
+            this.ITEMS.subList(index + 1, this.ITEMS.size()).clear();
+        }
+    }
+
     public static ActionLog of(ActionLogDB db) throws KirvesGameException {
         List<ActionLogItem> items = new ArrayList<>();
         if(db.items == null || db.items.isEmpty()) throw new KirvesGameException("ActionLogDB.items was null or empty");
-        ActionLog actionLog = new ActionLog(db.initialState);
+        ActionLog actionLog = new ActionLog(db.initialState, db.owner.email);
         for(ActionLogItemDB itemDB : db.items) {
             actionLog.addItem(ActionLogItem.of(itemDB));
         }
@@ -42,12 +50,16 @@ public class ActionLog {
         return actionLog;
     }
 
+    public String getOwner() {
+        return this.OWNER;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Initial state:\n ");
-        sb.append(this.INITIAL_STATE);
+        sb.append("Initial state:\n ").append(this.INITIAL_STATE);
+        sb.append("\nOwner: ").append(this.OWNER);
 
         this.ITEMS.forEach(item -> {
             sb.append("\n");
