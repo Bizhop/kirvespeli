@@ -4,7 +4,6 @@ import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
-import fi.bizhop.jassu.model.kirves.ActionLog;
 import fi.bizhop.jassu.model.kirves.ActionLogItem;
 import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
@@ -13,18 +12,23 @@ import fi.bizhop.jassu.model.kirves.out.GameOut;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.util.ParameterUser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-import static fi.bizhop.jassu.exception.KirvesGameException.Type.*;
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.BAD_REQUEST;
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.UNAUTHORIZED;
 import static fi.bizhop.jassu.exception.TransactionException.Type.INTERNAL;
 import static fi.bizhop.jassu.exception.TransactionException.Type.UNKNOWN;
 
 @RestController
 public class KirvesController {
+    private static final Logger LOG = LogManager.getLogger(KirvesController.class);
+
     final KirvesService KIRVES_SERVICE;
     final MessageService MESSAGE_SERVICE;
 
@@ -39,6 +43,7 @@ public class KirvesController {
             Long id = this.KIRVES_SERVICE.init(user);
             return this.KIRVES_SERVICE.getGame(id).out(user).setId(id);
         } catch (Exception e) {
+            LOG.error("Failed to initialize game", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -59,6 +64,7 @@ public class KirvesController {
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
         } catch (Exception e) {
+            LOG.error("Failed to join game", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -71,6 +77,7 @@ public class KirvesController {
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
         } catch (Exception e) {
+            LOG.error("Failed to get game", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -97,6 +104,7 @@ public class KirvesController {
         } catch (TransactionException e) {
             throw createTransactionResponseStatus(e);
         } catch (Exception e) {
+            LOG.error("Action failed", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -117,7 +125,8 @@ public class KirvesController {
             return game.out();
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
-        } catch (CardException e) {
+        } catch (Exception e) {
+            LOG.error("Getting replay failed", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -129,10 +138,11 @@ public class KirvesController {
             this.refresh(id);
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
-        } catch (CardException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (TransactionException e) {
             throw createTransactionResponseStatus(e);
+        } catch (Exception e) {
+            LOG.error("Failed to restore game", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

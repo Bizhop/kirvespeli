@@ -30,7 +30,7 @@ public class Game {
 
     private final Cards deck;
     private final List<Player> players = new ArrayList<>();
-    private String admin;
+    private final String admin;
     private Player turn;
     private Player dealer;
     private Player firstPlayerOfRound;
@@ -73,7 +73,7 @@ public class Game {
         this.data = new GameDataPOJO();
         this.deck = new Deck().shuffle();
         this.data.canJoin = true;
-        this.data.admin = admin.getEmail();
+        this.admin = admin.getEmail();
 
         Player player = this.addPlayerInternal(admin.toPOJO());
         this.setDealer(player);
@@ -81,6 +81,7 @@ public class Game {
 
     public String toJson() throws KirvesGameException {
         this.data.players = this.players.stream().map(Player::toPojo).collect(toList());
+        this.data.admin = this.admin;
         this.data.deck = this.deck.getCardsOut();
         this.data.turn = this.turn == null ? null : this.turn.getUserEmail();
         this.data.dealer = this.dealer == null ? null : this.dealer.getUserEmail();

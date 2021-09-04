@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -199,23 +200,24 @@ public class KirvesService {
                     inMemoryLog.addItem(actionLogItem);
                 }
             } else if (in.action == DEAL) {
-                var owner = this.USER_SERVICE.get(game.getAdmin());
-                this.initializeActionLog(in, owner, user, game, id);
+                var ownerDB = this.USER_SERVICE.get(new User(game.getAdmin(), null));
+                this.initializeActionLog(in, ownerDB, user, game, id);
             }
         }
     }
 
-    private void initializeActionLog(GameIn in, User owner, User user, Game game, Long gameId) throws KirvesGameException {
+    private void initializeActionLog(GameIn in, UserDB ownerDB, User user, Game game, Long gameId) throws KirvesGameException {
         Long handId = game.incrementHandId();
 
         String initialState = game.toJson();
         String key = actionLogKey(gameId, handId);
 
-        ActionLog actionLog = new ActionLog(initialState, owner.getEmail());
+        ActionLog actionLog = new ActionLog(initialState, ownerDB.email);
 
         ActionLogDB actionLogDB = new ActionLogDB();
         actionLogDB.key = key;
         actionLogDB.initialState = initialState;
+        actionLogDB.owner = ownerDB;
 
         actionLogDB = this.ACTION_LOG_REPO.save(actionLogDB);
         ActionLogItem actionLogItem = this.saveActionLogItem(in, user, gameId, handId, actionLogDB);
@@ -277,6 +279,7 @@ public class KirvesService {
         return game;
     }
 
+    @Transactional
     public void restoreGame(Long id, Long handId, int actionLogItemIndex, User user) throws KirvesGameException, CardException, TransactionException {
         var game = this.getReplay(id, handId, actionLogItemIndex, user);
 

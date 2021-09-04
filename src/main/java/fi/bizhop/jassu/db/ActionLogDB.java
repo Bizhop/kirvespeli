@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name="action_logs")
-public class ActionLogDB extends TimestampBase {
+public class ActionLogDB {
     //key is composite of gameId and handId
     @Id
     public String key;
