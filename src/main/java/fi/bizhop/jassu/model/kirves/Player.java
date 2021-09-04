@@ -10,6 +10,8 @@ import fi.bizhop.jassu.model.kirves.pojo.UserPOJO;
 import java.util.Collections;
 import java.util.List;
 
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.BAD_REQUEST;
+
 public class Player {
 
     private final Cards hand = new Cards();
@@ -155,7 +157,7 @@ public class Player {
 
     public void discard(int index) throws KirvesGameException, CardException {
         if(this.extraCard == null) {
-            throw new KirvesGameException("DISCARD ei onnistu: ei ylimääräistä korttia");
+            throw new KirvesGameException("DISCARD ei onnistu: ei ylimääräistä korttia", BAD_REQUEST);
         }
         this.hand.remove(index);
         this.hand.add(this.extraCard);

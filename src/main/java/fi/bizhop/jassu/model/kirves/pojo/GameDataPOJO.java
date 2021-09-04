@@ -6,6 +6,7 @@ public class GameDataPOJO {
     //these values are only updated when generating save data
     public List<PlayerPOJO> players;
     public List<String> deck;
+    public String admin;
     public String turn;
     public String dealer;
     public String firstPlayerOfRound;

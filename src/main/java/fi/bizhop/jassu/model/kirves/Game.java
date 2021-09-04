@@ -16,6 +16,7 @@ import fi.bizhop.jassu.util.RandomUtil;
 
 import java.util.*;
 
+import static fi.bizhop.jassu.exception.KirvesGameException.Type.BAD_REQUEST;
 import static fi.bizhop.jassu.model.Card.Rank.*;
 import static fi.bizhop.jassu.model.Card.Suit.*;
 import static fi.bizhop.jassu.model.kirves.Game.Action.*;
@@ -29,6 +30,7 @@ public class Game {
 
     private final Cards deck;
     private final List<Player> players = new ArrayList<>();
+    private final String admin;
     private Player turn;
     private Player dealer;
     private Player firstPlayerOfRound;
@@ -40,8 +42,9 @@ public class Game {
     private final GameDataPOJO data;
 
     public Game(GameDataPOJO pojo) throws KirvesGameException {
-        if(pojo == null) throw new KirvesGameException("GameDataPOJO ei voi olla tyhjä (null)");
+        if(pojo == null) throw new KirvesGameException("GameDataPOJO ei voi olla tyhjä (null)", BAD_REQUEST);
         this.data = pojo;
+        this.admin = pojo.admin;
         this.deck = Cards.fromAbbreviations(pojo.deck);
 
         //map the players
@@ -70,6 +73,7 @@ public class Game {
         this.data = new GameDataPOJO();
         this.deck = new Deck().shuffle();
         this.data.canJoin = true;
+        this.admin = admin.getEmail();
 
         Player player = this.addPlayerInternal(admin.toPOJO());
         this.setDealer(player);
@@ -77,6 +81,7 @@ public class Game {
 
     public String toJson() throws KirvesGameException {
         this.data.players = this.players.stream().map(Player::toPojo).collect(toList());
+        this.data.admin = this.admin;
         this.data.deck = this.deck.getCardsOut();
         this.data.turn = this.turn == null ? null : this.turn.getUserEmail();
         this.data.dealer = this.dealer == null ? null : this.dealer.getUserEmail();
@@ -169,10 +174,10 @@ public class Game {
                 this.resetActions();
                 player.setAvailableActions(List.of(CUT));
             } else {
-                throw new KirvesGameException(String.format("Pelaaja %s on jo pelissä", user.getNickname()));
+                throw new KirvesGameException(String.format("Pelaaja %s on jo pelissä", user.getNickname()), BAD_REQUEST);
             }
         } else {
-            throw new KirvesGameException("Tähän peliin ei voi liittyä nyt");
+            throw new KirvesGameException("Tähän peliin ei voi liittyä nyt", BAD_REQUEST);
         }
     }
 
@@ -199,7 +204,7 @@ public class Game {
 
     //use this method directly only when testing!
     public void deal(User user, List<Card> possibleTrumpCards) throws CardException, KirvesGameException {
-        if(!this.data.canDeal) throw new KirvesGameException("Jakaminen ei onnistu");
+        if(!this.data.canDeal) throw new KirvesGameException("Jakaminen ei onnistu", BAD_REQUEST);
         List<Player> players = this.getPlayersStartingFrom(this.dealer.getUserEmail());
         for(Player player : players) {
             player.getPlayedCards().clear();
@@ -250,7 +255,7 @@ public class Game {
     //use this method directly only when testing!
     public void cut(User cutter, boolean decline, Card cutCard, Card second) throws CardException, KirvesGameException {
         if(decline && !this.data.canDeclineCut) {
-            throw new KirvesGameException("Nostosta ei voi kieltäytyä");
+            throw new KirvesGameException("Nostosta ei voi kieltäytyä", BAD_REQUEST);
         }
         this.deck.clear();
         this.deck.add(new Deck().shuffle());
@@ -309,7 +314,7 @@ public class Game {
     }
 
     public void speak(User user, Speak speak) throws KirvesGameException {
-        if(speak == null) throw new KirvesGameException("Puhe ei voi olla tyhjä (null)");
+        if(speak == null) throw new KirvesGameException("Puhe ei voi olla tyhjä (null)", BAD_REQUEST);
 
         Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         if(speak == KEEP) {
@@ -337,8 +342,8 @@ public class Game {
     }
 
     public void speakSuit(User user, Card.Suit suit) throws KirvesGameException {
-        if(suit == null) throw new KirvesGameException("Valttimaa ei voi olla tyhjä (null)");
-        if(suit == this.trump) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()));
+        if(suit == null) throw new KirvesGameException("Valttimaa ei voi olla tyhjä (null)", BAD_REQUEST);
+        if(suit == this.trump) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()), BAD_REQUEST);
 
         Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.setDeclaredPlayer(true);
@@ -658,6 +663,10 @@ public class Game {
     public Long incrementHandId() {
         this.data.currentHandId = this.data.currentHandId == null ? 0L : this.data.currentHandId + 1L;
         return this.data.currentHandId;
+    }
+
+    public String getAdmin() {
+        return this.admin;
     }
 
     public enum Action {
