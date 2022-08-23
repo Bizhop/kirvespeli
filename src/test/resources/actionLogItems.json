@@ -4,8 +4,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "ACE_OR_TWO_DECISION",
@@ -20,8 +19,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "DISCARD",
@@ -36,8 +34,7 @@
       "user": {
         "email": "other@mock.com",
         "jwt": null,
-        "nickname": "Other",
-        "money": 97
+        "nickname": "Other"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -52,8 +49,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -68,8 +64,7 @@
       "user": {
         "email": "other@mock.com",
         "jwt": null,
-        "nickname": "Other",
-        "money": 97
+        "nickname": "Other"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -84,8 +79,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -100,8 +94,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -116,8 +109,7 @@
       "user": {
         "email": "other@mock.com",
         "jwt": null,
-        "nickname": "Other",
-        "money": 97
+        "nickname": "Other"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -132,8 +124,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -148,8 +139,7 @@
       "user": {
         "email": "other@mock.com",
         "jwt": null,
-        "nickname": "Other",
-        "money": 97
+        "nickname": "Other"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -164,8 +154,7 @@
       "user": {
         "email": "other@mock.com",
         "jwt": null,
-        "nickname": "Other",
-        "money": 97
+        "nickname": "Other"
       },
       "input": {
         "action": "PLAY_CARD",
@@ -180,8 +169,7 @@
       "user": {
         "email": "user@mock.com",
         "jwt": null,
-        "nickname": "User",
-        "money": 118
+        "nickname": "User"
       },
       "input": {
         "action": "PLAY_CARD",

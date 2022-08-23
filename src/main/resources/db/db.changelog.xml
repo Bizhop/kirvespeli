@@ -105,4 +105,7 @@
 			</column>
 		</addColumn>
 	</changeSet>
+	<changeSet id="removeMoneyFromUser" author="Ville">
+		<dropColumn tableName="users" columnName="money" />
+	</changeSet>
 </databaseChangeLog>

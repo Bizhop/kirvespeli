@@ -174,8 +174,8 @@ public class KirvesServiceTest {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
         when(this.actionLogRepo.findById(eq("0-0"))).thenReturn(Optional.of(getTestActionLog("0-0")));
 
-        User user1 = getTestUser();
-        User user2 = getTestUser("other@mock.com");
+        var user1 = getTestUser();
+        var user2 = getTestUser("other@mock.com");
 
         when(this.userService.get(eq(user1))).thenReturn(new UserDB(user1));
         when(this.userService.get(eq(user2))).thenReturn(new UserDB(user2));
@@ -193,16 +193,16 @@ public class KirvesServiceTest {
                 .action(DEAL)
                 .build();
 
-        Game game = this.kirvesService.action(0L, deal, user2);
+        var game = this.kirvesService.action(0L, deal, user2);
 
-        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L, user1);
+        var actionLog = this.kirvesService.getActionLog(0L, 0L, user1);
         System.out.println(actionLog);
         System.out.println("----------");
 
         assertNotNull(actionLog.getInitialState());
 
         assertEquals(1, actionLog.getItems().size());
-        ActionLogItem item = actionLog.getItems().get(0);
+        var item = actionLog.getItems().get(0);
         assertEquals("other@mock.com", item.getUser().getEmail());
         assertEquals(DEAL, item.getInput().getAction());
 
@@ -250,9 +250,9 @@ public class KirvesServiceTest {
     @Test
     public void testActionLogCache() throws KirvesGameException, IOException {
         when(this.actionLogRepo.findById(any())).thenReturn(Optional.of(getTestActionLog("0-0")));
-        User user = getTestUser();
+        var user = getTestUser();
 
-        ActionLog actionLog = this.kirvesService.getActionLog(0L, 0L, user);
+        var actionLog = this.kirvesService.getActionLog(0L, 0L, user);
         System.out.println(actionLog);
 
         this.kirvesService.getActionLog(0L,0L, user);

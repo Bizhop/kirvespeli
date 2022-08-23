@@ -32,10 +32,10 @@ public class UserServiceTest {
     public void testUserObject() {
         when(this.userRepo.findByEmail(eq(TEST_USER_EMAIL))).thenReturn(Optional.of(getTestUserDB(TEST_USER_EMAIL)));
 
-        User user = this.userService.get(TEST_USER_EMAIL);
+        var user = this.userService.get(TEST_USER_EMAIL);
         assertEquals(TEST_USER_EMAIL, user.getEmail());
 
-        User noUser = this.userService.get("other@example.com");
+        var noUser = this.userService.get("other@example.com");
         assertNull(noUser);
     }
 }

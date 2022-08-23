@@ -14,8 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Collections;
@@ -23,6 +21,8 @@ import java.util.List;
 
 import static fi.bizhop.jassu.util.TestUserUtil.TEST_USER_EMAIL;
 import static fi.bizhop.jassu.util.TestUserUtil.getTestUser;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,7 +49,7 @@ public class KirvesControllerTest extends TestBase {
         var builder = MockMvcRequestBuilders.get("/api/kirves");
 
         var result = this.mockMvc.perform(builder).andReturn();
-        assertEquals(401, result.getResponse().getStatus());
+        assertEquals(SC_UNAUTHORIZED, result.getResponse().getStatus());
     }
 
     @Test
@@ -61,7 +61,7 @@ public class KirvesControllerTest extends TestBase {
         when(this.kirvesService.getActiveGames()).thenReturn(this.getTestGames());
 
         var result = this.mockMvc.perform(builder).andReturn();
-        assertEquals(200, result.getResponse().getStatus());
+        assertEquals(SC_OK, result.getResponse().getStatus());
 
         var response = this.mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
 

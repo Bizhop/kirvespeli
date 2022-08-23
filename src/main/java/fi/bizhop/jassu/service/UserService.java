@@ -11,8 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-
 
 @Service
 @RequiredArgsConstructor
@@ -35,21 +33,6 @@ public class UserService {
     public void add(User user) {
         var userDB = new UserDB(user);
         this.USER_REPO.save(userDB);
-    }
-
-    /**
-     * Modify users money. Use negative values to subtract
-     */
-    public void modifyMoney(BigDecimal value, String email) {
-        this.USER_REPO.findByEmail(email)
-                .ifPresent(u -> {
-                    u.money = u.money.add(value);
-                    this.USER_REPO.save(u);
-                });
-    }
-
-    public BigDecimal getUserMoney(String email) {
-        return this.get(email).getMoney();
     }
 
     public User updateUser(String email, UserIn userIn) throws UserException {
