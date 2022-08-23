@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>4.11.0</version>
+            <version>4.14.0</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -83,7 +83,13 @@
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-gson</artifactId>
-            <version>1.42.0</version>
+            <version>1.42.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

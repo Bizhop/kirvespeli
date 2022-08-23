@@ -71,21 +71,22 @@ public class KirvesServiceTest {
     public void testTransactionSuccess() throws IOException, TransactionException, CardException, KirvesGameException, InterruptedException {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
-        User user = getTestUser();
+        var user = getTestUser();
 
-        GameIn input = new GameIn();
-        input.action = CUT;
-        input.declineCut = false;
+        var input = GameIn.builder()
+                .action(CUT)
+                .declineCut(false)
+                .build();
 
-        Game output = this.kirvesService.action(0L, input, user, 0);
+        var output = this.kirvesService.action(0L, input, user, 0);
 
         //verify data changed
-        KirvesGameDB originalDB = getTestGameDB();
-        GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
+        var originalDB = getTestGameDB();
+        var originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
         assertNotNull(originalPojo);
 
-        String json = output.toJson();
-        GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
+        var json = output.toJson();
+        var pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
         assertNotEquals(originalPojo, pojo);
     }
 
@@ -93,27 +94,28 @@ public class KirvesServiceTest {
     public void testTransactionTimeout() throws IOException, CardException, KirvesGameException, InterruptedException, TransactionException {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
-        User user = getTestUser();
+        var user = getTestUser();
 
-        GameIn input = new GameIn();
-        input.action = CUT;
-        input.declineCut = false;
+        var input = GameIn.builder()
+                .action(CUT)
+                .declineCut(false)
+                .build();
 
         try {
             this.kirvesService.action(0L, input, user, 6 * 1000);
         } catch (TransactionException e) {
             //verify data didn't change
-            KirvesGameDB originalDB = getTestGameDB();
-            GameDataPOJO originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
+            var originalDB = getTestGameDB();
+            var originalPojo = JsonUtil.getJavaObject(originalDB.gameData, GameDataPOJO.class).orElse(null);
             assertNotNull(originalPojo);
 
             //make sure you get the inMemoryGame by checking the call wasn't made on DB
             verify(this.kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
-            Game game = this.kirvesService.getGame(0L);
+            var game = this.kirvesService.getGame(0L);
             verify(this.kirvesGameRepo, times(1)).findByIdAndActiveTrue(any());
 
-            String json = game.toJson();
-            GameDataPOJO pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
+            var json = game.toJson();
+            var pojo = JsonUtil.getJavaObject(json, GameDataPOJO.class).orElseThrow();
             assertEquals(originalPojo, pojo);
             return;
         }
@@ -126,12 +128,13 @@ public class KirvesServiceTest {
     public void testTransactionLock() throws IOException, InterruptedException {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 
-        Thread p1Thread = new Thread(() -> {
-            User user = getTestUser();
+        var p1Thread = new Thread(() -> {
+            var user = getTestUser();
 
-            GameIn input = new GameIn();
-            input.action = CUT;
-            input.declineCut = false;
+            var input = GameIn.builder()
+                    .action(CUT)
+                    .declineCut(false)
+                    .build();
 
             try {
                 this.kirvesService.action(0L, input, user, 3 * 1000);
@@ -140,13 +143,14 @@ public class KirvesServiceTest {
             }
         });
 
-        Thread p2Thread = new Thread(() -> {
-            User user = getTestUser("other@mock.com");
+        var p2Thread = new Thread(() -> {
+            var user = getTestUser("other@mock.com");
 
             try {
-                var input = new GameIn();
-                input.action = CUT;
-                input.declineCut = false;
+                var input = GameIn.builder()
+                        .action(CUT)
+                        .declineCut(false)
+                        .build();
 
                 this.kirvesService.action(0L, input, user, 0);
             } catch (Exception e) {
@@ -177,15 +181,17 @@ public class KirvesServiceTest {
         when(this.userService.get(eq(user2))).thenReturn(new UserDB(user2));
         when(this.userService.get(eq(TEST_USER_EMAIL))).thenReturn(user1);
 
-        GameIn cut = new GameIn();
-        cut.action = CUT;
-        cut.declineCut = false;
+        var cut = GameIn.builder()
+                .action(CUT)
+                .declineCut(false)
+                .build();
 
         this.kirvesService.action(0L, cut, user1);
         Thread.sleep(1000);
 
-        GameIn deal = new GameIn();
-        deal.action = DEAL;
+        var deal = GameIn.builder()
+                .action(DEAL)
+                .build();
 
         Game game = this.kirvesService.action(0L, deal, user2);
 
@@ -198,32 +204,28 @@ public class KirvesServiceTest {
         assertEquals(1, actionLog.getItems().size());
         ActionLogItem item = actionLog.getItems().get(0);
         assertEquals("other@mock.com", item.getUser().getEmail());
-        assertEquals(DEAL, item.getInput().action);
+        assertEquals(DEAL, item.getInput().getAction());
 
-        GameIn nextAction = new GameIn();
-        User nextUser = user1;
+        var nextActionBuilder = GameIn.builder();
+        var nextUser = user1;
 
         if(game.userHasActionAvailable(user1, SPEAK)) {
-            nextAction.action = SPEAK;
-            nextAction.speak = Game.Speak.KEEP;
+            nextActionBuilder.action(SPEAK).speak(Game.Speak.KEEP);
         } else if(game.userHasActionAvailable(user1, DISCARD)) {
-            nextAction.action = DISCARD;
-            nextAction.index = 0;
+            nextActionBuilder.action(DISCARD).index(0);
         } else if(game.userHasActionAvailable(user1, CUT)) {
-            nextAction.action = CUT;
-            nextAction.declineCut = true;
+            nextActionBuilder.action(CUT).declineCut(false);
         }
         else if(game.userHasActionAvailable(user2, ACE_OR_TWO_DECISION)) {
-            nextAction.action = ACE_OR_TWO_DECISION;
-            nextAction.keepExtraCard = true;
+            nextActionBuilder.action(ACE_OR_TWO_DECISION).keepExtraCard(true);
             nextUser = user2;
         } else if(game.userHasActionAvailable(user2, DISCARD)) {
-            nextAction.action = DISCARD;
-            nextAction.index = 0;
+            nextActionBuilder.action(DISCARD).index(0);
             nextUser = user2;
         }
 
-        System.out.println("Next action: " + nextAction.action);
+        var nextAction = nextActionBuilder.build();
+        System.out.println("Next action: " + nextAction.getAction());
         System.out.println("Next user: " + nextUser.getEmail());
 
         this.kirvesService.action(0L, nextAction, nextUser);
@@ -237,7 +239,7 @@ public class KirvesServiceTest {
         assertEquals(2, actionLog.getItems().size());
         item = actionLog.getItems().get(1);
         assertEquals(nextUser.getEmail(), item.getUser().getEmail());
-        assertEquals(nextAction.action, item.getInput().action);
+        assertEquals(nextAction.getAction(), item.getInput().getAction());
 
         //verify that action log was saved once
         verify(this.actionLogRepo, times(1)).save(any());
@@ -327,7 +329,7 @@ public class KirvesServiceTest {
     }
 
     private static KirvesGameDB getTestGameDB() throws IOException {
-        KirvesGameDB db = new KirvesGameDB();
+        var db = new KirvesGameDB();
         db.id = 0L;
         db.admin = getTestUserDB();
         db.canJoin = true;
@@ -338,12 +340,12 @@ public class KirvesServiceTest {
     }
 
     private static ActionLogDB getTestActionLog(String key) throws IOException {
-        ActionLogDB db = new ActionLogDB();
+        var db = new ActionLogDB();
         db.key = key;
         db.owner = getTestUserDB();
         db.initialState = FileUtils.readFileToString(new File("src/test/resources/actionLogInitialState.json"), "UTF-8");
 
-        ActionLogItemDB item = new ActionLogItemDB();
+        var item = new ActionLogItemDB();
         item.actionLog = db;
         item.user = getTestUserDB();
         item.input = "{\"action\":\"DEAL\",\"index\":0,\"keepExtraCard\":false,\"suit\":null,\"declineCut\":false,\"speak\":null}";

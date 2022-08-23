@@ -1,24 +1,27 @@
 package fi.bizhop.jassu.model.kirves.out;
 
 import fi.bizhop.jassu.model.kirves.Player;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
+@Value
+@Jacksonized
 public class PlayerOut {
-    private String email;
-    private String nickname;
-    private int cardsInHand;
-    private List<String> playedCards;
-    private List<Integer> roundsWon;
-    private List<String> availableActions;
-    private String extraCard;
-    private boolean declaredPlayer;
-    private boolean folded;
-    private String speak;
-
-    public PlayerOut() {}
+    String email;
+    String nickname;
+    int cardsInHand;
+    List<String> playedCards;
+    List<Integer> roundsWon;
+    List<String> availableActions;
+    String extraCard;
+    boolean declaredPlayer;
+    boolean folded;
+    String speak;
 
     public PlayerOut(Player player) {
         this.email = player.getUserEmail();

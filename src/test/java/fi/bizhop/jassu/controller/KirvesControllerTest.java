@@ -46,36 +46,37 @@ public class KirvesControllerTest extends TestBase {
 
     @Test
     public void getGamesWithoutUserFails() throws Exception {
-        RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
+        var builder = MockMvcRequestBuilders.get("/api/kirves");
 
-        MvcResult result = this.mockMvc.perform(builder).andReturn();
+        var result = this.mockMvc.perform(builder).andReturn();
         assertEquals(401, result.getResponse().getStatus());
     }
 
     @Test
     public void getGamesWithUserSuccess() throws Exception {
-        RequestBuilder builder = MockMvcRequestBuilders.get("/api/kirves");
+        var builder = MockMvcRequestBuilders.get("/api/kirves");
 
         when(this.authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
         when(this.userService.get(eq(TEST_USER_EMAIL))).thenReturn(TestUserUtil.getTestUser(TEST_USER_EMAIL));
         when(this.kirvesService.getActiveGames()).thenReturn(this.getTestGames());
 
-        MvcResult result = this.mockMvc.perform(builder).andReturn();
+        var result = this.mockMvc.perform(builder).andReturn();
         assertEquals(200, result.getResponse().getStatus());
 
-        GameBrief[] response = this.mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
+        var response = this.mapper.readValue(result.getResponse().getContentAsString(), GameBrief[].class);
 
         assertEquals(1, response.length);
-        GameBrief brief = response[0];
-        assertEquals(1, brief.players.longValue());
-        assertEquals(TEST_USER_EMAIL, brief.admin.getEmail());
+        var brief = response[0];
+        assertEquals(1, brief.getPlayers());
+        assertEquals(TEST_USER_EMAIL, brief.getAdmin().getEmail());
     }
 
     private List<GameBrief> getTestGames() {
-        GameBrief brief = new GameBrief();
-        brief.id = 0L;
-        brief.players = 1;
-        brief.admin = getTestUser(TEST_USER_EMAIL);
+        var brief = GameBrief.builder()
+                .id(0L)
+                .players(1)
+                .admin(getTestUser(TEST_USER_EMAIL))
+                .build();
         return Collections.singletonList(brief);
     }
 }

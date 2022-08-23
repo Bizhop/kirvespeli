@@ -24,7 +24,7 @@ public class UserController {
     public @ResponseBody User update(   @RequestBody UserIn userIn,
                                         HttpServletRequest request,
                                         HttpServletResponse response) throws UserException {
-        String email = this.AUTH_SERVICE.getEmailFromJWT(request);
+        var email = this.AUTH_SERVICE.getEmailFromJWT(request);
         if(email == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;

@@ -120,27 +120,26 @@ public class Game {
             }
         }
 
-        return new GameOut(
-                this.getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()),
-                this.deck.size(),
-                this.dealer.getUserEmail(),
-                this.turn.getUserEmail(),
-                myCards,
-                myExtraCard,
-                myActions,
-                this.data.messages.isEmpty() ? "" : this.data.messages.get(this.data.messages.size() - 1),
-                this.data.messages,
-                this.data.canJoin,
-                this.trumpCard == null ? "" : this.trumpCard.toString(),
-                this.trump == null ? "" : this.trump.toString(),
-                this.data.canDeclineCut,
-                this.cutCard == null ? "" : this.cutCard.toString(),
-                this.secondCutCard == null ? "" : this.secondCutCard.toString(),
-                this.players.size(),
-                this.getFirstCardSuit(),
-                this.getScoreOutput(this.data.scores),
-                this.data.scoresHistory.stream().map(this::getScoreOutput).collect(toList())
-        );
+        return GameOut.builder()
+                .players(this.getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()))
+                .messages(this.data.messages)
+                .cardsInDeck(this.deck.size())
+                .turn(this.turn.getUserEmail())
+                .dealer(this.dealer.getUserEmail())
+                .myCardsInHand(myCards)
+                .myExtraCard(myExtraCard)
+                .myAvailableActions(myActions)
+                .canJoin(this.data.canJoin)
+                .canDeclineCut(this.data.canDeclineCut)
+                .trumpCard(this.trumpCard == null ? "" : this.trumpCard.toString())
+                .trump(this.trump == null ? "" : this.trump.toString())
+                .cutCard(this.cutCard == null ? "" : this.cutCard.toString())
+                .secondCutCard(this.secondCutCard == null ? "" : this.secondCutCard.toString())
+                .playersTotal(this.players.size())
+                .firstCardSuit(this.getFirstCardSuit())
+                .scores(this.getScoreOutput(this.data.scores))
+                .scoresHistory(this.data.scoresHistory.stream().map(this::getScoreOutput).collect(toList()))
+                .build();
     }
 
     private Map<String, Integer> getScoreOutput(Map<String, ScorePOJO> input) {
@@ -343,7 +342,7 @@ public class Game {
 
     public void speakSuit(User user, Card.Suit suit) throws KirvesGameException {
         if(suit == null) throw new KirvesGameException("Valttimaa ei voi olla tyhjä (null)", BAD_REQUEST);
-        if(suit == this.trump) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit.toString()), BAD_REQUEST);
+        if(suit == this.trump) throw new KirvesGameException(String.format("Pitää valita eri maa kuin %s", suit), BAD_REQUEST);
 
         Player player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.setDeclaredPlayer(true);

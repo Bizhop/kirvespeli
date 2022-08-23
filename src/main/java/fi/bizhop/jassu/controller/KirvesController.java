@@ -40,7 +40,7 @@ public class KirvesController {
     @RequestMapping(value = "/kirves", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody GameOut init(@ParameterUser User user) {
         try {
-            Long id = this.KIRVES_SERVICE.init(user);
+            var id = this.KIRVES_SERVICE.init(user);
             return this.KIRVES_SERVICE.getGame(id).out(user).setId(id);
         } catch (Exception e) {
             LOG.error("Failed to initialize game", e);
@@ -58,7 +58,7 @@ public class KirvesController {
     public @ResponseBody GameOut joinGame(@PathVariable Long id, @ParameterUser User user) {
         try {
             this.KIRVES_SERVICE.joinGame(id, user);
-            GameOut out = this.KIRVES_SERVICE.getGame(id).out(user);
+            var out = this.KIRVES_SERVICE.getGame(id).out(user);
             this.refresh(id);
             return out;
         } catch (KirvesGameException e) {
@@ -72,7 +72,7 @@ public class KirvesController {
     @RequestMapping(value = "/kirves/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody GameOut getGame(@PathVariable Long id, @ParameterUser User user) {
         try {
-            Game game = this.KIRVES_SERVICE.getGame(id);
+            var game = this.KIRVES_SERVICE.getGame(id);
             return game.out(user).setId(id);
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
@@ -96,7 +96,7 @@ public class KirvesController {
     @RequestMapping(value = "/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody GameOut action(@PathVariable Long id, @RequestBody GameIn in, @ParameterUser User user) {
         try {
-            GameOut out = this.KIRVES_SERVICE.action(id, in, user).out(user);
+            var out = this.KIRVES_SERVICE.action(id, in, user).out(user);
             this.refresh(id);
             return out;
         } catch (KirvesGameException e) {
