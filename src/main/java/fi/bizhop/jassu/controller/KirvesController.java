@@ -10,6 +10,7 @@ import fi.bizhop.jassu.model.kirves.out.GameOut;
 import fi.bizhop.jassu.service.KirvesService;
 import fi.bizhop.jassu.service.MessageService;
 import fi.bizhop.jassu.util.ParameterUser;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -24,16 +25,12 @@ import static fi.bizhop.jassu.exception.TransactionException.Type.INTERNAL;
 import static fi.bizhop.jassu.exception.TransactionException.Type.UNKNOWN;
 
 @RestController
+@RequiredArgsConstructor
 public class KirvesController {
     private static final Logger LOG = LogManager.getLogger(KirvesController.class);
 
     final KirvesService KIRVES_SERVICE;
     final MessageService MESSAGE_SERVICE;
-
-    public KirvesController(KirvesService kirvesService, MessageService messageService) {
-        this.KIRVES_SERVICE = kirvesService;
-        this.MESSAGE_SERVICE = messageService;
-    }
 
     @RequestMapping(value = "/kirves", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody List<GameBrief> init(@ParameterUser User user) {

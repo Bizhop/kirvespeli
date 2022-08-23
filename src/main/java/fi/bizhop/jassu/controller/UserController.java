@@ -5,20 +5,17 @@ import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.UserIn;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
+@RequiredArgsConstructor
 public class UserController {
     final UserService USER_SERVICE;
     final AuthService AUTH_SERVICE;
-
-    public UserController(UserService userService, AuthService authService) {
-        this.USER_SERVICE = userService;
-        this.AUTH_SERVICE = authService;
-    }
 
     @RequestMapping(value = "/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public @ResponseBody User update(   @RequestBody UserIn userIn,

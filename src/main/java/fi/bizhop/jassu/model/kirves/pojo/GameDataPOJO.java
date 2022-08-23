@@ -31,7 +31,7 @@ public class GameDataPOJO {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof GameDataPOJO)) return false;
-        GameDataPOJO other = (GameDataPOJO) o;
+        var other = (GameDataPOJO) o;
         if(this.currentHandId != null && other.currentHandId == null) return false;
 
         return this.scores.equals(other.scores)

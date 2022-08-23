@@ -18,7 +18,7 @@ public class UserPOJO {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof UserPOJO)) return false;
-        UserPOJO other = (UserPOJO)o;
+        var other = (UserPOJO)o;
 
         if(this.email != null && other.email == null) return false;
         if(this.nickname != null && other.nickname == null) return false;

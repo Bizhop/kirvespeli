@@ -2,12 +2,10 @@ package fi.bizhop.jassu.model.kirves;
 
 import fi.bizhop.jassu.db.ActionLogDB;
 import fi.bizhop.jassu.db.ActionLogItemDB;
-import fi.bizhop.jassu.db.UserDB;
 import fi.bizhop.jassu.exception.KirvesGameException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ActionLog {
     private final String INITIAL_STATE;

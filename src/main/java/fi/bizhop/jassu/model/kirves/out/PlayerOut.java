@@ -1,7 +1,6 @@
 package fi.bizhop.jassu.model.kirves.out;
 
 import fi.bizhop.jassu.model.kirves.Player;
-import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -36,50 +35,5 @@ public class PlayerOut {
         this.declaredPlayer = player.isDeclaredPlayer();
         this.folded = player.isFolded();
         this.speak = player.getSpeak() == null ? null : player.getSpeak().name();
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public int getCardsInHand() {
-        return this.cardsInHand;
-    }
-
-    public List<String> getPlayedCards() {
-        return this.playedCards;
-    }
-
-    public List<Integer> getRoundsWon() {
-        return this.roundsWon;
-    }
-
-    public List<String> getAvailableActions() {
-        return this.availableActions;
-    }
-
-    public String getExtraCard() {
-        return this.extraCard;
-    }
-
-    @Override
-    public String toString() {
-        return this.email;
-    }
-
-    public String getNickname() {
-        return this.nickname;
-    }
-
-    public boolean isDeclaredPlayer() {
-        return this.declaredPlayer;
-    }
-
-    public boolean isFolded() {
-        return this.folded;
-    }
-
-    public String getSpeak() {
-        return this.speak;
     }
 }

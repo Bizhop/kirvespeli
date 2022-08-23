@@ -13,6 +13,7 @@ import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.jassu.util.JsonUtil;
 import fi.bizhop.jassu.util.TransactionHandler;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import static fi.bizhop.jassu.model.kirves.Game.Action.*;
 import static java.util.stream.Collectors.toList;
 
 @Service
+@RequiredArgsConstructor
 public class KirvesService {
     private static final Logger LOG = LogManager.getLogger(KirvesService.class);
 
@@ -42,13 +44,6 @@ public class KirvesService {
     private final Map<String, ActionLog> IN_MEMORY_ACTION_LOGS = new HashMap<>();
 
     private final TransactionHandler TRANSACTION_HANDLER = new TransactionHandler();
-
-    public KirvesService(UserService userService, KirvesGameRepo gameRepo, ActionLogRepo actionLogRepo, ActionLogItemRepo actionLogItemRepo) {
-        this.USER_SERVICE = userService;
-        this.GAME_REPO = gameRepo;
-        this.ACTION_LOG_REPO = actionLogRepo;
-        this.ACTION_LOG_ITEM_REPO = actionLogItemRepo;
-    }
 
     public Long init(User admin) throws CardException, KirvesGameException, TransactionException {
         var game = new Game(admin);

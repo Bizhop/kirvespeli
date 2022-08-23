@@ -27,7 +27,7 @@ public class TransactionHandler {
     public synchronized void begin(Long id, User user, String rollbackState) throws TransactionException {
         if(!this.TXS.containsKey(id)) throw new TransactionException(INTERNAL, "Game must be registered to TransactionHandler");
 
-        Transaction tx = this.TXS.get(id);
+        var tx = this.TXS.get(id);
         tx.begin(user, rollbackState);
         tx.check(user);
     }

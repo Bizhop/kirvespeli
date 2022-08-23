@@ -3,6 +3,7 @@ package fi.bizhop.jassu.util;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.service.AuthService;
 import fi.bizhop.jassu.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -16,14 +17,10 @@ import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 @Component
+@RequiredArgsConstructor
 public class RequestUserResolver implements HandlerMethodArgumentResolver {
     final AuthService AUTH_SERVICE;
     final UserService USER_SERVICE;
-
-    public RequestUserResolver(AuthService authService, UserService userService) {
-        this.AUTH_SERVICE = authService;
-        this.USER_SERVICE = userService;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {

@@ -14,7 +14,7 @@ public class ScorePOJO {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof ScorePOJO)) return false;
-        ScorePOJO other = (ScorePOJO) o;
+        var other = (ScorePOJO) o;
 
         return this.nickname.equals(other.nickname)
                 && this.score == other.score;

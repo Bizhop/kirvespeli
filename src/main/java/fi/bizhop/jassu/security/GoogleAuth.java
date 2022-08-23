@@ -1,6 +1,5 @@
 package fi.bizhop.jassu.security;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
@@ -23,7 +22,7 @@ public class GoogleAuth {
     public static String getUserEmail(String token) {
         LOG.debug(String.format("Authenticating with google token: %s", token));
 
-        String email = verifyAndGetEmail(token);
+        var email = verifyAndGetEmail(token);
         if(email != null) {
             LOG.debug(String.format("Google user found with email: %s", email));
         }
@@ -32,7 +31,7 @@ public class GoogleAuth {
 
     public static String verifyAndGetEmail(String token) {
         try {
-            GoogleIdToken gToken = VERIFIER.verify(token);
+            var gToken = VERIFIER.verify(token);
             if(gToken != null) {
                 return gToken.getPayload().getEmail();
             }

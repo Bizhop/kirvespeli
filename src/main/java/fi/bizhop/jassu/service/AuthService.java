@@ -18,20 +18,20 @@ public class AuthService {
     }
 
     public User login(HttpServletRequest request) {
-        String userEmail = this.getEmail(request);
+        var userEmail = this.getEmail(request);
         if(userEmail == null) {
             return null;
         }
         else {
-            User user = this.userService.get(userEmail);
+            var user = this.userService.get(userEmail);
             if(user == null) {
-                String jwt = JWTAuth.getJwt(userEmail);
+                var jwt = JWTAuth.getJwt(userEmail);
                 user = new User(userEmail, jwt);
                 this.userService.add(user);
             }
             else {
-                String token = request.getHeader(HEADER_STRING);
-                String jwt = token.startsWith(JWTAuth.JWT_TOKEN_PREFIX) ? token : JWTAuth.getJwt(userEmail);
+                var token = request.getHeader(HEADER_STRING);
+                var jwt = token.startsWith(JWTAuth.JWT_TOKEN_PREFIX) ? token : JWTAuth.getJwt(userEmail);
                 user.setJwt(jwt);
             }
             return user;
@@ -39,7 +39,7 @@ public class AuthService {
     }
 
     private String getEmail(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_STRING);
+        var token = request.getHeader(HEADER_STRING);
         if(token == null || token.equals("null")) {
             return null;
         }
@@ -54,7 +54,7 @@ public class AuthService {
     }
 
     public String getEmailFromJWT(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_STRING);
+        var token = request.getHeader(HEADER_STRING);
         return JWTAuth.getUserEmail(token);
     }
 }

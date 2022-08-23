@@ -44,8 +44,8 @@ public class Card implements Comparable<Card> {
             LOG.warn("Unable to get card from abbreviation: {}", abbreviation);
             return null;
         }
-        Suit suit = SUITS_BY_ABBREVIATION.get(abbreviation.substring(1));
-        Rank rank = RANKS_BY_ABBREVIATION.get(abbreviation.substring(0, 1));
+        var suit = SUITS_BY_ABBREVIATION.get(abbreviation.substring(1));
+        var rank = RANKS_BY_ABBREVIATION.get(abbreviation.substring(0, 1));
         if(suit == null || rank == null) {
             LOG.warn("Unable to get card from abbreviation: {}", abbreviation);
             return null;
@@ -62,7 +62,7 @@ public class Card implements Comparable<Card> {
     public boolean equals(Object o) {
         if(o == null) return false;
         if(o instanceof Card) {
-            Card card = (Card) o;
+            var card = (Card) o;
             return this.SUIT == card.SUIT && this.RANK == card.RANK;
         }
         return false;

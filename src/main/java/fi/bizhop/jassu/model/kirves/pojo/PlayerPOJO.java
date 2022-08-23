@@ -32,7 +32,7 @@ public class PlayerPOJO {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof PlayerPOJO)) return false;
-        PlayerPOJO other = (PlayerPOJO)o;
+        var other = (PlayerPOJO)o;
         
         if(this.roundsWon.size() != other.roundsWon.size()) return false;
         for(int i=0; i < this.roundsWon.size(); i++) {

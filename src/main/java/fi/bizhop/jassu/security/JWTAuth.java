@@ -3,9 +3,9 @@ package fi.bizhop.jassu.security;
 import fi.bizhop.jassu.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +18,7 @@ public class JWTAuth {
     public static final String JWT_TOKEN_PREFIX = "JWT ";
 
     static {
-        String jwtSecret = System.getenv("JASSU_JWT_SECRET");
+        var jwtSecret = System.getenv("JASSU_JWT_SECRET");
         if(jwtSecret == null) {
             LOG.error("Env JASSU_JWT_SECRET must be set!");
             Application.exit();
@@ -27,10 +27,10 @@ public class JWTAuth {
     }
 
     public static String getJwt(String email) {
-        Claims claims = Jwts.claims();
+        var claims = Jwts.claims();
         claims.put("email", email);
 
-        String jwt = Jwts.builder()
+        var jwt = Jwts.builder()
                 .setSubject(email)
                 .setClaims(claims)
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
@@ -42,7 +42,7 @@ public class JWTAuth {
     }
 
     public static String getUserEmail(String token) {
-        Claims claims = getClaims(token);
+        var claims = getClaims(token);
 
         if(claims == null || claims.get("email") == null) {
             return null;
@@ -57,7 +57,7 @@ public class JWTAuth {
         }
 
         try {
-            String jwt = token.replace(JWT_TOKEN_PREFIX,"");
+            var jwt = token.replace(JWT_TOKEN_PREFIX,"");
             return Jwts.parserBuilder()
                     .setSigningKey(JWT_KEY)
                     .build()
