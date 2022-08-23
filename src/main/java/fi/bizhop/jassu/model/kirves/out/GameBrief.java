@@ -1,5 +1,6 @@
 package fi.bizhop.jassu.model.kirves.out;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import fi.bizhop.jassu.db.KirvesGameDB;
 import fi.bizhop.jassu.model.User;
 import lombok.*;
@@ -16,7 +17,9 @@ public class GameBrief {
     Integer players;
     Long lastHandId;
     Boolean canJoin;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdAt;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updatedAt;
 
     public static GameBrief fromDb(KirvesGameDB db) {

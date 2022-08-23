@@ -1,11 +1,9 @@
 package fi.bizhop.jassu.controller;
 
-import fi.bizhop.jassu.exception.CardException;
 import fi.bizhop.jassu.exception.KirvesGameException;
 import fi.bizhop.jassu.exception.TransactionException;
 import fi.bizhop.jassu.model.User;
 import fi.bizhop.jassu.model.kirves.ActionLogItem;
-import fi.bizhop.jassu.model.kirves.Game;
 import fi.bizhop.jassu.model.kirves.in.GameIn;
 import fi.bizhop.jassu.model.kirves.out.GameBrief;
 import fi.bizhop.jassu.model.kirves.out.GameOut;
@@ -38,10 +36,10 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/kirves", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody GameOut init(@ParameterUser User user) {
+    public @ResponseBody List<GameBrief> init(@ParameterUser User user) {
         try {
             var id = this.KIRVES_SERVICE.init(user);
-            return this.KIRVES_SERVICE.getGame(id).out(user).setId(id);
+            return this.KIRVES_SERVICE.getActiveGames();
         } catch (Exception e) {
             LOG.error("Failed to initialize game", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -55,12 +53,10 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/kirves/{id}", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody GameOut joinGame(@PathVariable Long id, @ParameterUser User user) {
+    public void joinGame(@PathVariable Long id, @ParameterUser User user) {
         try {
             this.KIRVES_SERVICE.joinGame(id, user);
-            var out = this.KIRVES_SERVICE.getGame(id).out(user);
             this.refresh(id);
-            return out;
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
         } catch (Exception e) {
@@ -94,11 +90,10 @@ public class KirvesController {
     }
 
     @RequestMapping(value = "/kirves/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
-    public @ResponseBody GameOut action(@PathVariable Long id, @RequestBody GameIn in, @ParameterUser User user) {
+    public void action(@PathVariable Long id, @RequestBody GameIn in, @ParameterUser User user) {
         try {
-            var out = this.KIRVES_SERVICE.action(id, in, user).out(user);
+            this.KIRVES_SERVICE.action(id, in, user).out(user);
             this.refresh(id);
-            return out;
         } catch (KirvesGameException e) {
             throw createKirvesResponseStatus(e);
         } catch (TransactionException e) {
