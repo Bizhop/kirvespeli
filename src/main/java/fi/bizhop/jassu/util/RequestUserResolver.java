@@ -12,6 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 @Component
@@ -30,16 +31,16 @@ public class RequestUserResolver implements HandlerMethodArgumentResolver {
     }
 
     @Override
-    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) {
+    public Object resolveArgument(@Nonnull MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) {
         var request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         return this.authorizeAndAuthenticate(request);
     }
 
     private User authorizeAndAuthenticate(HttpServletRequest request) throws ResponseStatusException {
-        String email = this.AUTH_SERVICE.getEmailFromJWT(request);
+        var email = this.AUTH_SERVICE.getEmailFromJWT(request);
         if(email == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
 
-        User user = this.USER_SERVICE.get(email);
+        var user = this.USER_SERVICE.get(email);
         if(user == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("Tunnusta ei löytynyt: %s", email));
 
         return user;

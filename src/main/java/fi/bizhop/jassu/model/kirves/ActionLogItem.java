@@ -34,8 +34,8 @@ public class ActionLogItem {
     }
 
     public static ActionLogItem of(ActionLogItemDB db) throws KirvesGameException {
-        User user = new User(db.user);
-        GameIn input = JsonUtil.getJavaObject(db.input, GameIn.class)
+        var user = new User(db.user);
+        var input = JsonUtil.getJavaObject(db.input, GameIn.class)
                 .orElseThrow(() -> new KirvesGameException("Unable to convert GameIn from ActionLogItem.input"));
         return new ActionLogItem(user, input);
     }
@@ -44,7 +44,7 @@ public class ActionLogItem {
         if(userDB == null || userDB.email == null) throw new KirvesGameException("Invalid user (null or email null)", BAD_REQUEST);
         if(!userDB.email.equals(this.user.getEmail())) throw new KirvesGameException("Invalid user (differs from ActionLogItem.USER)", BAD_REQUEST);
 
-        ActionLogItemDB logItemDB = new ActionLogItemDB();
+        var logItemDB = new ActionLogItemDB();
         logItemDB.user = userDB;
         logItemDB.input = JsonUtil.getJson(this.input).orElseThrow(() -> new KirvesGameException("Unable to convert GameIn to json"));
         logItemDB.actionLog = actionLogDB;
@@ -53,7 +53,7 @@ public class ActionLogItem {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         sb.append(" User: ");
         sb.append(this.user.getEmail());

@@ -40,9 +40,9 @@ public class ActionLog {
     }
 
     public static ActionLog of(ActionLogDB db) throws KirvesGameException {
-        List<ActionLogItem> items = new ArrayList<>();
+        var items = new ArrayList<ActionLogItem>();
         if(db.items == null || db.items.isEmpty()) throw new KirvesGameException("ActionLogDB.items was null or empty");
-        ActionLog actionLog = new ActionLog(db.initialState, db.owner.email);
+        var actionLog = new ActionLog(db.initialState, db.owner.email);
         for(ActionLogItemDB itemDB : db.items) {
             actionLog.addItem(ActionLogItem.of(itemDB));
         }
@@ -56,7 +56,7 @@ public class ActionLog {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         sb.append("Initial state:\n ").append(this.INITIAL_STATE);
         sb.append("\nOwner: ").append(this.OWNER);

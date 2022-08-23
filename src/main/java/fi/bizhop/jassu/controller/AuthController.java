@@ -20,7 +20,7 @@ public class AuthController {
 
     @RequestMapping(value = "/auth", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody User auth(HttpServletRequest request, HttpServletResponse response) {
-        User user = this.authService.login(request);
+        var user = this.authService.login(request);
         if(user == null) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return null;
