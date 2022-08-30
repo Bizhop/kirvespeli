@@ -12,7 +12,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedMethods("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE")
-                .allowedOrigins("https://kirvespeli.herokuapp.com", "http://localhost:1234")
+                .allowedOrigins("http://localhost:1234", "http://localhost:8080", "https://kirvespeli.herokuapp.com", "https://kirvespeli-web.fly.dev")
                 .allowedHeaders("*");
     }
 }
