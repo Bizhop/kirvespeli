@@ -1,3 +1,1 @@
-# Jassu
-
-https://jassu.herokuapp.com/
+# Kirvespeli

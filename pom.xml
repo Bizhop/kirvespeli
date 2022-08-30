@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fi.bizhop</groupId>
-    <artifactId>jassu</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>kirvespeli</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>jassu</name>
-    <description>Jassu</description>
+    <name>kirvespeli</name>
+    <description>kirvespeli</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -115,9 +115,9 @@
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <configuration>
-                    <url>jdbc:postgresql://localhost:5432/jassu</url>
-                    <username>jassu</username>
-                    <password>jassu</password>
+                    <url>jdbc:postgresql://localhost:5432/kirves</url>
+                    <username>kirves</username>
+                    <password>kirves</password>
                     <changeLogFile>classpath:db/db.changelog.xml</changeLogFile>
                 </configuration>
             </plugin>

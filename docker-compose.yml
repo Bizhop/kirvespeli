@@ -2,11 +2,24 @@ version: '3'
 
 services:
   db:
-    image: postgres:9.5
-    container_name: jassu-database
+    image: postgres:14
+    container_name: kirves-database
     ports:
      - "5432:5432"
     environment:
-     - POSTGRES_USER=jassu
-     - POSTGRES_PASSWORD=jassu
-     - POSTGRES_DB=jassu
+     - POSTGRES_USER=kirves
+     - POSTGRES_PASSWORD=kirves
+     - POSTGRES_DB=kirves
+  backend:
+    image: kirvespeli-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    container_name: kirvespeli-backend
+    environment:
+      - KIRVES_JWT_SECRET
+      - KIRVES_GOOGLE_CLIENT_ID
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/kirves
+      - SPRING_DATASOURCE_USERNAME=kirves
+      - SPRING_DATASOURCE_PASSWORD=kirves
