@@ -52,7 +52,7 @@ const App = () => (
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme}>
         <GoogleOAuthProvider clientId="266150004835-ijh2ibgdsa9timu7cmak0udc76hnhldb.apps.googleusercontent.com">
-          <Router>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <CssBaseline />
             <Container>
               <Header />
