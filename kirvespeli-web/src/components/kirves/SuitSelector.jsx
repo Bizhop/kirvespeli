@@ -11,7 +11,12 @@ const SuitSelector = ({ currentTrump, action, gameId }) => {
       <h3>Valitse valtti</h3>
       <Grid container spacing={1}>
         {suits.map(suit => (
-          <Grid item md={4} key={`suit-${suit}`}>
+          <Grid
+            key={`suit-${suit}`}
+            size={{
+              md: 4,
+            }}
+          >
             <SvgImage
               name={`Suit${suit}`}
               onClick={() => action({ gameId, action: "SPEAK_SUIT", suit })}

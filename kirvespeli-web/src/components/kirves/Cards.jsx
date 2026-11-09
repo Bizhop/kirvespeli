@@ -32,7 +32,11 @@ const Cards = ({
         />
       ))}
       {firstCardSuit && (
-        <Grid item md>
+        <Grid
+          size={{
+            md: "grow",
+          }}
+        >
           <Box display="flex" justifyContent="center">
             <SvgImage name={`Suit${firstCardSuit}`} className="opaque50" />
           </Box>

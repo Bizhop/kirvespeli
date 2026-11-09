@@ -32,14 +32,15 @@ const Card = ({
   })
   return (
     <Grid
-      item
-      md={scale}
       key={`card-${card}`}
       sx={{ position: "relative" }}
       onClick={() =>
         !cardsVisible &&
         (flipped ? action({ gameId, action: actionName, index: index }) : lastCard && flip(set))
       }
+      size={{
+        md: scale,
+      }}
     >
       {cardsVisible && !flipped ? (
         <div>

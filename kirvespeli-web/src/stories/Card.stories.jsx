@@ -21,7 +21,7 @@ export default {
 }
 
 export const card = () => (
-  <Grid container>
+  <Grid container spacing={1}>
     <Card {...baseData} />
   </Grid>
 )

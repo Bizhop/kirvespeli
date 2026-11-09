@@ -20,12 +20,20 @@ export const KirvesContainer = props => {
     <Box sx={{ flexGrow: 1 }}>
       <h1>Kirves</h1>
       <Grid container spacing={1}>
-        <Grid item md={3}>
+        <Grid
+          size={{
+            md: 3,
+          }}
+        >
           <Button variant="contained" onClick={() => props.init()}>
             Aloita uusi peli
           </Button>
         </Grid>
-        <Grid item md={3}>
+        <Grid
+          size={{
+            md: 3,
+          }}
+        >
           <Tooltip title="Hae pelit">
             <IconButton onClick={() => props.getGames()}>
               <RefreshIcon />

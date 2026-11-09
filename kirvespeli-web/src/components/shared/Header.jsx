@@ -10,7 +10,12 @@ import LogoutIcon from "@mui/icons-material/Logout"
 import { logout } from "../user/userActions"
 
 const MyNavLink = ({ to, label, icon }) => (
-  <Grid item md={1} textAlign="center">
+  <Grid
+    textAlign="center"
+    size={{
+      md: 1,
+    }}
+  >
     <NavLink to={to}>
       <Tooltip title={label}>
         <IconButton variant="outlined" size="small">
@@ -27,7 +32,11 @@ export const Header = ({ loggedIn, logout }) => (
       <MyNavLink to="/" label="Etusivu" icon={<HomeIcon />} />
       {loggedIn && <MyNavLink to="/kirves" label="Pelit" icon={<GamesIcon />} />}
       {loggedIn && (
-        <Grid item md>
+        <Grid
+          size={{
+            md: "grow",
+          }}
+        >
           <Box display="flex" justifyContent="flex-end">
             <Tooltip title="Kirjaudu ulos">
               <IconButton onClick={() => logout()} variant="contained" color="error">

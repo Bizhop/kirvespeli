@@ -29,7 +29,11 @@ const makeButton = props => {
 }
 
 const ButtonWrapper = props => (
-  <Grid item md={2}>
+  <Grid
+    size={{
+      md: 2,
+    }}
+  >
     {makeButton(props)}
   </Grid>
 )
@@ -155,8 +159,14 @@ export const KirvesGame = ({
                 currentTrump={game.trump}
               />
             )}
-            <Grid container spacing={1}>
-              <Grid item md display="flex" justifyContent="flex-end">
+            <Grid container spacing={1} size={12}>
+              <Grid
+                display="flex"
+                justifyContent="flex-end"
+                size={{
+                  md: "grow",
+                }}
+              >
                 <Messages messages={pathOr([], ["messages"], game)} />
               </Grid>
             </Grid>
@@ -169,7 +179,13 @@ export const KirvesGame = ({
             cardsVisible={cardsVisible}
           />
           <Grid container spacing={1}>
-            <Grid item md display="flex" justifyContent="flex-end">
+            <Grid
+              display="flex"
+              justifyContent="flex-end"
+              size={{
+                md: "grow",
+              }}
+            >
               <ScoreCard game={game} />
             </Grid>
           </Grid>
