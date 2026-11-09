@@ -36,8 +36,10 @@ class KirvesServiceDbTest extends DbTestBase {
 
     @Test
     void initJoinAndInactivate() throws Exception {
-        saveUser(this.admin.getEmail(), "Admin");
-        saveUser(this.player.getEmail(), "Player");
+        this.admin.setNickname("Admin");
+        this.player.setNickname("Player");
+        saveUser(this.admin.getEmail(), this.admin.getNickname());
+        saveUser(this.player.getEmail(), this.player.getNickname());
 
         var id = this.kirvesService.init(this.admin);
         this.kirvesService.joinGame(id, this.player);
@@ -54,8 +56,10 @@ class KirvesServiceDbTest extends DbTestBase {
 
     @Test
     void actionLogIsPersistedAndRestoreTruncatesIt() throws Exception {
-        saveUser(this.admin.getEmail(), "Admin");
-        saveUser(this.player.getEmail(), "Player");
+        this.admin.setNickname("Admin");
+        this.player.setNickname("Player");
+        saveUser(this.admin.getEmail(), this.admin.getNickname());
+        saveUser(this.player.getEmail(), this.player.getNickname());
         var id = this.kirvesService.init(this.admin);
         this.kirvesService.joinGame(id, this.player);
 

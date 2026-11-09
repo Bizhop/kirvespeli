@@ -27,7 +27,7 @@ class UserDbTest extends DbTestBase {
 
     @Test
     void timestampsAreSet() throws InterruptedException {
-        var saved = saveUser("a@example.com", null);
+        var saved = saveUser("a@example.com", "Initial A");
         assertNotNull(saved.createdAt);
 
         Thread.sleep(10);
@@ -41,9 +41,22 @@ class UserDbTest extends DbTestBase {
     }
 
     @Test
-    void uniqueNicknameAllowsSeveralNulls() {
-        saveUser("a@example.com", null);
-        assertDoesNotThrow(() -> saveUser("b@example.com", null));
+    void nullNicknameIsRejected() {
+        assertThrows(DataIntegrityViolationException.class, () -> saveUser("a@example.com", null));
+    }
+
+    @Test
+    void addGeneratesAndPersistsNickname() {
+        var user = new fi.bizhop.kirves.model.User("new@example.com", null);
+        this.userService.add(user);
+        assertTrue(user.getNickname().matches("Pelaaja-[a-z0-9]{6}"));
+        assertEquals(user.getNickname(), this.userService.get(user.getEmail()).getNickname());
+    }
+
+    @Test
+    void duplicateEmailIsRejected() {
+        saveUser("a@example.com", "A");
+        assertThrows(DataIntegrityViolationException.class, () -> saveUser("a@example.com", "B"));
     }
 
     @Test
@@ -54,14 +67,14 @@ class UserDbTest extends DbTestBase {
 
     @Test
     void updateUserReportsTakenNickname() throws UserException {
-        saveUser("a@example.com", null);
-        saveUser("b@example.com", null);
+        saveUser("a@example.com", "Initial A");
+        saveUser("b@example.com", "Initial B");
         this.userService.updateUser("a@example.com", nickname("Same"));
 
         // relies on the constraint violation surfacing at save, i.e. no surrounding transaction
         var e = assertThrows(UserException.class, () -> this.userService.updateUser("b@example.com", nickname("Same")));
         assertEquals("Nickname on jo käytössä", e.getMessage());
-        assertNull(this.userRepo.findByEmail("b@example.com").orElseThrow().nickname);
+        assertEquals("Initial B", this.userRepo.findByEmail("b@example.com").orElseThrow().nickname);
     }
 
     private static UserIn nickname(String nickname) {

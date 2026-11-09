@@ -48,12 +48,7 @@ public class User {
     }
 
     public String getNickname() {
-        if(this.nickname == null || this.nickname.isEmpty()) {
-            return this.email;
-        }
-        else {
-            return this.nickname;
-        }
+        return this.nickname;
     }
 
     public UserPOJO toPOJO() {

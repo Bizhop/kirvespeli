@@ -24,7 +24,7 @@ class ActionLogDbTest extends DbTestBase {
     @Test
     void keyColumnWorks() {
         // "key" is a reserved word in H2, a non-reserved keyword in PostgreSQL
-        var owner = saveUser("owner@example.com", null);
+        var owner = saveUser("owner@example.com", "Owner");
         saveLog("12-3", owner);
 
         var reloaded = this.actionLogRepo.findById("12-3").orElseThrow();
@@ -34,7 +34,7 @@ class ActionLogDbTest extends DbTestBase {
 
     @Test
     void itemsAreLoadedWithLog() {
-        var owner = saveUser("owner@example.com", null);
+        var owner = saveUser("owner@example.com", "Owner");
         var log = saveLog("1-0", owner);
         saveItem(log, owner, "{\"action\":\"DEAL\"}");
         saveItem(log, owner, "{\"action\":\"FOLD\"}");
@@ -46,7 +46,7 @@ class ActionLogDbTest extends DbTestBase {
 
     @Test
     void deleteByActionLogInTransaction() {
-        var owner = saveUser("owner@example.com", null);
+        var owner = saveUser("owner@example.com", "Owner");
         var log = saveLog("1-0", owner);
         var other = saveLog("2-0", owner);
         saveItem(log, owner, "{}");

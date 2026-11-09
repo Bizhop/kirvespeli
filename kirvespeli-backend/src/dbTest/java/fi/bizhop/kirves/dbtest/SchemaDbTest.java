@@ -1,6 +1,7 @@
 package fi.bizhop.kirves.dbtest;
 
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +14,7 @@ class SchemaDbTest extends DbTestBase {
     @Test
     void gameAdminIsNotNull() {
         assertThrows(DataIntegrityViolationException.class,
-                () -> this.jdbc.update("INSERT INTO games (admin_user_id) VALUES (NULL)"));
+                () -> this.jdbc.update("INSERT INTO games (admin_user_id, active, game_data) VALUES (NULL, true, '{}')"));
     }
 
     @Test
@@ -24,14 +25,14 @@ class SchemaDbTest extends DbTestBase {
 
     @Test
     void actionLogItemMustReferenceExistingLog() {
-        var userId = this.jdbc.queryForObject("SELECT id FROM users WHERE email = ?", Integer.class, SEEDED_USER_EMAIL);
+        var userId = this.jdbc.queryForObject("SELECT id FROM users WHERE email = ?", Long.class, SEEDED_USER_EMAIL);
         assertThrows(DataIntegrityViolationException.class,
                 () -> this.jdbc.update("INSERT INTO action_log_items (user_id, action_log_id, input) VALUES (?, 'missing', '{}')", userId));
     }
 
     @Test
     void createdAtDefaultsToNow() {
-        this.jdbc.update("INSERT INTO users (email) VALUES ('sql@example.com')");
+        this.jdbc.update("INSERT INTO users (email, nickname) VALUES ('sql@example.com', 'SQL')");
         assertTrue(this.jdbc.queryForObject(
                 "SELECT created_at > now() - interval '1 minute' FROM users WHERE email = 'sql@example.com'", Boolean.class));
     }
@@ -39,8 +40,8 @@ class SchemaDbTest extends DbTestBase {
     @Test
     void liquibaseChangelogIsFullyApplied() {
         var applied = this.jdbc.queryForList("SELECT id FROM databasechangelog ORDER BY orderexecuted", String.class);
-        assertEquals("CreateUserTable", applied.getFirst());
-        assertEquals("removeMoneyFromUser", applied.getLast());
+        assertEquals(List.of("createUsersTable", "createGamesTable", "createActionLogsTable",
+                "createActionLogItemsTable"), applied);
     }
 
     @Test
@@ -54,9 +55,29 @@ class SchemaDbTest extends DbTestBase {
         assertEquals("text", columnType("games", "game_data"));
         assertEquals("text", columnType("action_logs", "initial_state"));
         assertEquals("text", columnType("action_log_items", "input"));
-        // SERIAL ids are 32-bit even though the entities map them to Long
-        assertEquals("integer", columnType("users", "id"));
+        for (var table : List.of("users", "games", "action_log_items")) {
+            assertEquals("bigint", columnType(table, "id"));
+        }
+        assertEquals("bigint", columnType("games", "admin_user_id"));
+        assertEquals("bigint", columnType("games", "last_hand_id"));
+        assertEquals("bigint", columnType("action_logs", "owner_user_id"));
+        assertEquals("bigint", columnType("action_log_items", "user_id"));
         assertEquals("timestamp without time zone", columnType("games", "created_at"));
+    }
+
+    @Test
+    void gameAdminMustExist() {
+        assertThrows(DataIntegrityViolationException.class, () -> this.jdbc.update(
+                "INSERT INTO games (admin_user_id, active, game_data) VALUES (-1, true, '{}')"));
+    }
+
+    @Test
+    void gameDataAndActiveAreRequired() {
+        var userId = this.userRepo.findByEmail(SEEDED_USER_EMAIL).orElseThrow().id;
+        assertThrows(DataIntegrityViolationException.class, () -> this.jdbc.update(
+                "INSERT INTO games (admin_user_id, active, game_data) VALUES (?, NULL, '{}')", userId));
+        assertThrows(DataIntegrityViolationException.class, () -> this.jdbc.update(
+                "INSERT INTO games (admin_user_id, active, game_data) VALUES (?, true, NULL)", userId));
     }
 
     private String columnType(String table, String column) {

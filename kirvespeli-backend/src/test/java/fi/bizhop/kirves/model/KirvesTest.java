@@ -25,6 +25,7 @@ import static fi.bizhop.kirves.model.Card.Suit.*;
 import static fi.bizhop.kirves.model.kirves.Game.Action.*;
 import static fi.bizhop.kirves.model.kirves.Game.Speak.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static fi.bizhop.kirves.util.TestUserUtil.getTestUser;
 
 public class KirvesTest {
     static final List<User> TEST_USERS;
@@ -35,10 +36,10 @@ public class KirvesTest {
 
     static {
         TEST_USERS = List.of(
-                new User("test0@example.com", ""),
-                new User("test1@example.com", ""),
-                new User("test2@example.com", ""),
-                new User("test3@example.com", ""));
+                getTestUser("test0@example.com"),
+                getTestUser("test1@example.com"),
+                getTestUser("test2@example.com"),
+                getTestUser("test3@example.com"));
 
         try {
             JACKS_AND_JOKERS = List.of(

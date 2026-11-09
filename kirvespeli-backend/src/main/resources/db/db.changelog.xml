@@ -1,112 +1,74 @@
 <databaseChangeLog logicalFilePath="db/db.changelog.xml"
-				   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-				   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-				   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-	<property name="now" value="now()"/>
-	<changeSet author="Ville" id="CreateUserTable">
-		<createTable tableName="users">
-			<column autoIncrement="true" name="id" type="SERIAL">
-				<constraints primaryKey="true" primaryKeyName="user_pkey" />
-			</column>
-			<column name="email" type="VARCHAR(100)">
-				<constraints nullable="false" />
-			</column>
-			<column name="money" type="DECIMAL(20,2)" />
-		</createTable>
-	</changeSet>
-	<changeSet id="CreateTestUser" author="Ville">
-		<insert tableName="users">
-			<column name="email" value="test@example.com" />
-			<column name="money" value="100.00" />
-		</insert>
-	</changeSet>
-	<changeSet id="AddNicknameToUser" author="Ville">
-		<addColumn tableName="users">
-			<column name="nickname" type="VARCHAR(100)" />
-		</addColumn>
-	</changeSet>
-	<changeSet id="CreateGameTable" author="Ville">
-		<createTable tableName="games">
-			<column autoIncrement="true" name="id" type="SERIAL">
-				<constraints primaryKey="true" primaryKeyName="game_pkey" />
-			</column>
-			<column name="admin_user_id" type="INT">
-				<constraints nullable="false" />
-			</column>
-			<column name="players" type="INT" />
-			<column name="active" type="BOOLEAN" />
-			<column name="game_data" type="TEXT" />
-		</createTable>
-	</changeSet>
-	<changeSet id="addTimestamps" author="Ville">
-		<addColumn tableName="users">
-			<column name="created_at" type="DATETIME" defaultValueDate="${now}"  >
-				<constraints nullable="false" />
-			</column>
-			<column name="updated_at" type="DATETIME" />
-		</addColumn>
-		<addColumn tableName="games">
-			<column name="created_at" type="DATETIME" defaultValueDate="${now}"  >
-				<constraints nullable="false" />
-			</column>
-			<column name="updated_at" type="DATETIME" />
-		</addColumn>
-	</changeSet>
-	<changeSet id="changeGameDataType" author="Ville">
-		<dropColumn tableName="games" columnName="game_data" />
-		<addColumn tableName="games">
-			<column name="game_data" type="BYTEA" />
-		</addColumn>
-	</changeSet>
-	<changeSet id="addCanJoinToGames" author="Ville">
-		<addColumn tableName="games">
-			<column name="can_join" type="BOOLEAN" />
-		</addColumn>
-	</changeSet>
-	<changeSet id="revertChangeGameDataType" author="Ville">
-		<delete tableName="games" />
-		<modifyDataType tableName="games" columnName="game_data" newDataType="TEXT" />
-	</changeSet>
-	<changeSet id="setUserNicknameUnique" author="Ville">
-		<addUniqueConstraint tableName="users" columnNames="nickname" />
-	</changeSet>
-	<changeSet id="createActionLogTables" author="Ville">
-		<createTable tableName="action_logs">
-			<column name="key" type="TEXT">
-				<constraints primaryKey="true" primaryKeyName="action_log_pkey" />
-			</column>
-			<column name="initial_state" type="TEXT">
-				<constraints nullable="false" />
-			</column>
-		</createTable>
-		<createTable tableName="action_log_items">
-			<column autoIncrement="true" name="id" type="SERIAL">
-				<constraints primaryKey="true" primaryKeyName="action_log_item_pkey" />
-			</column>
-			<column name="user_id" type="INT">
-				<constraints nullable="false" foreignKeyName="fk_action_log_item_user" references="users(id)" />
-			</column>
-			<column name="action_log_id" type="TEXT">
-				<constraints nullable="false" foreignKeyName="fk_action_log_item_action_log" references="action_logs(key)" />
-			</column>
-			<column name="input" type="TEXT">
-				<constraints nullable="false" />
-			</column>
-		</createTable>
-	</changeSet>
-	<changeSet id="addLastHandIdToGame" author="Ville">
-		<addColumn tableName="games">
-			<column name="last_hand_id" type="INT" />
-		</addColumn>
-	</changeSet>
-	<changeSet id="addOwnerUserIdToActionLog" author="Ville">
-		<addColumn tableName="action_logs">
-			<column name="owner_user_id" type="INT">
-				<constraints nullable="false" foreignKeyName="fk_action_log_owner_user" references="users(id)" />
-			</column>
-		</addColumn>
-	</changeSet>
-	<changeSet id="removeMoneyFromUser" author="Ville">
-		<dropColumn tableName="users" columnName="money" />
-	</changeSet>
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="Ville" id="createUsersTable">
+        <createTable tableName="users">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="user_pkey" />
+            </column>
+            <column name="email" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="users_email_key" />
+            </column>
+            <column name="nickname" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="users_nickname_key" />
+            </column>
+            <column name="created_at" type="DATETIME" defaultValueComputed="now()">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="DATETIME" />
+        </createTable>
+    </changeSet>
+    <changeSet author="Ville" id="createGamesTable">
+        <createTable tableName="games">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="game_pkey" />
+            </column>
+            <column name="admin_user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_game_admin_user" references="users(id)" />
+            </column>
+            <column name="players" type="INT" />
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false" />
+            </column>
+            <column name="game_data" type="TEXT">
+                <constraints nullable="false" />
+            </column>
+            <column name="can_join" type="BOOLEAN" />
+            <column name="last_hand_id" type="BIGINT" />
+            <column name="created_at" type="DATETIME" defaultValueComputed="now()">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="DATETIME" />
+        </createTable>
+    </changeSet>
+    <changeSet author="Ville" id="createActionLogsTable">
+        <createTable tableName="action_logs">
+            <column name="key" type="TEXT">
+                <constraints primaryKey="true" primaryKeyName="action_log_pkey" />
+            </column>
+            <column name="initial_state" type="TEXT">
+                <constraints nullable="false" />
+            </column>
+            <column name="owner_user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_action_log_owner_user" references="users(id)" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Ville" id="createActionLogItemsTable">
+        <createTable tableName="action_log_items">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="action_log_item_pkey" />
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_action_log_item_user" references="users(id)" />
+            </column>
+            <column name="action_log_id" type="TEXT">
+                <constraints nullable="false" foreignKeyName="fk_action_log_item_action_log" references="action_logs(key)" />
+            </column>
+            <column name="input" type="TEXT">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

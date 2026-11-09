@@ -47,6 +47,8 @@ public abstract class DbTestBase {
     void emptyTables() {
         this.jdbc.execute("TRUNCATE action_log_items, action_logs, games");
         this.jdbc.update("DELETE FROM users WHERE email <> ?", SEEDED_USER_EMAIL);
+        this.jdbc.update("INSERT INTO users (email, nickname) VALUES (?, ?) ON CONFLICT (email) DO NOTHING",
+                SEEDED_USER_EMAIL, "Testikäyttäjä");
     }
 
     protected UserDB saveUser(String email, String nickname) {

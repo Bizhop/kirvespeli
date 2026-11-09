@@ -10,6 +10,19 @@ export KIRVES_GOOGLE_CLIENT_ID=...
 ```
 `./gradlew test` runs the tests. The Docker image builds the application with Gradle.
 
+## Tietokantaskeema ja lempinimet
+
+Liquibase-changelog on nollattu neljään taulukohtaiseen changesetiin. Vanhan changelogin
+mukaiset paikalliset tietokannat pitää luoda uudelleen ennen käynnistystä: vanhan kannan
+Liquibase-historia ei vastaa uutta changelogia. Esimerkiksi `docker compose down -v`
+poistaa paikallisen Compose-tietokannan tiedot; `docker compose up -d db` luo tyhjän kannan.
+Tämä poistaa kaikki paikalliset käyttäjät, pelit ja toimintolokit.
+
+Changelog ei lisää testikäyttäjiä. Uusi käyttäjä saa yksilöllisen lempinimen muodossa
+`Pelaaja-<6 satunnaista merkkiä>` (numerot ja kirjaimet a–f), joka näkyy heti kirjautumisen
+jälkeen ja jonka voi vaihtaa profiilissa. Lempinimestä poistetaan ympäröivät välilyönnit;
+tyhjä tai yli 100 merkin nimi hylätään. Sähköpostiosoitetta ei käytetä lempinimen varana.
+
 ## Tietokantatestit (PostgreSQL)
 Valinnainen testisarja (`src/dbTest`) ajetaan oikeaa PostgreSQL:ää vasten. Se ei ole osa `build`/`check`/`test`-ajoa eikä Docker-buildia.
 ```

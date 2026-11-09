@@ -15,10 +15,12 @@ public class TestUserUtil {
     }
 
     public static User getTestUser(String email) {
-        return new User(email, "");
+        var user = new User(email, "");
+        user.setNickname(email);
+        return user;
     }
 
     public static User getTestUser() {
-        return new User(TEST_USER_EMAIL, "");
+        return getTestUser(TEST_USER_EMAIL);
     }
 }

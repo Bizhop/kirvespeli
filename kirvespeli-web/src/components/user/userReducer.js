@@ -3,6 +3,8 @@ import {
   LOGIN_FAILURE,
   LOGOUT,
   UPDATE_SUCCESS,
+  UPDATE_REQUEST,
+  UPDATE_FAILURE,
   GOOGLE_LOGIN_FAIL,
   AUTO_LOGIN,
   AUTO_LOGIN_SUCCESS,
@@ -28,6 +30,17 @@ const resetToken = () => {
 const userReducer = (state = initialState, action) => {
   const user = pathOr({}, ["payload", "data"], action)
   switch (action.type) {
+    case UPDATE_REQUEST:
+      return { ...state, error: null }
+    case UPDATE_FAILURE:
+      return {
+        ...state,
+        error: pathOr(
+          "Käyttäjän tallennus epäonnistui",
+          ["error", "response", "data", "message"],
+          action,
+        ),
+      }
     case AUTO_LOGIN:
       return {
         ...state,

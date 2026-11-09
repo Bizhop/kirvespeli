@@ -28,15 +28,16 @@ class GameDbTest extends DbTestBase {
     }
 
     @Test
-    void nullActiveIsNotActive() {
-        var game = saveGame(saveUser("admin@example.com", null), null, "{}");
-        assertTrue(this.gameRepo.findByIdAndActiveTrue(game.id).isEmpty());
+    void nullActiveIsRejected() {
+        var admin = saveUser("admin@example.com", "Admin");
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,
+                () -> saveGame(admin, null, "{}"));
     }
 
     @Test
     void largeGameDataRoundTrip() {
         var gameData = "{\"data\":\"" + "x".repeat(1_000_000) + "ä€\"}";
-        var game = saveGame(saveUser("admin@example.com", null), true, gameData);
+        var game = saveGame(saveUser("admin@example.com", "Admin"), true, gameData);
 
         var reloaded = this.gameRepo.findById(game.id).orElseThrow();
         assertEquals(gameData, reloaded.gameData);
