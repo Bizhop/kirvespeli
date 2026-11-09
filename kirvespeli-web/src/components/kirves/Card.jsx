@@ -5,6 +5,9 @@ import CheckIcon from "@mui/icons-material/Check"
 
 import { SvgImage } from "../shared/images"
 
+// matches the default SvgImage height; absolutely positioned card faces take no space in the layout
+const CARD_HEIGHT = 200
+
 const flip = set => {
   set(true)
   setTimeout(() => {
@@ -33,7 +36,7 @@ const Card = ({
   return (
     <Grid
       key={`card-${card}`}
-      sx={{ position: "relative" }}
+      sx={{ position: "relative", height: CARD_HEIGHT }}
       onClick={() =>
         !cardsVisible &&
         (flipped ? action({ gameId, action: actionName, index: index }) : lastCard && flip(set))
