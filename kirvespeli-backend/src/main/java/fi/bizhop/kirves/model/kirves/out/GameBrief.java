@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.bizhop.kirves.db.KirvesGameDB;
 import fi.bizhop.kirves.model.User;
+import fi.bizhop.kirves.model.kirves.Game;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,10 @@ public class GameBrief {
     LocalDateTime createdAt;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updatedAt;
+
+    public int getMaxPlayers() {
+        return Game.MAX_PLAYERS;
+    }
 
     @JsonCreator
     public static GameBrief fromJson(

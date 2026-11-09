@@ -58,6 +58,34 @@ public class KirvesServiceTest {
     }
 
     @Test
+    public void testFullGameLobby() throws Exception {
+        var db = getTestGameDB();
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(0L)).thenReturn(Optional.of(db));
+        when(this.kirvesGameRepo.findByActiveTrue()).thenReturn(List.of(db));
+
+        for (int i = 3; i <= 5; i++) {
+            this.kirvesService.joinGame(0L, getTestUser("player" + i + "@example.com"));
+        }
+        var spectator = getTestUser("spectator@example.com");
+        assertTrue(this.kirvesService.getActiveGames(spectator).get(0).getCanJoin());
+
+        this.kirvesService.joinGame(0L, getTestUser("sixth@example.com"));
+        assertEquals(6, db.players);
+        assertFalse(db.canJoin);
+        var brief = this.kirvesService.getActiveGames(spectator).get(0);
+        assertFalse(brief.getCanJoin());
+        assertEquals(6, brief.getPlayers());
+        assertEquals(6, brief.getMaxPlayers());
+        var json = JsonUtil.getJson(brief).orElseThrow();
+        assertEquals(6, new tools.jackson.databind.ObjectMapper().readTree(json).get("maxPlayers").asInt());
+
+        var error = assertThrows(KirvesGameException.class,
+                () -> this.kirvesService.joinGame(0L, spectator));
+        assertEquals("Peli on täynnä", error.getMessage());
+        verify(this.kirvesGameRepo, times(4)).save(any());
+    }
+
+    @Test
     public void testInMemoryGames() throws CardException, KirvesGameException, IOException, TransactionException {
         when(this.kirvesGameRepo.findByIdAndActiveTrue(eq(0L))).thenReturn(Optional.of(getTestGameDB()));
 

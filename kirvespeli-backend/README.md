@@ -10,6 +10,14 @@ export KIRVES_GOOGLE_CLIENT_ID=...
 ```
 `./gradlew test` runs the tests. The Docker image builds the application with Gradle.
 
+## Pelaajamäärä
+
+Pelissä voi olla enintään 6 pelaajaa, pelin luoja mukaan lukien. Kuudennen pelaajan
+liityttyä peli sulkeutuu uusilta pelaajilta. Liittyminen sulkeutuu myös ensimmäiseen
+nostoon. Aulan rajapinta palauttaa pelaajamäärän (`players`), enimmäismäärän
+(`maxPlayers`) ja käyttäjäkohtaisen liittymistilan (`canJoin`). Täyteen peliin
+liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
+
 ## Tietokantaskeema ja lempinimet
 
 Liquibase-changelog on nollattu neljään taulukohtaiseen changesetiin. Vanhan changelogin

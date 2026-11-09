@@ -17,6 +17,13 @@ npm run preview          # komponenttien esikatselu osoitteeseen http://localhos
 npm run format           # prettier
 ```
 
+## Pelaajamäärä ja liittyminen
+
+Aulan Pelaajia-sarake näyttää pelaajamäärän muodossa `n/6`. Enimmäismäärä tulee
+backendin `maxPlayers`-kentästä. Täyteen peliin ei voi liittyä. Liittymisyrityksen
+jälkeen pelitilanne haetaan uudelleen myös virheen yhteydessä; hylätyn yrityksen
+yhteydessä näytetään backendin virheviesti, esimerkiksi `Peli on täynnä`.
+
 ## Komponenttien esikatselu
 `src/preview/` on erillinen Parcel-sivu, joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
 ```js

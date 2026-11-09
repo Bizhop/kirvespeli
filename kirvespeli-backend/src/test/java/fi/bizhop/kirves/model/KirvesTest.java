@@ -97,6 +97,61 @@ public class KirvesTest {
     }
 
     @Test
+    public void testPlayerLimit() throws CardException, KirvesGameException {
+        var game = getTestGame();
+        game.addPlayer(getTestUser("fifth@example.com"));
+        assertTrue(game.getCanJoin());
+
+        game.addPlayer(getTestUser("sixth@example.com"));
+        assertEquals(6, game.getNumberOfPlayers());
+        assertFalse(game.getCanJoin());
+        assertFalse(game.out(getTestUser("spectator@example.com")).isCanJoin());
+
+        var before = game.toJson();
+        var error = assertThrows(KirvesGameException.class,
+                () -> game.addPlayer(getTestUser("seventh@example.com")));
+        assertEquals(KirvesGameException.Type.BAD_REQUEST, error.getType());
+        assertEquals("Peli on täynnä", error.getMessage());
+        assertEquals(before, game.toJson());
+
+        var restored = new Game(JsonUtil.getJavaObject(before, GameDataPOJO.class).orElseThrow());
+        assertFalse(restored.getCanJoin());
+        assertEquals(6, restored.getNumberOfPlayers());
+    }
+
+    @Test
+    public void testConcurrentJoinsForLastSeat() throws Exception {
+        var game = getTestGame();
+        game.addPlayer(getTestUser("fifth@example.com"));
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var results = new ArrayList<java.util.concurrent.Future<Boolean>>();
+            for (int i = 0; i < 2; i++) {
+                var user = getTestUser("contender" + i + "@example.com");
+                results.add(executor.submit(() -> {
+                    start.await();
+                    try {
+                        game.addPlayer(user);
+                        return true;
+                    } catch (KirvesGameException e) {
+                        assertEquals(KirvesGameException.Type.BAD_REQUEST, e.getType());
+                        assertEquals("Peli on täynnä", e.getMessage());
+                        return false;
+                    }
+                }));
+            }
+            start.countDown();
+            int joined = 0;
+            for (var result : results) {
+                if (result.get(5, java.util.concurrent.TimeUnit.SECONDS)) joined++;
+            }
+            assertEquals(1, joined);
+        }
+        assertEquals(6, game.getNumberOfPlayers());
+        assertFalse(game.getCanJoin());
+    }
+
+    @Test
     public void testAddingPlayers() throws CardException, KirvesGameException {
         var game = getTestGame();
 

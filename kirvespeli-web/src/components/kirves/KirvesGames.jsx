@@ -37,7 +37,9 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => (
               <NavLink to={`/kirves/${game.id}`}>{game.id}</NavLink>
             </TableCell>
             <TableCell>{formatString(game.createdAt)}</TableCell>
-            <TableCell>{game.players}</TableCell>
+            <TableCell>
+              {game.players}/{game.maxPlayers}
+            </TableCell>
             <TableCell>{game.canJoin && <CheckIcon />}</TableCell>
             <TableCell>
               {user.email === game.admin.email && (

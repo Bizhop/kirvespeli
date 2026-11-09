@@ -208,7 +208,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-  join: gameId => dispatch(joinGame(gameId)),
+  join: gameId => dispatch(joinGame(gameId)).then(() => dispatch(getGame(gameId))),
   refresh: gameId => dispatch(getGame(gameId)),
   action: params => dispatch(action(params)),
   showAllCards: () => dispatch(showAllCards()),

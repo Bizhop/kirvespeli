@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class Game {
+    public static final int MAX_PLAYERS = 6;
     private static final int NUM_OF_CARD_TO_DEAL = 5;
 
     private final Cards deck;
@@ -164,13 +165,19 @@ public class Game {
         return this.players.stream().filter(player -> player.getRoundsWon().contains(round)).findFirst();
     }
 
-    public void addPlayer(User user) throws KirvesGameException {
+    public synchronized void addPlayer(User user) throws KirvesGameException {
+        if(this.players.size() >= MAX_PLAYERS) {
+            throw new KirvesGameException("Peli on täynnä", BAD_REQUEST);
+        }
         if(this.data.canJoin) {
             if (this.players.stream()
                     .noneMatch(player -> user.getEmail().equals(player.getUserEmail()))) {
                 var player = this.addPlayerInternal(user.toPOJO());
                 this.resetActions();
                 player.setAvailableActions(List.of(CUT));
+                if(this.players.size() == MAX_PLAYERS) {
+                    this.data.canJoin = false;
+                }
             } else {
                 throw new KirvesGameException(String.format("Pelaaja %s on jo pelissä", user.getNickname()), BAD_REQUEST);
             }
