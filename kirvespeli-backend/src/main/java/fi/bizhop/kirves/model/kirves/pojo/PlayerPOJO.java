@@ -16,8 +16,8 @@ public class PlayerPOJO {
 
     //these values are updated running the game and evaluated for PlayerPOJO equality
     public UserPOJO user;
-    public final List<Integer> roundsWon = new ArrayList<>();
-    public final List<Game.Action> availableActions = new ArrayList<>();
+    public List<Integer> roundsWon = new ArrayList<>();
+    public List<Game.Action> availableActions = new ArrayList<>();
     public boolean declaredPlayer = false;
     public boolean inGame = true;
     public boolean folded = false;

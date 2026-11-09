@@ -1,7 +1,8 @@
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+<databaseChangeLog logicalFilePath="db/db.changelog.xml"
+				   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 				   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-	<property name="now" value="now()" dbms="postgresql"/>
+	<property name="now" value="now()"/>
 	<changeSet author="Ville" id="CreateUserTable">
 		<createTable tableName="users">
 			<column autoIncrement="true" name="id" type="SERIAL">

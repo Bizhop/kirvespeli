@@ -20,17 +20,17 @@ public class GameIn {
     @JsonCreator
     public static GameIn fromJson(
             @JsonProperty("action") Game.Action action,
-            @JsonProperty("index") int index,
-            @JsonProperty("keepExtraCard") boolean keepExtraCard,
+            @JsonProperty("index") Integer index,
+            @JsonProperty("keepExtraCard") Boolean keepExtraCard,
             @JsonProperty("suit") Card.Suit suit,
-            @JsonProperty("declineCut") boolean declineCut,
+            @JsonProperty("declineCut") Boolean declineCut,
             @JsonProperty("speak") Game.Speak speak) {
         return GameIn.builder()
                 .action(action)
-                .index(index)
-                .keepExtraCard(keepExtraCard)
+                .index(index == null ? 0 : index)
+                .keepExtraCard(Boolean.TRUE.equals(keepExtraCard))
                 .suit(suit)
-                .declineCut(declineCut)
+                .declineCut(Boolean.TRUE.equals(declineCut))
                 .speak(speak)
                 .build();
     }
