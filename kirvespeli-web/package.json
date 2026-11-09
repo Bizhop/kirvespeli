@@ -4,17 +4,13 @@
   "scripts": {
     "start": "parcel",
     "build": "parcel build",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "format": "prettier --write \"src/**/*.{js,jsx}\" .storybook"
+    "preview": "parcel src/preview/index.html --port 1235 --dist-dir dist-preview",
+    "format": "prettier --write \"src/**/*.{js,jsx}\""
   },
   "devDependencies": {
     "@parcel/resolver-glob": "^2.16.4",
-    "@storybook/react-vite": "^10.6.6",
     "parcel": "^2.16.4",
-    "prettier": "^3.9.10",
-    "storybook": "^10.6.6",
-    "vite": "^8.3.6"
+    "prettier": "^3.9.10"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

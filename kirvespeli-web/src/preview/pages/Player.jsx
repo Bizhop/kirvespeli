@@ -1,6 +1,6 @@
 import React from "react"
 
-import Player from "../components/kirves/Player"
+import Player from "../../components/kirves/Player"
 
 const game = {
   dealer: "ville.piispa@gmail.com",
@@ -39,10 +39,11 @@ const playerWithActions = {
 }
 
 export default {
-  title: "Containers/Player",
-  component: Player,
+  title: "Player",
+  group: "Containers",
+  variants: {
+    allPlayed: () => <Player player={player} game={game} />,
+    extraCard: () => <Player player={playerExtraCard} game={game} />,
+    withActions: () => <Player player={playerWithActions} game={game} />,
+  },
 }
-
-export const allPlayed = () => <Player player={player} game={game} />
-export const extraCard = () => <Player player={playerExtraCard} game={game} />
-export const withActions = () => <Player player={playerWithActions} game={game} />
