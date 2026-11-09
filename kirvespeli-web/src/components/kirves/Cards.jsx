@@ -19,7 +19,8 @@ const Cards = ({
   return (
     <Grid container spacing={1}>
       {cards.map((card, index) => (
-        <Card 
+        <Card
+          key={index}
           index={index}
           scale={s}
           card={card}
@@ -29,11 +30,20 @@ const Cards = ({
           roundsWon={roundsWon}
           cardsVisible={cardsVisible}
           lastCard={numOfPlayedRounds - 1 == index}
-        />        
+        />
       ))}
       {firstCardSuit && (
-        <Grid item md>
-          <Box display="flex" justifyContent="center">
+        <Grid
+          size={{
+            md: "grow",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <SvgImage name={`Suit${firstCardSuit}`} className="opaque50" />
           </Box>
         </Grid>

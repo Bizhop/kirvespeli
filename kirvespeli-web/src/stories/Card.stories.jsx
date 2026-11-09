@@ -12,12 +12,16 @@ const baseData = {
   actionName: "PLAY_CARD",
   roundsWon: [1],
   cardsVisible: false,
-  lastCard: true
+  lastCard: true,
 }
 
 export default {
   title: "Components/Card",
-  component: Card
+  component: Card,
 }
 
-export const card = () => <Grid container><Card {...baseData} /></Grid>
+export const card = () => (
+  <Grid container spacing={1}>
+    <Card {...baseData} />
+  </Grid>
+)

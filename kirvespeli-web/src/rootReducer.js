@@ -1,4 +1,4 @@
-import { combineReducers } from "redux"
+import { combineReducers } from "@reduxjs/toolkit"
 
 import userReducer from "./components/user/userReducer"
 import kirvesReducer from "./components/kirves/kirvesReducer"

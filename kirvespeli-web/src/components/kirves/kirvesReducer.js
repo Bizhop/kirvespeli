@@ -53,7 +53,7 @@ const kirvesReducer = (state = initialState, action) => {
         ...state,
         games: map(
           pick(["id", "canJoin", "players", "lastHandId", "createdAt", "admin"]),
-          action.payload.data
+          action.payload.data,
         ),
         logVisible: false,
         logItems: [],

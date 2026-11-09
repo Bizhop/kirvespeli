@@ -11,30 +11,54 @@ export const RenderGame = ({ game, isReplay, action, cardsVisible, showAllCards 
   <Box sx={{ flexGrow: 1 }}>
     {game.cutCard && (
       <Grid container spacing={1}>
-        <Grid item md={1}>
+        <Grid
+          size={{
+            md: 1,
+          }}
+        >
           Nostokortti:
         </Grid>
-        <Grid item md={2}>
+        <Grid
+          size={{
+            md: 2,
+          }}
+        >
           <SvgImage name={game.cutCard} />
         </Grid>
         {game.secondCutCard && (
-          <Grid item md={2}>
+          <Grid
+            size={{
+              md: 2,
+            }}
+          >
             <SvgImage name={game.secondCutCard} className="opaque50" />
           </Grid>
         )}
       </Grid>
     )}
     <Grid container spacing={1}>
-      <Grid item md={1}>
+      <Grid
+        size={{
+          md: 1,
+        }}
+      >
         Valtti:
       </Grid>
       {game.trumpCard && (
-        <Grid item md={2}>
+        <Grid
+          size={{
+            md: 2,
+          }}
+        >
           <SvgImage name={game.trumpCard} />
         </Grid>
       )}
       {game.trump && (
-        <Grid item md={2}>
+        <Grid
+          size={{
+            md: 2,
+          }}
+        >
           <SvgImage name={`Suit${game.trump}`} className="opaque50" />
         </Grid>
       )}
@@ -56,10 +80,18 @@ export const RenderGame = ({ game, isReplay, action, cardsVisible, showAllCards 
     )}
     {!isReplay && game.myExtraCard && (
       <Grid container spacing={1}>
-        <Grid item md={1}>
+        <Grid
+          size={{
+            md: 1,
+          }}
+        >
           Ylimääräinen kortti:
         </Grid>
-        <Grid item md={2}>
+        <Grid
+          size={{
+            md: 2,
+          }}
+        >
           <SvgImage name={game.myExtraCard} />
         </Grid>
       </Grid>

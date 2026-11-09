@@ -1,6 +1,6 @@
 import React from "react"
 import { path } from "ramda"
-import { NavLink } from "react-router-dom"
+import { NavLink } from "react-router"
 import { connect } from "react-redux"
 import { Box, Grid, IconButton, Tooltip } from "@mui/material"
 import HomeIcon from "@mui/icons-material/Home"
@@ -10,7 +10,14 @@ import LogoutIcon from "@mui/icons-material/Logout"
 import { logout } from "../user/userActions"
 
 const MyNavLink = ({ to, label, icon }) => (
-  <Grid item md={1} textAlign="center">
+  <Grid
+    size={{
+      md: 1,
+    }}
+    sx={{
+      textAlign: "center",
+    }}
+  >
     <NavLink to={to}>
       <Tooltip title={label}>
         <IconButton variant="outlined" size="small">
@@ -27,8 +34,17 @@ export const Header = ({ loggedIn, logout }) => (
       <MyNavLink to="/" label="Etusivu" icon={<HomeIcon />} />
       {loggedIn && <MyNavLink to="/kirves" label="Pelit" icon={<GamesIcon />} />}
       {loggedIn && (
-        <Grid item md>
-          <Box display="flex" justifyContent="flex-end">
+        <Grid
+          size={{
+            md: "grow",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
             <Tooltip title="Kirjaudu ulos">
               <IconButton onClick={() => logout()} variant="contained" color="error">
                 <LogoutIcon />
