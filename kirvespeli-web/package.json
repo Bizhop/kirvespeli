@@ -6,7 +6,7 @@
     "build": "parcel build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "NODE_OPTIONS=--openssl-legacy-provider build-storybook",
-    "format": "prettier --write \"src/**/*.js\" .storybook"
+    "format": "prettier --write \"src/**/*.{js,jsx}\" .storybook"
   },
   "devDependencies": {
     "@babel/core": "^7.19.6",
