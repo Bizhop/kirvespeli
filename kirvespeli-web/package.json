@@ -6,7 +6,7 @@
     "build": "parcel build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "NODE_OPTIONS=--openssl-legacy-provider build-storybook",
-    "format": "prettier --print-width 100 --no-semi --arrow-parens avoid --write 'src/**/*.js'"
+    "format": "prettier --write \"src/**/*.js\" .storybook"
   },
   "devDependencies": {
     "@babel/core": "^7.19.6",
@@ -22,7 +22,7 @@
     "babel-loader": "^8.2.5",
     "buffer": "^6.0.3",
     "parcel": "^2.6.2",
-    "prettier": "2.7.1",
+    "prettier": "^3.9.10",
     "process": "^0.11.10",
     "redux-devtools-extension": "^2.13.9"
   },
@@ -34,7 +34,6 @@
     "@react-oauth/google": "^0.2.8",
     "@react-spring/web": "^9.5.5",
     "axios": "^0.27.2",
-    "lodash": "^4.17.21",
     "ramda": "^0.28.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -42,21 +41,13 @@
     "react-redux": "^8.0.2",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
-    "react-select": "^5.4.0",
     "react-stomp": "^5.1.0",
     "redux": "^4.2.0",
     "redux-axios-middleware": "^4.0.1",
     "serve": "^14.0.1"
   },
-  "targets": {
-    "default": {
-      "engines": {
-        "browsers": ">= 50%"
-      }
-    }
-  },
   "engines": {
-    "node": ">= 16",
-    "npm": ">= 7"
-  }
+    "node": ">= 22"
+  },
+  "browserslist": "defaults"
 }
