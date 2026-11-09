@@ -1,0 +1,92 @@
+ul#message-log {
+  height: 160px;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+table.custom-table {
+  width: auto;
+  table-layout: fixed;
+  word-wrap: normal;
+  white-space: nowrap;
+}
+
+table.score {
+  background-color: white;
+  border: gray 1px solid;
+  border-collapse: separate;
+}
+
+.btn-th {
+  padding: 0px;
+}
+
+.smaller {
+  font-size: 75%;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+  background-color: lightgray;
+}
+
+img.on-table {
+  width: 20px;
+  height: 20px;
+}
+
+.card {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+img.opaque50 {
+  opacity: 50%;
+}
+
+div.kirves-container {
+  background-color: mediumseagreen;
+  padding: 10px;
+}
+
+div.rai-spinner {
+  margin: 10px;
+}
+
+div.card {
+  text-align: center;
+  padding: 5px;
+}
+
+div.cards {
+  margin-top: 5px;
+}
+
+div.action-buttons {
+  margin-top: 10px;
+}
+
+div.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5%;
+  right: 0;
+  height: 15%;
+  width: 90%;
+  opacity: 0;
+  background-color: yellow;
+}
+
+div.held {
+  opacity: 0.6;
+}
+
+img.image100 {
+  width: 100%;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}

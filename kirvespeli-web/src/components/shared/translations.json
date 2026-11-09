@@ -1,0 +1,17 @@
+{
+  "DIAMONDS": "Ruutu",
+  "HEARTS": "Hertta",
+  "SPADES": "Pata",
+  "CLUBS": "Risti",
+  "PLAY_CARD": "Pelaa kortti",
+  "FOLD": "Mene pakkaan",
+  "CUT": "Nosta",
+  "DEAL": "Jaa",
+  "DISCARD": "Tyhjennä",
+  "SPEAK": "Puhu",
+  "PASS": "Viitenä",
+  "CHANGE": "Värjäisin",
+  "KEEP": "Päältä",
+  "SPEAK_SUIT": "Valitse valtti",
+  "ACE_OR_TWO_DECISION": "Päätä hakki"
+}
