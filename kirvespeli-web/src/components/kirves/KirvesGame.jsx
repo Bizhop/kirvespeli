@@ -196,7 +196,7 @@ export const KirvesGame = ({
           </Grid>
         </Box>
       )}
-      {!user.email && <Navigate to="/" />}
+      {!user.loading && !user.email && <Navigate to="/" />}
     </div>
   )
 }

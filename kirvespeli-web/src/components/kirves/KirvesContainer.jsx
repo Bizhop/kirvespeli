@@ -58,7 +58,7 @@ export const KirvesContainer = props => {
           />
         </Box>
       )}
-      {!props.user.email && <Navigate to="/" />}
+      {!props.user.loading && !props.user.email && <Navigate to="/" />}
       {props.error && <Alert severity="error">{props.error}</Alert>}
     </Box>
   )

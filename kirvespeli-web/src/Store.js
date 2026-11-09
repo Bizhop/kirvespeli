@@ -38,7 +38,9 @@ const Store = () => {
       getDefaultMiddleware({ serializableCheck: false }).concat(axiosMiddleware),
   })
 
-  store.dispatch(autoLogin())
+  if (localStorage.getItem("kirves-token")) {
+    store.dispatch(autoLogin())
+  }
 
   return store
 }
