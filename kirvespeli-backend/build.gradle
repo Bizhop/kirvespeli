@@ -58,12 +58,15 @@ dependencies {
 }
 
 liquibase {
+    def setting = { String propertyName, String environmentName, String defaultValue ->
+        project.findProperty(propertyName) ?: System.getenv(environmentName) ?: defaultValue
+    }
     activities {
         main {
             arguments = [
-                url: project.findProperty('liquibaseUrl') ?: 'jdbc:postgresql://localhost:5432/kirves',
-                username: project.findProperty('liquibaseUsername') ?: 'kirves',
-                password: project.findProperty('liquibasePassword') ?: 'kirves',
+                url: setting('liquibaseUrl', 'KIRVES_LIQUIBASE_URL', 'jdbc:postgresql://localhost:5432/kirves'),
+                username: setting('liquibaseUsername', 'KIRVES_LIQUIBASE_USERNAME', 'kirves'),
+                password: setting('liquibasePassword', 'KIRVES_LIQUIBASE_PASSWORD', 'kirves'),
                 changelogFile: 'src/main/resources/db/db.changelog.xml'
             ]
         }
