@@ -13,7 +13,7 @@ while read -r line; do
     abbr=x$abbr 
   fi
   
-  echo "import $abbr from \"./$image.svg\"" >> svgImages.js
+  echo "import $abbr from \"url:./$image.svg\"" >> svgImages.js
 done < lines.txt
 
 echo "" >> svgImages.js
