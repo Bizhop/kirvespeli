@@ -355,27 +355,32 @@ public class Game {
         var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.playCard(index);
         this.setCardPlayer(player.getNext(this.players.size()));
-        this.determinePossibleRoundWinner();
+        this.determinePossibleRoundWinner(true);
     }
 
     public void fold(User user) throws KirvesGameException {
         var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        //folding is also possible out of turn at the start of a round, when no cards have been played yet
+        var roundInProgress = !this.turn.equals(this.firstPlayerOfRound);
+        var wasTurn = this.turn.equals(player);
         player.fold();
         if(this.firstPlayerOfRound.equals(player)) {
             this.firstPlayerOfRound = player.getNext(this.players.size());
         }
-        this.setCardPlayer(player.getNext(this.players.size()));
-        this.determinePossibleRoundWinner();
+        if(wasTurn) {
+            this.setCardPlayer(player.getNext(this.players.size()));
+        }
+        this.determinePossibleRoundWinner(roundInProgress);
         this.data.messages.add(String.format("%s meni pakkaan", user.getNickname()));
     }
 
-    private void determinePossibleRoundWinner() throws KirvesGameException {
+    private void determinePossibleRoundWinner(boolean roundInProgress) throws KirvesGameException {
         var players = this.getPlayersStartingFrom(this.firstPlayerOfRound.getUserEmail());
         if(players.size() == 0) throw new KirvesGameException("Virhe: 0 pelaajaa jäljellä");
         if(players.size() == 1) {
             var winner = players.get(0);
             this.handleScoring(Set.of(winner));
-        } else if(this.turn.equals(this.firstPlayerOfRound)) {
+        } else if(roundInProgress && this.turn.equals(this.firstPlayerOfRound)) {
             var playedCards = players.stream()
                     .map(Player::getLastPlayedCard)
                     .collect(toList());
