@@ -20,6 +20,7 @@ services:
     environment:
       - KIRVES_JWT_SECRET
       - KIRVES_GOOGLE_CLIENT_ID
+      - KIRVES_ALLOWED_ORIGINS=${KIRVES_ALLOWED_ORIGINS:-http://localhost:1234,http://localhost:8080}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/kirves
       - SPRING_DATASOURCE_USERNAME=kirves
       - SPRING_DATASOURCE_PASSWORD=kirves

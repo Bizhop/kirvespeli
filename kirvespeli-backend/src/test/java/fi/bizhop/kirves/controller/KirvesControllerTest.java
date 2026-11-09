@@ -58,7 +58,7 @@ public class KirvesControllerTest extends TestBase {
 
         when(this.authService.getEmailFromJWT(any())).thenReturn(TEST_USER_EMAIL);
         when(this.userService.get(eq(TEST_USER_EMAIL))).thenReturn(TestUserUtil.getTestUser(TEST_USER_EMAIL));
-        when(this.kirvesService.getActiveGames()).thenReturn(this.getTestGames());
+        when(this.kirvesService.getActiveGames(any())).thenReturn(this.getTestGames());
 
         var result = this.mockMvc.perform(builder).andReturn();
         assertEquals(SC_OK, result.getResponse().getStatus());

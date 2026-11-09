@@ -35,11 +35,11 @@ img.on-table {
   height: 20px;
 }
 
-/* -8px matches the item padding of the legacy MUI Grid these cards were laid out with */
+/* Front and back faces are stacked inside a relatively positioned, fixed height Card grid item */
 .card {
   position: absolute;
-  top: -8px;
-  left: -8px;
+  top: 0;
+  left: 0;
 }
 
 img.opaque50 {

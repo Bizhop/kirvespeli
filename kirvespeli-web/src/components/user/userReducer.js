@@ -4,7 +4,9 @@ import {
   LOGOUT,
   UPDATE_SUCCESS,
   GOOGLE_LOGIN_FAIL,
+  AUTO_LOGIN,
   AUTO_LOGIN_SUCCESS,
+  AUTO_LOGIN_FAIL,
 } from "./userActions"
 
 import { pathOr } from "ramda"
@@ -12,6 +14,7 @@ import { pathOr } from "ramda"
 const initialState = {
   email: null,
   error: null,
+  loading: false,
 }
 
 const saveToken = user => {
@@ -25,6 +28,16 @@ const resetToken = () => {
 const userReducer = (state = initialState, action) => {
   const user = pathOr({}, ["payload", "data"], action)
   switch (action.type) {
+    case AUTO_LOGIN:
+      return {
+        ...state,
+        loading: true,
+      }
+    case AUTO_LOGIN_FAIL:
+      resetToken()
+      return {
+        ...initialState,
+      }
     case LOGOUT:
     case LOGIN_FAILURE:
     case GOOGLE_LOGIN_FAIL:
@@ -41,6 +54,7 @@ const userReducer = (state = initialState, action) => {
         email: user.email,
         nickname: user.nickname,
         error: null,
+        loading: false,
       }
     default:
       return state

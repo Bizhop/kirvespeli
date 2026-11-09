@@ -36,7 +36,7 @@ public class KirvesController {
     public @ResponseBody List<GameBrief> init(@ParameterUser User user) {
         try {
             var id = this.KIRVES_SERVICE.init(user);
-            return this.KIRVES_SERVICE.getActiveGames();
+            return this.KIRVES_SERVICE.getActiveGames(user);
         } catch (Exception e) {
             LOG.error("Failed to initialize game", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -46,7 +46,7 @@ public class KirvesController {
     //user is injected here to invoke resolver
     @RequestMapping(value = "/kirves", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<GameBrief> getGames(@ParameterUser User user) {
-        return this.KIRVES_SERVICE.getActiveGames();
+        return this.KIRVES_SERVICE.getActiveGames(user);
     }
 
     @RequestMapping(value = "/kirves/{id}", method = RequestMethod.POST, produces = "application/json")

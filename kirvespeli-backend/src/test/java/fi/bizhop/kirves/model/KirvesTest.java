@@ -170,6 +170,61 @@ public class KirvesTest {
     }
 
     @Test
+    public void testFoldBeforeAnyCardPlayedInRound() throws CardException, KirvesGameException {
+        var game = getTestGame();
+
+        var cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+        game.speak(TEST_USERS.get(1), KEEP);
+
+        //last player in turn order folds out of turn before anyone has played
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), FOLD));
+        game.fold(TEST_USERS.get(0));
+        assertEquals(0, game.out().getNumOfPlayedRounds());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
+
+        //first player of the round folds before anyone has played
+        game.fold(TEST_USERS.get(1));
+        assertEquals(0, game.out().getNumOfPlayedRounds());
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), PLAY_CARD));
+        game.playCard(TEST_USERS.get(2), 0);
+        game.playCard(TEST_USERS.get(3), 0);
+        assertEquals(1, game.out().getNumOfPlayedRounds());
+    }
+
+    @Test
+    public void testFoldAtStartOfLaterRound() throws CardException, KirvesGameException {
+        var game = getTestGame();
+
+        var cutter = game.getUserWithAction(CUT).orElseThrow(KirvesGameException::new);
+        game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
+        game.deal(TEST_USERS.get(0), OTHER_CARDS);
+        game.speak(TEST_USERS.get(1), KEEP);
+        game.playCard(TEST_USERS.get(1), 0);
+        game.playCard(TEST_USERS.get(2), 0);
+        game.playCard(TEST_USERS.get(3), 0);
+        game.playCard(TEST_USERS.get(0), 0);
+        assertEquals(1, game.out().getNumOfPlayedRounds());
+
+        //round winner starts next round and folds; previous round cards must not be evaluated again
+        var starter = game.getUserWithAction(PLAY_CARD).orElseThrow(KirvesGameException::new);
+        game.fold(starter);
+        assertEquals(1, game.out().getNumOfPlayedRounds());
+        assertTrue(game.getUserWithAction(PLAY_CARD).isPresent());
+    }
+
+    @Test
+    public void testCanJoinIsPerUser() throws CardException, KirvesGameException {
+        var game = getTestGame(TEST_USERS.subList(0, 2));
+
+        assertFalse(game.out(TEST_USERS.get(0)).isCanJoin());
+        assertFalse(game.out(TEST_USERS.get(1)).isCanJoin());
+        assertTrue(game.out(TEST_USERS.get(2)).isCanJoin());
+        assertTrue(game.out().isCanJoin());
+    }
+
+    @Test
     public void testVakyri() throws CardException, KirvesGameException {
         var game = getTestGame();
 

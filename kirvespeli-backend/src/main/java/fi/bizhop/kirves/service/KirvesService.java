@@ -64,11 +64,23 @@ public class KirvesService {
         return id;
     }
 
-    public List<GameBrief> getActiveGames() {
+    public List<GameBrief> getActiveGames(User user) {
         var activeGames = this.GAME_REPO.findByActiveTrue();
         return activeGames == null
                 ? Collections.emptyList()
-                : activeGames.stream().map(GameBrief::fromDb).collect(toList());
+                : activeGames.stream()
+                        .map(db -> GameBrief.fromDb(db, Boolean.TRUE.equals(db.canJoin) && !isPlayerInGame(db, user)))
+                        .collect(toList());
+    }
+
+    private boolean isPlayerInGame(KirvesGameDB db, User user) {
+        if(user == null) return false;
+        var inMemory = this.IN_MEMORY_GAMES.get(db.id);
+        if(inMemory != null) return inMemory.hasPlayer(user);
+        return JsonUtil.getJavaObject(db.gameData, GameDataPOJO.class)
+                .map(pojo -> pojo.players != null && pojo.players.stream()
+                        .anyMatch(player -> player.user != null && user.getEmail().equals(player.user.email)))
+                .orElse(false);
     }
 
     public void joinGame(Long id, User user) throws KirvesGameException, TransactionException {
