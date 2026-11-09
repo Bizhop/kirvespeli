@@ -37,5 +37,11 @@
   "browserslist": "defaults",
   "@parcel/resolver-default": {
     "packageExports": true
+  },
+  "allowScripts": {
+    "@parcel/watcher": false,
+    "@swc/core": false,
+    "lmdb": false,
+    "msgpackr-extract": false
   }
 }
