@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router"
 
 import "../src/styles/style.css"
 
-addDecorator(story => <MemoryRouter initialEntries={['/']}>{story()}</MemoryRouter>)
+addDecorator(story => <MemoryRouter initialEntries={["/"]}>{story()}</MemoryRouter>)
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

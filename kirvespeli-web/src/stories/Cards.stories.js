@@ -12,7 +12,9 @@ export default {
   component: Cards,
 }
 
-export const myCards = () => <Cards scale={0.5} cards={cardsInHand} roundsWon={[]} action={action} />
+export const myCards = () => (
+  <Cards scale={0.5} cards={cardsInHand} roundsWon={[]} action={action} />
+)
 export const myCardsWithSuit = () => (
   <Cards cards={cardsInHand} roundsWon={[]} action={action} firstCardSuit="HEARTS" />
 )
