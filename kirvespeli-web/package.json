@@ -9,16 +9,17 @@
     "format": "prettier --write \"src/**/*.{js,jsx}\" .storybook"
   },
   "devDependencies": {
-    "@parcel/resolver-glob": "^2.6.2",
+    "@parcel/resolver-glob": "^2.16.4",
     "@storybook/react-vite": "^10.6.6",
-    "parcel": "^2.6.2",
+    "parcel": "^2.16.4",
     "prettier": "^3.9.10",
     "storybook": "^10.6.6",
     "vite": "^8.3.6"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.4",
-    "@emotion/styled": "^11.10.4",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@react-oauth/google": "^0.13.5",
@@ -32,8 +33,7 @@
     "react-dom": "^19.3.1",
     "react-final-form": "^7.0.1",
     "react-redux": "^9.3.1",
-    "react-router": "^8.5.1",
-    "serve": "^14.0.1"
+    "react-router": "^8.5.1"
   },
   "engines": {
     "node": ">= 22.22"
