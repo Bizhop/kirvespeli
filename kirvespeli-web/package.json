@@ -38,5 +38,8 @@
   "engines": {
     "node": ">= 22"
   },
-  "browserslist": "defaults"
+  "browserslist": "defaults",
+  "@parcel/resolver-default": {
+    "packageExports": true
+  }
 }
