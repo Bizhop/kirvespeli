@@ -1,6 +1,6 @@
 package fi.bizhop.kirves.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
