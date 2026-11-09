@@ -104,6 +104,7 @@ export const KirvesGame = ({
             )}
             {includes("ACE_OR_TWO_DECISION", game.myAvailableActions) && (
               <ButtonWrapper
+                type="action"
                 action={action}
                 actionName="ACE_OR_TWO_DECISION"
                 gameId={game.id}
