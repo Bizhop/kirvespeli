@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { connect } from "react-redux"
 import { Navigate } from "react-router-dom"
 import { path, pathOr, pick } from "ramda"
@@ -10,45 +10,51 @@ import RenderGame from "./RenderGame"
 import KirvesGames from "./KirvesGames"
 import Log from "./Log"
 
-export const KirvesContainer = props => (
-  <Box sx={{ flexGrow: 1 }}>
-    <h1>Kirves</h1>
-    <Grid container spacing={1}>
-      <Grid item md={3}>
-        <Button variant="contained" onClick={() => props.init()}>
-          Aloita uusi peli
-        </Button>
+export const KirvesContainer = props => {
+  useEffect(() => {
+    if (!props.gamesFetched) {
+      props.getGames()
+    }
+  }, [props.gamesFetched])
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <h1>Kirves</h1>
+      <Grid container spacing={1}>
+        <Grid item md={3}>
+          <Button variant="contained" onClick={() => props.init()}>
+            Aloita uusi peli
+          </Button>
+        </Grid>
+        <Grid item md={3}>
+          <Tooltip title="Hae pelit">
+            <IconButton onClick={() => props.getGames()}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Grid>
       </Grid>
-      <Grid item md={3}>
-        <Tooltip title="Hae pelit">
-          <IconButton onClick={() => props.getGames()}>
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
-      </Grid>
-    </Grid>
-    <KirvesGames {...pick(["games", "user", "getLog", "deleteGame"], props)} />
-    {props.logVisible && (
-      <Log
-        {...pick(["logId", "logItems", "selectedLogIndex", "getReplay", "restoreGame"], props)}
-      />
-    )}
-    {props.replay && (
-      <Box className="kirves-container">
-        <RenderGame
-          game={props.replay}
-          isReplay={true}
-          action={() => {}}
-          showAllCards={() => {}}
-          cardsVisible={true}
+      <KirvesGames {...pick(["games", "user", "getLog", "deleteGame"], props)} />
+      {props.logVisible && (
+        <Log
+          {...pick(["logId", "logItems", "selectedLogIndex", "getReplay", "restoreGame"], props)}
         />
-      </Box>
-    )}
-    {!props.user.email && <Navigate to="/" />}
-    {!props.gamesFetched && props.getGames() && null}
-    {props.error && <Alert severity="error">{props.error}</Alert>}
-  </Box>
-)
+      )}
+      {props.replay && (
+        <Box className="kirves-container">
+          <RenderGame
+            game={props.replay}
+            isReplay={true}
+            action={() => {}}
+            showAllCards={() => {}}
+            cardsVisible={true}
+          />
+        </Box>
+      )}
+      {!props.user.email && <Navigate to="/" />}
+      {props.error && <Alert severity="error">{props.error}</Alert>}
+    </Box>
+  )
+}
 
 const mapStateToProps = state => ({
   user: path(["user"], state),

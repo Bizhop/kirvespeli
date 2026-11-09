@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { connect } from "react-redux"
-import { Navigate, useLocation } from "react-router-dom"
+import { Navigate, useParams } from "react-router-dom"
 import { path, includes, pathOr, omit } from "ramda"
 import { Grid, Box, Button } from "@mui/material"
 
@@ -11,12 +11,6 @@ import ActionButton from "./ActionButton"
 import Messages from "./Messages"
 import SuitSelector from "./SuitSelector"
 import useGameRefresh from "./useGameRefresh"
-
-const getGameIdAndGame = getGame => {
-  const location = useLocation()
-  var id = location.pathname.split("/").pop()
-  getGame(id)
-}
 
 const makeButton = props => {
   const buttonProps = omit(["type", "label"], props)
@@ -51,10 +45,16 @@ export const KirvesGame = ({
   getGame,
   socketDisabled,
 }) => {
+  const { id } = useParams()
+  useEffect(() => {
+    if (id && String(game?.id) !== id) {
+      getGame(id)
+    }
+  }, [id, game?.id])
   useGameRefresh(game?.id, refresh, !socketDisabled)
   return (
     <div>
-      {game ? (
+      {game && (
         <Box sx={{ flexGrow: 1 }} className="kirves-container">
           <h1>Kirves (Peli {game.id})</h1>
           <Grid container spacing={1}>
@@ -174,8 +174,6 @@ export const KirvesGame = ({
             </Grid>
           </Grid>
         </Box>
-      ) : (
-        getGameIdAndGame(getGame) && null
       )}
       {!user.email && <Navigate to="/" />}
     </div>
