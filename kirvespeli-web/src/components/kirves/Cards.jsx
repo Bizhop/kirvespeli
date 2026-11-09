@@ -20,6 +20,7 @@ const Cards = ({
     <Grid container spacing={1}>
       {cards.map((card, index) => (
         <Card
+          key={index}
           index={index}
           scale={s}
           card={card}

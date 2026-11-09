@@ -1,7 +1,6 @@
 import React from "react"
-import { Route, Routes } from "react-router-dom"
+import { HashRouter as Router, Route, Routes } from "react-router"
 import { Provider } from "react-redux"
-import { HashRouter as Router } from "react-router-dom"
 import { CssBaseline, createTheme, ThemeProvider, Container, Box } from "@mui/material"
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
@@ -53,7 +52,7 @@ const App = () => (
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme}>
         <GoogleOAuthProvider clientId="266150004835-ijh2ibgdsa9timu7cmak0udc76hnhldb.apps.googleusercontent.com">
-          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Router>
             <CssBaseline />
             <Container>
               <Header />

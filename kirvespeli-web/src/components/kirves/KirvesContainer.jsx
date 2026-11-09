@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { connect } from "react-redux"
-import { Navigate } from "react-router-dom"
+import { Navigate } from "react-router"
 import { path, pathOr, pick } from "ramda"
 import { Tooltip, IconButton, Box, Grid, Button, Alert } from "@mui/material"
 import RefreshIcon from "@mui/icons-material/Refresh"

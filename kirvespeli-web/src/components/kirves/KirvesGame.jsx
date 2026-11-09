@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { connect } from "react-redux"
-import { Navigate, useParams } from "react-router-dom"
+import { Navigate, useParams } from "react-router"
 import { path, includes, pathOr, omit } from "ramda"
 import { Grid, Box, Button } from "@mui/material"
 

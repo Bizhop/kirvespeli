@@ -1,6 +1,6 @@
 import React from "react"
 import { path } from "ramda"
-import { NavLink } from "react-router-dom"
+import { NavLink } from "react-router"
 import { connect } from "react-redux"
 import { Box, Grid, IconButton, Tooltip } from "@mui/material"
 import HomeIcon from "@mui/icons-material/Home"
