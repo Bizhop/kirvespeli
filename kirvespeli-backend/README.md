@@ -1,14 +1,14 @@
 # Kirvespeli backend
 
-Spring Boot 2.5, Java 11, PostgreSQL 14.
+Spring Boot 4.1, Java 25, Gradle 9, PostgreSQL 14.
 
 ## Käynnistys
 ```
 export KIRVES_JWT_SECRET=...        # pakollinen
 export KIRVES_GOOGLE_CLIENT_ID=...
-./buildAndRun.sh                    # mvn package, docker-image ja docker compose (backend + tietokanta)
+./buildAndRun.sh                    # Docker image build and docker compose (backend + database)
 ```
-`mvn test` ajaa testit.
+`./gradlew test` runs the tests. The Docker image builds the application with Gradle.
 
 ## Osoitteet
 - REST-rajapinta on kokonaisuudessaan polun `/api` alla (`util/WebConfig.java`).

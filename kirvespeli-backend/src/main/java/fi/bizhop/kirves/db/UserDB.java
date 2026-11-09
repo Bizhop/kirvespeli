@@ -2,7 +2,7 @@ package fi.bizhop.kirves.db;
 
 import fi.bizhop.kirves.model.User;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name="users")

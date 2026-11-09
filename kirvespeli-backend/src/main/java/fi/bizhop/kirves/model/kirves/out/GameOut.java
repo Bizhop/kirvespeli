@@ -2,14 +2,12 @@ package fi.bizhop.kirves.model.kirves.out;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 import java.util.Map;
 
 @Data
 @Builder
-@Jacksonized
 public class GameOut {
     List<PlayerOut> players;
     List<String> messages;

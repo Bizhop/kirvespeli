@@ -16,8 +16,8 @@ public class GameDataPOJO {
     public String secondCutCard;
 
     //these values are updated running the game and evaluated for GameDataPOJO equality
-    public final Map<String, ScorePOJO> scores = new LinkedHashMap<>();
-    public final List<Map<String, ScorePOJO>> scoresHistory = new ArrayList<>();
+    public Map<String, ScorePOJO> scores = new LinkedHashMap<>();
+    public List<Map<String, ScorePOJO>> scoresHistory = new ArrayList<>();
     public boolean canJoin = false;
     public boolean canDeal = false;
     public List<String> messages = new ArrayList<>();

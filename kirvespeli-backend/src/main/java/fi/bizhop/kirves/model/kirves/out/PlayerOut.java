@@ -2,14 +2,12 @@ package fi.bizhop.kirves.model.kirves.out;
 
 import fi.bizhop.kirves.model.kirves.Player;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
 @Value
-@Jacksonized
 public class PlayerOut {
     String email;
     String nickname;

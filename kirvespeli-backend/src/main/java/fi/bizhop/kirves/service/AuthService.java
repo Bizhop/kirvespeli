@@ -5,7 +5,7 @@ import fi.bizhop.kirves.security.GoogleAuth;
 import fi.bizhop.kirves.security.JWTAuth;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
