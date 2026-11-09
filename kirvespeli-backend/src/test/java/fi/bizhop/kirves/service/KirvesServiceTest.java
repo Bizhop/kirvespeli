@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
@@ -30,18 +30,18 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 public class KirvesServiceTest {
-    @MockBean
+    @MockitoBean
     KirvesGameRepo kirvesGameRepo;
 
     KirvesService kirvesService;
 
-    @MockBean
+    @MockitoBean
     ActionLogRepo actionLogRepo;
 
-    @MockBean
+    @MockitoBean
     ActionLogItemRepo actionLogItemRepo;
 
-    @MockBean
+    @MockitoBean
     UserService userService;
 
     Map<Integer, Exception> threadExceptions = new HashMap<>();

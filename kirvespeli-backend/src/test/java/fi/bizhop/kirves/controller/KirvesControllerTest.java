@@ -10,8 +10,8 @@ import fi.bizhop.kirves.util.TestUserUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,8 +21,8 @@ import java.util.List;
 
 import static fi.bizhop.kirves.util.TestUserUtil.TEST_USER_EMAIL;
 import static fi.bizhop.kirves.util.TestUserUtil.getTestUser;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,13 +32,13 @@ import static org.mockito.Mockito.when;
 @WebMvcTest(value = KirvesController.class)
 public class KirvesControllerTest extends TestBase {
 
-    @MockBean
+    @MockitoBean
     AuthService authService;
-    @MockBean
+    @MockitoBean
     UserService userService;
-    @MockBean
+    @MockitoBean
     KirvesService kirvesService;
-    @MockBean
+    @MockitoBean
     MessageService messageService;
 
     @Autowired

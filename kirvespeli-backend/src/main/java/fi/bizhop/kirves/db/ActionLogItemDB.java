@@ -1,7 +1,7 @@
 package fi.bizhop.kirves.db;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "action_log_items")

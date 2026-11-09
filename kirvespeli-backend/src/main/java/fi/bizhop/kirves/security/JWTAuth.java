@@ -27,13 +27,10 @@ public class JWTAuth {
     }
 
     public static String getJwt(String email) {
-        var claims = Jwts.claims();
-        claims.put("email", email);
-
         var jwt = Jwts.builder()
-                .setSubject(email)
-                .setClaims(claims)
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .subject(email)
+                .claim("email", email)
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(JWT_KEY)
                 .compact();
 
@@ -58,11 +55,11 @@ public class JWTAuth {
 
         try {
             var jwt = token.replace(JWT_TOKEN_PREFIX,"");
-            return Jwts.parserBuilder()
-                    .setSigningKey(JWT_KEY)
+            return Jwts.parser()
+                    .verifyWith(JWT_KEY)
                     .build()
-                    .parseClaimsJws(jwt)
-                    .getBody();
+                    .parseSignedClaims(jwt)
+                    .getPayload();
         } catch (RuntimeException e) {
             return null;
         }
