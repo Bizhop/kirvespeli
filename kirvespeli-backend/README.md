@@ -10,6 +10,17 @@ export KIRVES_GOOGLE_CLIENT_ID=...
 ```
 `./gradlew test` runs the tests. The Docker image builds the application with Gradle.
 
+## Tietokantatestit (PostgreSQL)
+Valinnainen testisarja (`src/dbTest`) ajetaan oikeaa PostgreSQL:ää vasten. Se ei ole osa `build`/`check`/`test`-ajoa eikä Docker-buildia.
+```
+docker compose up -d db     # PostgreSQL 14 osoitteeseen localhost:5432
+./gradlew dbTest
+docker compose stop db
+```
+Ajo luo palvelimelle tilapäisen tietokannan `kirves_test_<satunnainen>`, ajaa siihen Liquibase-changelogin ja poistaa kannan ajon lopuksi. Testit ajetaan ilman testin omaa transaktiota (kuten sovellus), ja taulut tyhjennetään ennen jokaista testiä.
+
+Yhteys: `KIRVES_DBTEST_URL` (oletus `jdbc:postgresql://localhost:5432/kirves`, käytetään `CREATE DATABASE`/`DROP DATABASE` -komentoihin), `KIRVES_DBTEST_USERNAME` ja `KIRVES_DBTEST_PASSWORD` (oletus `kirves`). Käyttäjällä pitää olla oikeus luoda tietokantoja. Jos ajo keskeytetään väkisin, kanta voi jäädä jäljelle: `DROP DATABASE kirves_test_... WITH (FORCE)`.
+
 ## Osoitteet
 - REST-rajapinta on kokonaisuudessaan polun `/api` alla (`util/WebConfig.java`).
 - WebSocket (STOMP, SockJS-varmistus) on osoitteessa `/api/refresh`. Viestit julkaistaan aiheeseen `/topic/refresh`.

@@ -27,6 +27,19 @@ repositories {
     mavenCentral()
 }
 
+// Optional PostgreSQL tests (src/dbTest), run only with ./gradlew dbTest. Not part of check/build.
+sourceSets {
+    dbTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    dbTestImplementation.extendsFrom implementation
+    dbTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
@@ -49,8 +62,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'commons-io:commons-io:2.20.0'
-    testRuntimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    dbTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+    dbTestImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    dbTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     liquibaseRuntime 'org.liquibase:liquibase-core'
     liquibaseRuntime 'org.postgresql:postgresql'
@@ -76,6 +92,24 @@ liquibase {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.register('dbTest', Test) {
+    description = 'Runs the PostgreSQL tests against a running database (see README).'
+    group = 'verification'
+    testClassesDirs = sourceSets.dbTest.output.classesDirs
+    classpath = sourceSets.dbTest.runtimeClasspath
+    useJUnitPlatform()
+    // the database is external state, never consider the results up to date
+    outputs.upToDateWhen { false }
+    ['KIRVES_DBTEST_URL', 'KIRVES_DBTEST_USERNAME', 'KIRVES_DBTEST_PASSWORD'].each { name ->
+        def value = project.findProperty(name) ?: System.getenv(name)
+        if (value) systemProperty name, value
+    }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
 }
 
 tasks.jar {
