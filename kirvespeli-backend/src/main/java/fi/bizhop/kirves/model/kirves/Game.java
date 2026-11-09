@@ -128,7 +128,7 @@ public class Game {
                 .myCardsInHand(myCards)
                 .myExtraCard(myExtraCard)
                 .myAvailableActions(myActions)
-                .canJoin(this.data.canJoin)
+                .canJoin(this.data.canJoin && (user == null || !this.hasPlayer(user)))
                 .canDeclineCut(this.data.canDeclineCut)
                 .trumpCard(this.trumpCard == null ? "" : this.trumpCard.toString())
                 .trump(this.trump == null ? "" : this.trump.toString())

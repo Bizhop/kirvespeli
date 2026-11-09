@@ -215,6 +215,16 @@ public class KirvesTest {
     }
 
     @Test
+    public void testCanJoinIsPerUser() throws CardException, KirvesGameException {
+        var game = getTestGame(TEST_USERS.subList(0, 2));
+
+        assertFalse(game.out(TEST_USERS.get(0)).isCanJoin());
+        assertFalse(game.out(TEST_USERS.get(1)).isCanJoin());
+        assertTrue(game.out(TEST_USERS.get(2)).isCanJoin());
+        assertTrue(game.out().isCanJoin());
+    }
+
+    @Test
     public void testVakyri() throws CardException, KirvesGameException {
         var game = getTestGame();
 
