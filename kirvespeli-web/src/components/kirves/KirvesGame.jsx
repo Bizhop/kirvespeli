@@ -161,10 +161,12 @@ export const KirvesGame = ({
             )}
             <Grid container spacing={1} size={12}>
               <Grid
-                display="flex"
-                justifyContent="flex-end"
                 size={{
                   md: "grow",
+                }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
                 }}
               >
                 <Messages messages={pathOr([], ["messages"], game)} />
@@ -180,10 +182,12 @@ export const KirvesGame = ({
           />
           <Grid container spacing={1}>
             <Grid
-              display="flex"
-              justifyContent="flex-end"
               size={{
                 md: "grow",
+              }}
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
               }}
             >
               <ScoreCard game={game} />

@@ -11,9 +11,11 @@ import { logout } from "../user/userActions"
 
 const MyNavLink = ({ to, label, icon }) => (
   <Grid
-    textAlign="center"
     size={{
       md: 1,
+    }}
+    sx={{
+      textAlign: "center",
     }}
   >
     <NavLink to={to}>
@@ -37,7 +39,12 @@ export const Header = ({ loggedIn, logout }) => (
             md: "grow",
           }}
         >
-          <Box display="flex" justifyContent="flex-end">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
             <Tooltip title="Kirjaudu ulos">
               <IconButton onClick={() => logout()} variant="contained" color="error">
                 <LogoutIcon />

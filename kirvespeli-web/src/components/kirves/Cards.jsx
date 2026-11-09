@@ -37,7 +37,12 @@ const Cards = ({
             md: "grow",
           }}
         >
-          <Box display="flex" justifyContent="center">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <SvgImage name={`Suit${firstCardSuit}`} className="opaque50" />
           </Box>
         </Grid>
