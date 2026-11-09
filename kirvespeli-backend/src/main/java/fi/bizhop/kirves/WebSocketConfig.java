@@ -1,5 +1,6 @@
 package fi.bizhop.kirves;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -9,6 +10,9 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    @Value("${kirves.allowed-origins}")
+    private String[] allowedOrigins;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic");
@@ -17,7 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/refresh").setAllowedOrigins("http://localhost:1234", "http://localhost:8080", "https://kirvespeli.herokuapp.com", "https://kirvespeli-web.fly.dev");
-        registry.addEndpoint("/refresh").setAllowedOrigins("http://localhost:1234", "http://localhost:8080", "https://kirvespeli.herokuapp.com", "https://kirvespeli-web.fly.dev").withSockJS();
+        registry.addEndpoint("/api/refresh").setAllowedOrigins(this.allowedOrigins);
+        registry.addEndpoint("/api/refresh").setAllowedOrigins(this.allowedOrigins).withSockJS();
     }
 }
