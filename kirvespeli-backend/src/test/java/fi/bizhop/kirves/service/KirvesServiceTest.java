@@ -4,13 +4,16 @@ import fi.bizhop.kirves.db.*;
 import fi.bizhop.kirves.exception.CardException;
 import fi.bizhop.kirves.exception.KirvesGameException;
 import fi.bizhop.kirves.exception.TransactionException;
+import fi.bizhop.kirves.model.Card;
 import fi.bizhop.kirves.model.kirves.ActionLogItem;
 import fi.bizhop.kirves.model.kirves.Game;
 import fi.bizhop.kirves.model.kirves.in.GameIn;
 import fi.bizhop.kirves.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.kirves.util.JsonUtil;
+import fi.bizhop.kirves.util.TransactionHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,12 +21,15 @@ import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fi.bizhop.kirves.model.Card.Rank.*;
+import static fi.bizhop.kirves.model.Card.Suit.*;
 import static fi.bizhop.kirves.model.kirves.Game.Action.*;
 import static fi.bizhop.kirves.util.TestUserUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +51,9 @@ public class KirvesServiceTest {
     @MockitoBean
     UserService userService;
 
+    @MockitoBean
+    MessageService messageService;
+
     Map<Integer, Exception> threadExceptions = new HashMap<>();
 
     @Captor
@@ -52,9 +61,15 @@ public class KirvesServiceTest {
 
     @BeforeEach
     public void setup() {
+        if(this.kirvesService != null) this.kirvesService.shutdown();
         //SpringExtension no longer initializes @Captor fields
         MockitoAnnotations.openMocks(this);
-        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo);
+        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo, this.messageService);
+    }
+
+    @AfterEach
+    public void shutdown() {
+        this.kirvesService.shutdown();
     }
 
     @Test
@@ -83,6 +98,125 @@ public class KirvesServiceTest {
                 () -> this.kirvesService.joinGame(0L, spectator));
         assertEquals("Peli on täynnä", error.getMessage());
         verify(this.kirvesGameRepo, times(4)).save(any());
+    }
+
+    @Test
+    public void testAcknowledgeDeparture() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        mockGame(pendingDepartureGame(a, b, null));
+
+        var acknowledge = GameIn.builder().action(ACKNOWLEDGE_DEPARTURE).build();
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, a));
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, getTestUser("other@example.com")));
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), a));
+        assertTrue(this.kirvesService.getGame(0L).out().getScoresHistory().isEmpty());
+
+        var result = this.kirvesService.action(0L, acknowledge, b);
+        assertEquals(1, result.out().getScoresHistory().size());
+        assertEquals(a.getEmail(), result.out().getScoresHistory().get(0).loser());
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, b));
+        assertEquals(1, this.kirvesService.getGame(0L).out().getScoresHistory().size());
+    }
+
+    @Test
+    public void testAdminContinuesGame() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        mockGame(pendingDepartureGame(a, b, null));
+
+        var continueGame = GameIn.builder().action(CONTINUE_GAME).build();
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, continueGame, b));
+        var result = this.kirvesService.action(0L, continueGame, a);
+        assertEquals(1, result.out().getScoresHistory().size());
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, continueGame, a));
+    }
+
+    @Test
+    public void testExpireDepartures() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        mockGame(pendingDepartureGame(a, b, null));
+        assertFalse(this.kirvesService.expireDepartures(0L));
+        assertTrue(this.kirvesService.getGame(0L).out().getScoresHistory().isEmpty());
+
+        this.setup();
+        var db = mockGame(pendingDepartureGame(a, b, System.currentTimeMillis() - 1));
+        assertTrue(this.kirvesService.expireDepartures(0L));
+        var out = this.kirvesService.getGame(0L).out();
+        assertEquals(1, out.getScoresHistory().size());
+        assertNull(out.getDepartureSecondsLeft());
+        assertFalse(db.gameData.contains("\"departurePending\":true"));
+        //the transaction was released
+        this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), getTestUser(out.getTurn()));
+    }
+
+    @Test
+    public void testDepartureTransactionTimeoutRollsBackAndCanRetry() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        var db = mockGame(pendingDepartureGame(a, b, null));
+        var game = this.kirvesService.getGame(0L);
+        //Drive expiry directly so the scheduler cannot race the test.
+        this.kirvesService.shutdown();
+        var data = (GameDataPOJO) ReflectionTestUtils.getField(game, "data");
+        data.departureDeadline = System.currentTimeMillis() - 1;
+        var pending = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        var transactions = mock(TransactionHandler.class);
+        ReflectionTestUtils.setField(this.kirvesService, "TRANSACTION_HANDLER", transactions);
+        doThrow(new TransactionException(TransactionException.Type.TIMEOUT))
+                .doNothing().when(transactions).end(0L);
+        when(transactions.rollback(0L, GameDataPOJO.class)).thenReturn(pending);
+
+        assertThrows(TransactionException.class, () -> this.kirvesService.expireDepartures(0L));
+
+        var restored = this.kirvesService.getGame(0L);
+        assertTrue(restored.userHasActionAvailable(b, ACKNOWLEDGE_DEPARTURE));
+        assertTrue(restored.out().getScoresHistory().isEmpty());
+        assertNotNull(restored.getDepartureDeadline());
+        verify(this.kirvesGameRepo, never()).save(any());
+
+        assertTrue(this.kirvesService.expireDepartures(0L));
+        assertFalse(this.kirvesService.expireDepartures(0L));
+        assertEquals(1, this.kirvesService.getGame(0L).out().getScoresHistory().size());
+        assertFalse(db.gameData.contains("\"departurePending\":true"));
+        verify(this.kirvesGameRepo, times(1)).save(any());
+    }
+
+    //a and b play; a folds when b has two points, so b must acknowledge their departure
+    private static String pendingDepartureGame(fi.bizhop.kirves.model.User a, fi.bizhop.kirves.model.User b, Long deadline) throws Exception {
+        var game = new Game(a);
+        game.addPlayer(b);
+        game.cut(b, false);
+        game.deal(a, safeCards());
+        game.speak(b, Game.Speak.KEEP);
+        var pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        pojo.scores.get(1).score = 2;
+        game = new Game(pojo);
+        game.fold(a);
+        pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        if(deadline != null) pojo.departureDeadline = deadline;
+        return JsonUtil.getJson(pojo).orElseThrow();
+    }
+
+    private KirvesGameDB mockGame(String gameData) {
+        var db = new KirvesGameDB();
+        db.id = 0L;
+        db.admin = getTestUserDB("a@example.com");
+        db.active = true;
+        db.gameData = gameData;
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(0L)).thenReturn(Optional.of(db));
+        return db;
+    }
+
+    private static List<Card> safeCards() throws CardException {
+        var cards = new ArrayList<Card>();
+        for(var suit : List.of(SPADES, HEARTS, CLUBS, DIAMONDS)) {
+            for(var rank : List.of(THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, QUEEN, KING)) {
+                cards.add(new Card(suit, rank));
+            }
+        }
+        return cards;
     }
 
     @Test

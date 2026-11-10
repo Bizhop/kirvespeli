@@ -1,10 +1,23 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@mui/material"
 import ActionButton from "./ActionButton"
 import SuitSelector from "./SuitSelector"
+import { departingPlayers } from "./turnState"
+
+// Counts down locally between refreshes; a new value from the server resynchronises it.
+const DepartureCountdown = ({ seconds }) => {
+  const [left, setLeft] = useState(seconds)
+  useEffect(() => {
+    setLeft(seconds)
+    const timer = setInterval(() => setLeft(s => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(timer)
+  }, [seconds])
+  return <span>Peli jatkuu automaattisesti {left} s kuluttua</span>
+}
 
 const ActionBar = ({ game, action, join, showAllCards }) => {
   const actions = game.myAvailableActions ?? []
+  const departing = departingPlayers(game)
   const button = (name, label, extra = {}) =>
     actions.includes(name) && (
       <ActionButton
@@ -44,7 +57,17 @@ const ActionBar = ({ game, action, join, showAllCards }) => {
       )}
       {actions.includes("PLAY_CARD") && <span>Valitse pelattava kortti</span>}
       {actions.includes("DISCARD") && <span>Valitse hylättävä kortti</span>}
-      {game.numOfPlayedRounds === 5 && (
+      {button("ACKNOWLEDGE_DEPARTURE", "Kuittaa poistuminen")}
+      {button("CONTINUE_GAME", "Jatka peliä")}
+      {departing.length > 0 && !actions.includes("ACKNOWLEDGE_DEPARTURE") && (
+        <span>
+          Odotetaan poistumisen kuittausta: {departing.map(p => p.nickname || p.email).join(", ")}
+        </span>
+      )}
+      {departing.length > 0 && game.departureSecondsLeft != null && (
+        <DepartureCountdown seconds={game.departureSecondsLeft} />
+      )}
+      {(game.numOfPlayedRounds === 5 || departing.length > 0) && (
         <Button variant="outlined" onClick={() => showAllCards?.()}>
           Näytä kortit
         </Button>

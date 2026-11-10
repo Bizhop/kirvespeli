@@ -29,10 +29,18 @@ const Seat = ({
   const currentDealer = game.dealer === player.email
   const SeatInfo = selectable ? "button" : "div"
   const nickname = player.nickname || player.email
-  const state = player.folded ? "Pakassa" : player.inGame === false ? "Sivussa" : ""
+  const state = player.folded
+    ? "Pakassa"
+    : player.departurePending
+      ? "Poistumassa"
+      : player.inGame === false
+        ? "Sivussa"
+        : ""
+  // a departing player's cards stay on the table until acknowledged, so the seat is not dimmed
+  const inactive = state && !player.departurePending
   return (
     <div
-      className={`seat seat-${position}${state ? " seat-inactive" : ""}${inTurn ? " seat-turn" : ""}${selectable ? " seat-selectable" : ""}`}
+      className={`seat seat-${position}${inactive ? " seat-inactive" : ""}${inTurn ? " seat-turn" : ""}${selectable ? " seat-selectable" : ""}`}
       data-email={player.email}
       role="group"
       aria-label={`${nickname}${inTurn ? ", vuorossa" : ""}`}

@@ -9,10 +9,12 @@ import fi.bizhop.kirves.model.kirves.Game;
 import fi.bizhop.kirves.model.kirves.Game.Action;
 import fi.bizhop.kirves.model.kirves.in.GameIn;
 import fi.bizhop.kirves.service.KirvesService;
+import fi.bizhop.kirves.service.MessageService;
 import fi.bizhop.kirves.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -27,6 +29,10 @@ class KirvesServiceDbTest extends DbTestBase {
 
     @Autowired
     KirvesService kirvesService;
+
+    //departure timeouts send refresh messages; no message broker in this context
+    @MockitoBean
+    MessageService messageService;
 
     @Autowired
     KirvesGameRepo gameRepo;

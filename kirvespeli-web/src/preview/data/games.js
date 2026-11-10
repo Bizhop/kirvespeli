@@ -219,3 +219,62 @@ export const handPowerGame = {
   trump: "HEARTS",
   myCardsInHand: ["9H", "JD", "BJ", "2C", "RJ", "JC"],
 }
+
+// A hand has ended and the players at `pending` seat indexes reached three points. `acknowledged`
+// seats have already left; their cards stay on the table until everyone has acknowledged.
+const handCards = [
+  ["7H", "QC", "KD", "9S", "TH"],
+  ["8H", "AC", "3D", "4S", "JH"],
+  ["5H", "6C", "QD", "KS", "2H"],
+  ["9H", "TC", "AD", "6S", "3H"],
+]
+const departure = (count, pending, { acknowledged = [], tricks = 5, folded = [] } = {}) => {
+  const players = tableGames[count].players.map((p, i) => {
+    const out = folded.includes(i)
+    return {
+      ...p,
+      folded: out,
+      inGame: !out && !pending.includes(i) && !acknowledged.includes(i),
+      departurePending: pending.includes(i),
+      availableActions: pending.includes(i) ? ["ACKNOWLEDGE_DEPARTURE"] : [],
+      cardsInHand: out ? 0 : 5 - tricks,
+      playedCards: out ? [] : handCards[i].slice(0, tricks),
+      roundsWon: [],
+      speak: null,
+      declaredPlayer: i === 1,
+    }
+  })
+  // the first departing seat took the tricks
+  const winner = players[pending[0] ?? acknowledged[0]]
+  winner.roundsWon = Array.from({ length: Math.min(tricks, 3) }, (_, i) => i)
+  return {
+    ...tableGames[count],
+    players,
+    turn: tablePlayers[1].email,
+    myAvailableActions: players[0].availableActions,
+    myCardsInHand: players[0].cardsInHand ? handCards[0].slice(tricks) : [],
+    numOfPlayedRounds: winner.roundsWon.length,
+    departureSecondsLeft: 60,
+    firstCardSuit: "",
+    scores: players.map((p, i) => ({
+      email: p.email,
+      nickname: p.nickname,
+      score: pending.includes(i) || acknowledged.includes(i) ? 3 : 1,
+    })),
+  }
+}
+export const departureGame = departure(3, [0])
+export const departureWaitingGame = departure(3, [1])
+const adminContinue = departure(3, [1])
+export const departureAdminGame = {
+  ...adminContinue,
+  myAvailableActions: ["CONTINUE_GAME"],
+  players: adminContinue.players.map((p, i) =>
+    i === 0 ? { ...p, availableActions: ["CONTINUE_GAME"] } : p,
+  ),
+  departureSecondsLeft: 42,
+}
+export const departureMultipleGame = departure(4, [0, 2])
+export const departureAcknowledgedGame = departure(4, [2], { acknowledged: [0] })
+export const departureEarlyEndGame = departure(3, [0], { tricks: 2, folded: [1, 2] })
+export const departureGameEndGame = departure(2, [0])

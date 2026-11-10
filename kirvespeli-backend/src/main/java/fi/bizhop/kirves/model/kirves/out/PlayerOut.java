@@ -19,6 +19,7 @@ public class PlayerOut {
     boolean declaredPlayer;
     boolean folded;
     boolean inGame;
+    boolean departurePending;
     String speak;
 
     public PlayerOut(Player player) {
@@ -34,6 +35,7 @@ public class PlayerOut {
         this.declaredPlayer = player.isDeclaredPlayer();
         this.folded = player.isFolded();
         this.inGame = player.isInGame();
+        this.departurePending = player.isDeparturePending();
         this.speak = player.getSpeak() == null ? null : player.getSpeak().name();
     }
 }

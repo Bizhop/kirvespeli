@@ -26,6 +26,19 @@ liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
 - Jaon voittaja(t) saa pisteen. Kolmen pisteen pelaaja on sivussa, kunnes häviäjä selviää.
   Peli päättyy, kun pelissä on jäljellä yksi pelaaja: hän on häviäjä (viesti `Hävisi: <nimi>`).
   Useampi voittaja voi päästä kolmeen pisteeseen samassa jaossa.
+- Kolmeen pisteeseen päässyt pelaaja kuittaa poistumisensa toiminnolla `ACKNOWLEDGE_DEPARTURE`.
+  Siihen asti pöytä säilyy ennallaan: pelaajan kortit ja tikit pysyvät näkyvissä, eikä muilla
+  ole toimintoja. Usean poistujan jaossa jokainen kuittaa erikseen, ja vasta viimeinen kuittaus
+  vie peliä eteenpäin (seuraava jakaja ja nosto tai pelin päättyminen ja häviäjän kirjaus).
+  Poistuneen pelaajan pöydälle pelatut kortit poistuvat seuraavassa nostossa muiden tapaan.
+- Kuittaamattomat poistumiset kuitataan automaattisesti 60 sekunnin kuluttua jaon päättymisestä
+  (viesti `Poistuminen kuitattiin automaattisesti`). Pelin ylläpitäjä voi sitä ennen jatkaa peliä
+  toiminnolla `CONTINUE_GAME` (viesti `<nimi> jatkoi peliä`), joka kuittaa kaikki poistumiset.
+  Ylläpitäjä saa toiminnon, kun joku muu kuin hän itse odottaa kuittausta. Määräaika
+  (`departureDeadline`) tallentuu pelidataan, joten ajastus jatkuu palvelimen uudelleenkäynnistyksen
+  jälkeen; jo umpeutunut määräaika kuitataan heti, kun peli ladataan. Pelitilanteen palautus
+  antaa odottaville poistumisille uuden 60 sekunnin määräajan. Ajastettu kuittaus lähettää
+  `/topic/refresh`-viestin kuten muutkin toiminnot.
 - Erän ensimmäinen häviö on keppi, saman pelaajan toinen häviö kirves (viesti
   `<nimi> sai kirveen`). Kirves päättää erän: kaikkien kepit nollautuvat ja seuraava erä alkaa.
   Pelaamista voi jatkaa rajatta, ja koko historia säilyy.
@@ -38,7 +51,9 @@ katsojan mukaan kierrettynä), ja `scoresHistory` on lista päättyneitä pelej�
 `{scores, loser, axe}`, jossa `loser` on häviäjän sähköposti ja `axe` kertoo kirveestä.
 Tallennettu pelidata käyttää samaa muotoa. Pelaajan `inGame` kertoo, onko hän vielä mukana
 pelissä. `folded` kertoo pakkaan menosta; kolmen pisteen takia sivussa oleva pelaaja
-tunnistetaan `inGame: false` -arvosta.
+tunnistetaan `inGame: false` -arvosta, ja `departurePending` kertoo kuittaamattomasta
+poistumisesta ja `departureSecondsLeft` sekunnit automaattiseen kuittaukseen. `players` sisältää aina kaikki pelaajat istumajärjestyksessä katsojasta alkaen,
+myös sivussa olevat.
 
 ## Tietokantaskeema ja lempinimet
 

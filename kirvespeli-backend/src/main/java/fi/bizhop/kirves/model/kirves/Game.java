@@ -30,6 +30,7 @@ public class Game {
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 6;
     private static final int NUM_OF_CARD_TO_DEAL = 5;
+    public static final long DEPARTURE_TIMEOUT_MS = 60 * 1000;
 
     private final Cards deck;
     private final List<Player> players = new ArrayList<>();
@@ -126,7 +127,7 @@ public class Game {
         }
 
         return GameOut.builder()
-                .players(this.getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()))
+                .players(this.getSeatsStartingFrom(user).stream().map(PlayerOut::new).collect(toList()))
                 .messages(this.data.messages)
                 .cardsInDeck(this.deck.size())
                 .turn(this.turn.getUserEmail())
@@ -144,7 +145,20 @@ public class Game {
                 .firstCardSuit(this.getFirstCardSuit())
                 .scores(this.data.scores.stream().map(ScoreOut::new).toList())
                 .scoresHistory(this.data.scoresHistory.stream().map(ScoreHistoryOut::new).toList())
+                .departureSecondsLeft(this.getDepartureSecondsLeft(System.currentTimeMillis()))
                 .build();
+    }
+
+    //every seat, including players who are out of the hand, rotated to start from the viewer
+    private List<Player> getSeatsStartingFrom(User user) {
+        int start = 0;
+        while(user != null && start < this.players.size() && !this.players.get(start).getUserEmail().equals(user.getEmail())) {
+            start++;
+        }
+        if(user == null || start == 0 || start == this.players.size()) return this.players;
+        var seats = new ArrayList<>(this.players.subList(start, this.players.size()));
+        seats.addAll(this.players.subList(0, start));
+        return seats;
     }
 
     private ScorePOJO getScore(String email) throws KirvesGameException {
@@ -294,7 +308,8 @@ public class Game {
         } else {
             this.data.messages.add(String.format("%s kieltäytyi nostosta", cutter.getNickname()));
         }
-        this.getPlayersStartingFrom(this.dealer.getUserEmail()).forEach(player -> {
+        //all seats, so that departed players' cards from the previous hand are cleared too
+        this.players.forEach(player -> {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
             player.getPlayedCards().clear();
@@ -450,13 +465,108 @@ public class Game {
         var label = winners.size() == 1 ? "Voittaja" : "Voittajat";
         var winnerNicks = winners.stream().map(Player::getUserNickname).collect(toList());
         this.data.messages.add(String.format("%s: %s", label, String.join(",", winnerNicks)));
+        var departing = new ArrayList<Player>();
         for(var winner : winners) {
             var score = this.getScore(winner.getUserEmail());
             score.score++;
             if(score.score == 3) {
-                winner.inactivate();
+                departing.add(winner);
             }
         }
+        if(departing.isEmpty()) {
+            this.continueAfterHand();
+        } else {
+            //the table stays as it is until every departing player has acknowledged or the timeout expires
+            this.resetActions();
+            departing.forEach(Player::depart);
+            this.restartDepartureTimeout();
+            this.updateContinueAction();
+        }
+    }
+
+    public void restartDepartureTimeout() {
+        if(this.isDeparturePending()) {
+            this.data.departureDeadline = System.currentTimeMillis() + DEPARTURE_TIMEOUT_MS;
+        }
+    }
+
+    public Long getDepartureDeadline() {
+        return this.data.departureDeadline;
+    }
+
+    private Integer getDepartureSecondsLeft(long now) {
+        if(this.data.departureDeadline == null) return null;
+        return (int) Math.max(0, (this.data.departureDeadline - now + 999) / 1000);
+    }
+
+    //the admin can continue the game for players who have not acknowledged their departure
+    private void updateContinueAction() {
+        this.players.forEach(player -> player.removeAvailableAction(CONTINUE_GAME));
+        var admin = this.getPlayer(this.admin);
+        if(admin.isPresent() && !admin.get().isDeparturePending() && this.isDeparturePending()) {
+            admin.get().addAvailableAction(CONTINUE_GAME);
+        }
+    }
+
+    public void continueGame(User user) throws KirvesGameException {
+        if(!user.getEmail().equals(this.admin) || !this.isDeparturePending()) {
+            throw new KirvesGameException("Peliä ei voi jatkaa nyt", BAD_REQUEST);
+        }
+        this.data.messages.add(String.format("%s jatkoi peliä", this.getPlayer(user.getEmail()).map(Player::getUserNickname).orElse(user.getNickname())));
+        this.acknowledgeAllDepartures();
+    }
+
+    /**
+     * Acknowledge pending departures once their timeout has expired.
+     *
+     * @return true if the game continued
+     */
+    public boolean expireDepartures(long now) throws KirvesGameException {
+        if(this.data.departureDeadline == null || now < this.data.departureDeadline || !this.isDeparturePending()) {
+            return false;
+        }
+        this.data.messages.add("Poistuminen kuitattiin automaattisesti");
+        this.acknowledgeAllDepartures();
+        return true;
+    }
+
+    private void acknowledgeAllDepartures() throws KirvesGameException {
+        for(var player : this.players) {
+            if(player.isDeparturePending()) {
+                player.acknowledgeDeparture();
+            }
+        }
+        this.finishDepartures();
+    }
+
+    public void acknowledgeDeparture(User user) throws KirvesGameException {
+        var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        if(!player.isDeparturePending()) {
+            throw new KirvesGameException("Poistumista ei voi kuitata nyt", BAD_REQUEST);
+        }
+        player.acknowledgeDeparture();
+        if(this.isDeparturePending()) {
+            this.updateContinueAction();
+            return;
+        }
+        this.finishDepartures();
+    }
+
+    private void finishDepartures() throws KirvesGameException {
+        this.data.departureDeadline = null;
+        for(var departed : this.players) {
+            if(!departed.isInGame() && !departed.isFolded()) {
+                departed.discardHand();
+            }
+        }
+        this.continueAfterHand();
+    }
+
+    private boolean isDeparturePending() {
+        return this.players.stream().anyMatch(Player::isDeparturePending);
+    }
+
+    private void continueAfterHand() throws KirvesGameException {
         this.startNextRound();
         if(this.getNumberOfPlayers(true) < 2) {
             this.endGame();
@@ -730,7 +840,7 @@ public class Game {
     }
 
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, SET_DEALER
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, SET_DEALER, ACKNOWLEDGE_DEPARTURE, CONTINUE_GAME
     }
 
     public enum Speak {
