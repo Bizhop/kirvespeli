@@ -6,6 +6,8 @@ import KirvesGames from "./KirvesGames"
 import Log from "./Log"
 import Messages from "./Messages"
 import ScoreCard from "./ScoreCard"
+import ScoreMark from "./ScoreMark"
+import DealerSelector from "./DealerSelector"
 import SuitSelector from "./SuitSelector"
 import UpdateUserForm from "./UpdateUserForm"
 import Dash from "./Dash"
@@ -23,6 +25,8 @@ export default [
   Log,
   Messages,
   ScoreCard,
+  ScoreMark,
+  DealerSelector,
   SuitSelector,
   UpdateUserForm,
   Dash,

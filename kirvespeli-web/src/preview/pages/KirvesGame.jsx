@@ -25,9 +25,27 @@ export default {
   title: "KirvesGame",
   group: "Containers",
   variants: {
+    waitingForPlayers: () => (
+      <KirvesGame
+        {...baseData}
+        game={{
+          ...withMyActions([]),
+          playersTotal: 1,
+          canJoin: true,
+          myCardsInHand: [],
+          trumpCard: "",
+          trump: "",
+          scores: game.scores.slice(0, 1),
+          scoresHistory: [],
+        }}
+      />
+    ),
     gameStart: () => <KirvesGame {...baseData} game={game} />,
     gameEnd: () => <KirvesGame {...baseData} game={game2} />,
     speak: () => <KirvesGame {...baseData} game={withMyActions(["SPEAK"])} />,
     speakSuit: () => <KirvesGame {...baseData} game={withMyActions(["SPEAK_SUIT"])} />,
+    lostGameChooseDealer: () => (
+      <KirvesGame {...baseData} game={{ ...withMyActions(["SET_DEALER"]), myCardsInHand: [] }} />
+    ),
   },
 }

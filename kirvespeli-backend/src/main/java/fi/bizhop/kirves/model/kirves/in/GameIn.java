@@ -16,6 +16,7 @@ public class GameIn {
     Card.Suit suit;
     boolean declineCut;
     Game.Speak speak;
+    String dealer;
 
     @JsonCreator
     public static GameIn fromJson(
@@ -24,7 +25,8 @@ public class GameIn {
             @JsonProperty("keepExtraCard") Boolean keepExtraCard,
             @JsonProperty("suit") Card.Suit suit,
             @JsonProperty("declineCut") Boolean declineCut,
-            @JsonProperty("speak") Game.Speak speak) {
+            @JsonProperty("speak") Game.Speak speak,
+            @JsonProperty("dealer") String dealer) {
         return GameIn.builder()
                 .action(action)
                 .index(index == null ? 0 : index)
@@ -32,6 +34,7 @@ public class GameIn {
                 .suit(suit)
                 .declineCut(Boolean.TRUE.equals(declineCut))
                 .speak(speak)
+                .dealer(dealer)
                 .build();
     }
 }

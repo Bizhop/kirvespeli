@@ -96,26 +96,86 @@
   "trumpCard": "6H",
   "trump": "H",
   "cutCard": null,
-  "scores": {
-    "esko.ruuskanen68@gmail.com": { "nickname": "Alappo", "score":  3},
-    "kirves.peli@gmail.com": { "nickname": "peluri", "score": 2},
-    "piispve@gmail.com": { "nickname": "pelurinkaveri", "score": 1}
-  },
+  "scores": [
+    {
+      "email": "esko.ruuskanen68@gmail.com",
+      "nickname": "Alappo",
+      "score": 3
+    },
+    {
+      "email": "piispve@gmail.com",
+      "nickname": "pelurinkaveri",
+      "score": 1
+    },
+    {
+      "email": "kirves.peli@gmail.com",
+      "nickname": "peluri",
+      "score": 2
+    }
+  ],
   "scoresHistory": [
     {
-      "esko.ruuskanen68@gmail.com": { "nickname": "Alappo", "score":  3},
-      "kirves.peli@gmail.com": { "nickname": "peluri", "score": 3},
-      "piispve@gmail.com": { "nickname": "pelurinkaveri", "score": 2}
+      "scores": [
+        {
+          "email": "esko.ruuskanen68@gmail.com",
+          "nickname": "Alappo",
+          "score": 3
+        },
+        {
+          "email": "piispve@gmail.com",
+          "nickname": "pelurinkaveri",
+          "score": 2
+        },
+        {
+          "email": "kirves.peli@gmail.com",
+          "nickname": "peluri",
+          "score": 3
+        }
+      ],
+      "loser": "piispve@gmail.com",
+      "axe": false
     },
     {
-      "esko.ruuskanen68@gmail.com":{ "nickname": "Alappo", "score":  3},
-      "kirves.peli@gmail.com": { "nickname": "peluri", "score": 1},
-      "piispve@gmail.com": { "nickname": "pelurinkaveri", "score": 3}
+      "scores": [
+        {
+          "email": "esko.ruuskanen68@gmail.com",
+          "nickname": "Alappo",
+          "score": 3
+        },
+        {
+          "email": "piispve@gmail.com",
+          "nickname": "pelurinkaveri",
+          "score": 3
+        },
+        {
+          "email": "kirves.peli@gmail.com",
+          "nickname": "peluri",
+          "score": 1
+        }
+      ],
+      "loser": "kirves.peli@gmail.com",
+      "axe": false
     },
     {
-      "esko.ruuskanen68@gmail.com": { "nickname": "Alappo", "score":  1},
-      "kirves.peli@gmail.com": { "nickname": "peluri", "score": 3},
-      "piispve@gmail.com": { "nickname": "pelurinkaveri", "score": 3}
+      "scores": [
+        {
+          "email": "esko.ruuskanen68@gmail.com",
+          "nickname": "Alappo",
+          "score": 1
+        },
+        {
+          "email": "piispve@gmail.com",
+          "nickname": "pelurinkaveri",
+          "score": 3
+        },
+        {
+          "email": "kirves.peli@gmail.com",
+          "nickname": "peluri",
+          "score": 3
+        }
+      ],
+      "loser": "esko.ruuskanen68@gmail.com",
+      "axe": false
     }
   ],
   "canJoin": false,

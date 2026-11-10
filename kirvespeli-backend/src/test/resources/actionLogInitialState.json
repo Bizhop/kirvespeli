@@ -103,16 +103,18 @@
   "trump": "S",
   "cutCard": null,
   "secondCutCard": null,
-  "scores": {
-    "user@mock.com": {
+  "scores": [
+    {
+      "email": "user@mock.com",
       "nickname": "User",
       "score": 0
     },
-    "other@mock.com": {
+    {
+      "email": "other@mock.com",
       "nickname": "Other",
       "score": 0
     }
-  },
+  ],
   "scoresHistory": [],
   "canJoin": false,
   "canDeal": false,

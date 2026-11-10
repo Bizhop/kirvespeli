@@ -25,6 +25,36 @@ export const games = [
   },
 ]
 
+const VILLE = "ville.piispa@gmail.com"
+const VESA = "vesa@example.com"
+const TERHI = "terhi@example.com"
+const KALLE = "kalle@example.com"
+
+// score lists in seating order: Ville, Vesa, Terhi (and Kalle when four values are given)
+const scores = (...values) =>
+  [
+    { email: VILLE, nickname: "Ville" },
+    { email: VESA, nickname: "Vesa" },
+    { email: TERHI, nickname: "Terhi" },
+    { email: KALLE, nickname: "Ville" },
+  ]
+    .slice(0, values.length)
+    .map((player, i) => ({ ...player, score: values[i] }))
+
+// two finished matches (Terhi and Vesa got the axe) and a third in progress; the fourth player
+// shares a nickname with the first
+export const scoreSheetGame = {
+  scores: scores(2, 0, 3, 1),
+  scoresHistory: [
+    { scores: scores(3, 3, 1, 3), loser: TERHI, axe: false },
+    { scores: scores(0, 3, 3, 3), loser: VILLE, axe: false },
+    { scores: scores(3, 3, 2, 3), loser: TERHI, axe: true },
+    { scores: scores(3, 1, 3, 3), loser: VESA, axe: false },
+    { scores: scores(3, 2, 3, 3), loser: VESA, axe: true },
+    { scores: scores(2, 3, 3, 3), loser: VILLE, axe: false },
+  ],
+}
+
 export const game = {
   players: [
     {
@@ -54,24 +84,12 @@ export const game = {
   cutCard: "",
   secondCutCard: "",
   id: 2,
-  playersTotal: 1,
+  playersTotal: 3,
   firstCardSuit: "",
-  scores: {
-    Ville: 0,
-    Vesa: 2,
-    Terhi: 1,
-  },
+  scores: scores(0, 2, 1),
   scoresHistory: [
-    {
-      Ville: 3,
-      Vesa: 2,
-      Terhi: 3,
-    },
-    {
-      Ville: 1,
-      Vesa: 3,
-      Terhi: 3,
-    },
+    { scores: scores(3, 2, 3), loser: VESA, axe: false },
+    { scores: scores(1, 3, 3), loser: VILLE, axe: false },
   ],
   numOfPlayedRounds: 0,
 }
@@ -89,9 +107,5 @@ export const game2 = {
     },
   ],
   myCardsInHand: [],
-  scores: {
-    Ville: 1,
-    Vesa: 2,
-    Terhi: 1,
-  },
+  scores: scores(1, 2, 1),
 }

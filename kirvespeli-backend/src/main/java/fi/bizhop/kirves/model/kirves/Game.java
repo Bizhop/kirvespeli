@@ -7,7 +7,10 @@ import fi.bizhop.kirves.model.Cards;
 import fi.bizhop.kirves.model.User;
 import fi.bizhop.kirves.model.kirves.out.GameOut;
 import fi.bizhop.kirves.model.kirves.out.PlayerOut;
+import fi.bizhop.kirves.model.kirves.out.ScoreHistoryOut;
+import fi.bizhop.kirves.model.kirves.out.ScoreOut;
 import fi.bizhop.kirves.model.kirves.pojo.GameDataPOJO;
+import fi.bizhop.kirves.model.kirves.pojo.ScoreHistoryPOJO;
 import fi.bizhop.kirves.model.kirves.pojo.ScorePOJO;
 import fi.bizhop.kirves.model.kirves.pojo.UserPOJO;
 import fi.bizhop.kirves.util.JsonUtil;
@@ -22,9 +25,9 @@ import static fi.bizhop.kirves.model.kirves.Game.Action.*;
 import static fi.bizhop.kirves.model.kirves.Game.Speak.CHANGE;
 import static fi.bizhop.kirves.model.kirves.Game.Speak.KEEP;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 public class Game {
+    public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 6;
     private static final int NUM_OF_CARD_TO_DEAL = 5;
 
@@ -77,6 +80,8 @@ public class Game {
 
         var player = this.addPlayerInternal(admin.toPOJO());
         this.setDealer(player);
+        //nobody can cut before the second player joins
+        this.resetActions();
     }
 
     public String toJson() throws KirvesGameException {
@@ -137,13 +142,16 @@ public class Game {
                 .secondCutCard(this.secondCutCard == null ? "" : this.secondCutCard.toString())
                 .playersTotal(this.players.size())
                 .firstCardSuit(this.getFirstCardSuit())
-                .scores(this.getScoreOutput(this.data.scores))
-                .scoresHistory(this.data.scoresHistory.stream().map(this::getScoreOutput).collect(toList()))
+                .scores(this.data.scores.stream().map(ScoreOut::new).toList())
+                .scoresHistory(this.data.scoresHistory.stream().map(ScoreHistoryOut::new).toList())
                 .build();
     }
 
-    private Map<String, Integer> getScoreOutput(Map<String, ScorePOJO> input) {
-        return input.entrySet().stream().collect(toMap(entry -> entry.getValue().nickname, entry -> entry.getValue().score));
+    private ScorePOJO getScore(String email) throws KirvesGameException {
+        return this.data.scores.stream()
+                .filter(score -> score.email.equals(email))
+                .findFirst()
+                .orElseThrow(() -> new KirvesGameException(String.format("Pisteitä ei löytynyt pelaajalle %s", email)));
     }
 
     private String getFirstCardSuit() {
@@ -199,7 +207,7 @@ public class Game {
             player = new Player(user);
         }
         this.players.add(player);
-        this.data.scores.put(user.email, new ScorePOJO(user.getNickname(), 0));
+        this.data.scores.add(new ScorePOJO(user.email, user.getNickname(), 0));
         return player;
     }
 
@@ -259,9 +267,14 @@ public class Game {
 
     //use this method directly only when testing!
     public void cut(User cutter, boolean decline, Card cutCard, Card second) throws CardException, KirvesGameException {
+        if(this.players.size() < MIN_PLAYERS) {
+            throw new KirvesGameException(String.format("Peliin tarvitaan vähintään %d pelaajaa", MIN_PLAYERS), BAD_REQUEST);
+        }
         if(decline && !this.data.canDeclineCut) {
             throw new KirvesGameException("Nostosta ei voi kieltäytyä", BAD_REQUEST);
         }
+        //the dealer can't be changed after the cut
+        this.players.forEach(player -> player.removeAvailableAction(SET_DEALER));
         this.deck.clear();
         this.deck.add(new Deck().shuffle());
         if(!decline) {
@@ -432,27 +445,64 @@ public class Game {
         return winners;
     }
 
-    private void handleScoring(Set<Player> winners) throws KirvesGameException {
+    //package-private for tests
+    void handleScoring(Set<Player> winners) throws KirvesGameException {
         var label = winners.size() == 1 ? "Voittaja" : "Voittajat";
         var winnerNicks = winners.stream().map(Player::getUserNickname).collect(toList());
         this.data.messages.add(String.format("%s: %s", label, String.join(",", winnerNicks)));
         for(var winner : winners) {
-            var previousScore = this.data.scores.get(winner.getUserEmail());
-            previousScore.score++;
-            if(previousScore.score == 3) {
+            var score = this.getScore(winner.getUserEmail());
+            score.score++;
+            if(score.score == 3) {
                 winner.inactivate();
             }
         }
         this.startNextRound();
         if(this.getNumberOfPlayers(true) < 2) {
-            this.data.scoresHistory.add(new HashMap<>(this.data.scores));
-            this.data.scores.clear();
-            this.players.forEach(player -> {
-                player.activate();
-                this.data.scores.put(player.getUserEmail(), new ScorePOJO(player.getUserNickname(), 0));
-            });
-            this.setDealer(this.dealer);
+            this.endGame();
         }
+    }
+
+    /**
+     * The only player left in game (below 3 points) is the loser. Their second loss in a match is
+     * the axe, which ends the match. The loser deals the next game by default, but may choose
+     * another dealer before the first cut.
+     */
+    private void endGame() throws KirvesGameException {
+        var loser = this.players.stream().filter(Player::isInGame).findFirst()
+                .orElseThrow(() -> new KirvesGameException("Häviäjää ei löytynyt"));
+        var loserEmail = loser.getUserEmail();
+        var axe = this.getLossesInMatch(loserEmail) == 1;
+        this.data.scoresHistory.add(new ScoreHistoryPOJO(
+                this.data.scores.stream().map(ScorePOJO::copy).collect(toList()), loserEmail, axe));
+        this.data.scores = this.players.stream()
+                .map(player -> new ScorePOJO(player.getUserEmail(), player.getUserNickname(), 0))
+                .collect(toList());
+        this.players.forEach(Player::activate);
+        this.data.messages.add(String.format("Hävisi: %s", loser.getUserNickname()));
+        if(axe) {
+            this.data.messages.add(String.format("%s sai kirveen", loser.getUserNickname()));
+        }
+        this.setDealer(loser);
+        loser.addAvailableAction(SET_DEALER);
+    }
+
+    private int getLossesInMatch(String email) {
+        int losses = 0;
+        for(int i = this.data.scoresHistory.size() - 1; i >= 0; i--) {
+            var entry = this.data.scoresHistory.get(i);
+            if(entry.axe) break;
+            if(email.equals(entry.loser)) losses++;
+        }
+        return losses;
+    }
+
+    public void chooseDealer(User user, String dealerEmail) throws KirvesGameException {
+        var chooser = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        var dealer = this.getPlayer(dealerEmail).orElseThrow(() -> new KirvesGameException("Jakajaa ei löytynyt pelaajista", BAD_REQUEST));
+        this.setDealer(dealer);
+        chooser.addAvailableAction(SET_DEALER);
+        this.data.messages.add(String.format("%s valitsi jakajaksi pelaajan %s", chooser.getUserNickname(), dealer.getUserNickname()));
     }
 
     public void startNextRound() throws KirvesGameException {
@@ -680,7 +730,7 @@ public class Game {
     }
 
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, SET_DEALER
     }
 
     public enum Speak {

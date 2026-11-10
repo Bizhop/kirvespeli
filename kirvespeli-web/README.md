@@ -20,9 +20,20 @@ npm run format           # prettier
 ## Pelaajamäärä ja liittyminen
 
 Aulan Pelaajia-sarake näyttää pelaajamäärän muodossa `n/6`. Enimmäismäärä tulee
-backendin `maxPlayers`-kentästä. Täyteen peliin ei voi liittyä. Liittymisyrityksen
+backendin `maxPlayers`-kentästä. Täyteen peliin ei voi liittyä. Peli alkaa vasta, kun pelaajia
+on vähintään kaksi; siihen asti pelinäkymässä näkyy teksti `Odotetaan pelaajia (vähintään 2)`. Liittymisyrityksen
 jälkeen pelitilanne haetaan uudelleen myös virheen yhteydessä; hylätyn yrityksen
 yhteydessä näytetään backendin virheviesti, esimerkiksi `Peli on täynnä`.
+
+## Pistetaulukko
+
+`ScoreCard` näyttää pelaajat istumajärjestyksessä, päättyneet pelit ja meneillään olevan pelin
+(korostettu rivi). Pisteet piirretään käsin piirretyn näköisinä merkkeinä (`ScoreMark`):
+1 = ympyrä, 2 = + pystyviiva, 3 = + vaakaviiva. Häviäjän ruutuun piirretään keppi tai kirves,
+erän päättävän kirveen jälkeen on paksu viiva, ja alarivillä on pelaajien kirveet ja avoin
+keppi. Merkit käyttävät `currentColor`ia; häviömerkin värin voi vaihtaa CSS-muuttujalla
+`--score-loss-color`. Häviäjälle näytetään ennen nostoa jakajan valinta (`DealerSelector`).
+Säännöt ovat backendin README:ssä.
 
 ## Komponenttien esikatselu
 `src/preview/` on erillinen Parcel-sivu, joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:

@@ -130,6 +130,10 @@ public class Player {
         this.data.availableActions.add(action);
     }
 
+    public void removeAvailableAction(Game.Action action) {
+        this.data.availableActions.remove(action);
+    }
+
     public Card getExtraCard() {
         return this.extraCard;
     }

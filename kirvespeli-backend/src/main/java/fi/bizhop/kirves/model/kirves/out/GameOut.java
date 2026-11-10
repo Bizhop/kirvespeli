@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
@@ -26,8 +25,8 @@ public class GameOut {
     Long id;
     Integer playersTotal;
     String firstCardSuit;
-    Map<String, Integer> scores;
-    List<Map<String, Integer>> scoresHistory;
+    List<ScoreOut> scores;
+    List<ScoreHistoryOut> scoresHistory;
 
     public int getNumOfPlayedRounds() {
         if(this.players == null) {

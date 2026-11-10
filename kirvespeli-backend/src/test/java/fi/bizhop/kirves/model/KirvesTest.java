@@ -120,6 +120,22 @@ public class KirvesTest {
     }
 
     @Test
+    public void testMinimumPlayers() throws CardException, KirvesGameException {
+        var game = getTestGame(TEST_USERS.subList(0, 1));
+        assertTrue(game.getUserWithAction(CUT).isEmpty());
+
+        var error = assertThrows(KirvesGameException.class,
+                () -> game.cut(TEST_USERS.get(0), false, getRandomCard(OTHER_CARDS), null));
+        assertEquals(KirvesGameException.Type.BAD_REQUEST, error.getType());
+        assertEquals("Peliin tarvitaan vähintään 2 pelaajaa", error.getMessage());
+
+        game.addPlayer(TEST_USERS.get(1));
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), CUT));
+        game.cut(TEST_USERS.get(1), false, getRandomCard(OTHER_CARDS), null);
+        assertTrue(game.userHasActionAvailable(TEST_USERS.get(0), DEAL));
+    }
+
+    @Test
     public void testConcurrentJoinsForLastSeat() throws Exception {
         var game = getTestGame();
         game.addPlayer(getTestUser("fifth@example.com"));

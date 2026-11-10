@@ -12,11 +12,31 @@ export KIRVES_GOOGLE_CLIENT_ID=...
 
 ## Pelaajamäärä
 
-Pelissä voi olla enintään 6 pelaajaa, pelin luoja mukaan lukien. Kuudennen pelaajan
+Pelissä voi olla 2–6 pelaajaa, pelin luoja mukaan lukien. Peli alkaa ensimmäisellä nostolla,
+joka on mahdollinen vasta toisen pelaajan liityttyä: yksin pelin luonut ei saa
+nostotoimintoa, ja nostoyritys alle kahdella pelaajalla hylätään HTTP 400 -virheellä
+`Peliin tarvitaan vähintään 2 pelaajaa`. Kuudennen pelaajan
 liityttyä peli sulkeutuu uusilta pelaajilta. Liittyminen sulkeutuu myös ensimmäiseen
 nostoon. Aulan rajapinta palauttaa pelaajamäärän (`players`), enimmäismäärän
 (`maxPlayers`) ja käyttäjäkohtaisen liittymistilan (`canJoin`). Täyteen peliin
 liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
+
+## Pisteytys
+
+- Jaon voittaja(t) saa pisteen. Kolmen pisteen pelaaja on sivussa, kunnes häviäjä selviää.
+  Peli päättyy, kun pelissä on jäljellä yksi pelaaja: hän on häviäjä (viesti `Hävisi: <nimi>`).
+  Useampi voittaja voi päästä kolmeen pisteeseen samassa jaossa.
+- Erän ensimmäinen häviö on keppi, saman pelaajan toinen häviö kirves (viesti
+  `<nimi> sai kirveen`). Kirves päättää erän: kaikkien kepit nollautuvat ja seuraava erä alkaa.
+  Pelaamista voi jatkaa rajatta, ja koko historia säilyy.
+- Häviäjä jakaa seuraavan pelin ensimmäisen jaon, mutta voi ennen nostoa valita jakajaksi kenet
+  tahansa pelaajista toiminnolla `SET_DEALER` (`{"action": "SET_DEALER", "dealer": "<email>"}`).
+  Valintaa voi vaihtaa nostoon asti.
+
+Pelin tulosteessa `scores` on lista `{email, nickname, score}` istumajärjestyksessä (ei
+katsojan mukaan kierrettynä), ja `scoresHistory` on lista päättyneitä pelejä
+`{scores, loser, axe}`, jossa `loser` on häviäjän sähköposti ja `axe` kertoo kirveestä.
+Tallennettu pelidata käyttää samaa muotoa.
 
 ## Tietokantaskeema ja lempinimet
 

@@ -10,6 +10,7 @@ import ScoreCard from "./ScoreCard"
 import ActionButton from "./ActionButton"
 import Messages from "./Messages"
 import SuitSelector from "./SuitSelector"
+import DealerSelector from "./DealerSelector"
 import useGameRefresh from "./useGameRefresh"
 
 const makeButton = props => {
@@ -61,6 +62,7 @@ export const KirvesGame = ({
       {game && (
         <Box sx={{ flexGrow: 1 }} className="kirves-container">
           <h1>Kirves (Peli {game.id})</h1>
+          {game.playersTotal < 2 && <p>Odotetaan pelaajia (vähintään 2)</p>}
           <Grid container spacing={1}>
             {game.canJoin && (
               <ButtonWrapper type="button" label="Liity peliin" onClick={() => join(game.id)} />
@@ -151,6 +153,16 @@ export const KirvesGame = ({
                 speak="PASS"
                 label="Viitenä"
               />
+            )}
+            {includes("SET_DEALER", game.myAvailableActions) && (
+              <Grid size={12}>
+                <DealerSelector
+                  players={game.scores}
+                  dealer={game.dealer}
+                  action={action}
+                  gameId={game.id}
+                />
+              </Grid>
             )}
             {includes("SPEAK_SUIT", game.myAvailableActions) && (
               <SuitSelector

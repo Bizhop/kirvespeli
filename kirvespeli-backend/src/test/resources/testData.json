@@ -92,7 +92,7 @@
   "trumpCard": null,
   "trump": null,
   "cutCard": null,
-  "scores": {},
+  "scores": [],
   "scoresHistory": [],
   "canJoin": true,
   "canDeal": false,
