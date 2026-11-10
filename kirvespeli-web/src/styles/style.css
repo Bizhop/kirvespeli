@@ -283,14 +283,21 @@ a {
     animation: none;
   }
 }
-/* revealed trick-winning cards glow light blue along their edges */
-.playing-card.won-visible {
+/* revealed trick-winning cards glow light blue inwards from their edges; drawn over the
+   card image because an inset shadow on the button itself would be covered by it */
+.playing-card.won-visible::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
   box-shadow:
-    0 0 0 2px #a8dcff,
-    0 0 14px 4px #a8dcffcc;
+    inset 0 0 0 2px #a8dcff,
+    inset 0 0 12px 4px #a8dcffcc;
+  pointer-events: none;
 }
 .won-card {
   position: absolute;
+  z-index: 1;
   right: 3px;
   bottom: 2px;
   background: #42550d;
