@@ -241,6 +241,33 @@ a {
   display: block;
   object-fit: contain;
 }
+/* Card flip: the old face folds to its edge, then the new face unfolds (100 + 100 ms). */
+.card-flip-out {
+  position: absolute;
+  inset: 0;
+  animation: card-fold 100ms ease-in forwards;
+}
+.card-flip-in {
+  animation: card-unfold 100ms ease-out 100ms backwards;
+}
+@keyframes card-fold {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes card-unfold {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-out {
+    display: none;
+  }
+  .card-flip-in {
+    animation: none;
+  }
+}
 .won-card {
   position: absolute;
   right: 3px;
