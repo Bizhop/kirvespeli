@@ -10,8 +10,49 @@ const groups = [...new Set(pages.map(page => page.group))]
 
 const pageIdFromHash = () => decodeURIComponent(window.location.hash.slice(1))
 
-const Nav = ({ selectedId }) => (
+// Remembered per browser; storage may be unavailable (private mode), then it is per session.
+const usePersistentFlag = name => {
+  const key = `preview-${name}`
+  const [value, setValue] = useState(() => {
+    try {
+      return window.localStorage.getItem(key) === "true"
+    } catch {
+      return false
+    }
+  })
+  const set = next => {
+    setValue(next)
+    try {
+      window.localStorage.setItem(key, String(next))
+    } catch {}
+  }
+  return [value, set]
+}
+
+// Small fixed button that restores a hidden panel.
+const Handle = ({ side, label, onClick, children }) => (
+  <button
+    type="button"
+    className={`preview-handle preview-handle-${side}`}
+    aria-label={label}
+    title={label}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+)
+
+const Nav = ({ selectedId, onHide }) => (
   <nav className="preview-nav">
+    <button
+      type="button"
+      className="preview-hide"
+      aria-label="Piilota valikko"
+      title="Piilota valikko"
+      onClick={onHide}
+    >
+      ‹
+    </button>
     {groups.map(group => (
       <div key={group}>
         <h2>{group}</h2>
@@ -34,11 +75,30 @@ const Nav = ({ selectedId }) => (
 const Page = ({ page }) => {
   const names = Object.keys(page.variants)
   const [selected, setSelected] = useState(names[0])
+  const [tabsHidden, setTabsHidden] = usePersistentFlag("tabs-hidden")
   const index = names.indexOf(selected)
   return (
     <>
-      <h1>{page.title}</h1>
+      {tabsHidden ? (
+        <Handle side="right" label="Näytä välilehdet" onClick={() => setTabsHidden(false)}>
+          ▾ {selected}
+        </Handle>
+      ) : (
+        <div className="preview-header">
+          <h1>{page.title}</h1>
+          <button
+            type="button"
+            className="preview-hide"
+            aria-label="Piilota välilehdet"
+            title="Piilota välilehdet"
+            onClick={() => setTabsHidden(true)}
+          >
+            ▴
+          </button>
+        </div>
+      )}
       <Tabs
+        sx={tabsHidden ? { display: "none" } : undefined}
         className="preview-variant-tabs"
         value={selected}
         onChange={(_, name) => setSelected(name)}
@@ -93,9 +153,16 @@ const Preview = () => {
     return () => window.removeEventListener("hashchange", listener)
   }, [])
   const page = pages.find(p => p.title === selectedId)
+  const [navHidden, setNavHidden] = usePersistentFlag("nav-hidden")
   return (
     <div className="preview-layout">
-      <Nav selectedId={selectedId} />
+      {navHidden ? (
+        <Handle side="left" label="Näytä valikko" onClick={() => setNavHidden(false)}>
+          ☰
+        </Handle>
+      ) : (
+        <Nav selectedId={selectedId} onHide={() => setNavHidden(true)} />
+      )}
       <main className="preview-main">
         {page ? <Page key={page.title} page={page} /> : <p>Valitse komponentti.</p>}
       </main>

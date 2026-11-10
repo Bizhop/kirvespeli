@@ -42,6 +42,56 @@ body.component-preview {
   padding: 8px 16px 48px;
 }
 
+.preview-nav {
+  position: relative;
+}
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-hide {
+  padding: 0 6px;
+  border: 1px solid #ffffff66;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: 14px/20px sans-serif;
+  cursor: pointer;
+}
+.preview-nav .preview-hide {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+/* restore handles stay small and translucent so they barely cover the layout */
+.preview-handle {
+  position: fixed;
+  top: 4px;
+  z-index: 1000;
+  max-width: 40vw;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 1px solid #ffffff66;
+  border-radius: 4px;
+  background: #333c;
+  color: white;
+  font: 12px/20px sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.preview-handle:hover,
+.preview-handle:focus-visible {
+  opacity: 1;
+}
+.preview-handle-left {
+  left: 4px;
+}
+.preview-handle-right {
+  right: 4px;
+}
 .preview-variant-tabs {
   margin-bottom: 20px;
   border-bottom: 1px solid #ffffff66;

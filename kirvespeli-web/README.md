@@ -52,6 +52,8 @@ Uusi sivu lisätään listaan `src/preview/pages/index.js`. Variantti valitaan v
 vain valittu variantti on kerrallaan renderöitynä omassa `MemoryRouter`issaan.
 Vaihto nollaa variantin paikallisen tilan. Callback-propseina käytetään
 `logAction("nimi")`, joka kirjoittaa kutsun konsoliin ja sivun alareunaan.
+Sivuvalikon (‹) ja otsikon välilehtineen (▴) voi piilottaa mobiiliasettelun tarkistamista
+varten; yläkulmiin jäävät pienet palautuspainikkeet, ja valinta muistetaan selaimessa.
 Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vierivää
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
 
