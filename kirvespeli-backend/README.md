@@ -31,6 +31,14 @@ liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
   ole toimintoja. Usean poistujan jaossa jokainen kuittaa erikseen, ja vasta viimeinen kuittaus
   vie peliä eteenpäin (seuraava jakaja ja nosto tai pelin päättyminen ja häviäjän kirjaus).
   Poistuneen pelaajan pöydälle pelatut kortit poistuvat seuraavassa nostossa muiden tapaan.
+- Kuittaamattomat poistumiset kuitataan automaattisesti 60 sekunnin kuluttua jaon päättymisestä
+  (viesti `Poistuminen kuitattiin automaattisesti`). Pelin ylläpitäjä voi sitä ennen jatkaa peliä
+  toiminnolla `CONTINUE_GAME` (viesti `<nimi> jatkoi peliä`), joka kuittaa kaikki poistumiset.
+  Ylläpitäjä saa toiminnon, kun joku muu kuin hän itse odottaa kuittausta. Määräaika
+  (`departureDeadline`) tallentuu pelidataan, joten ajastus jatkuu palvelimen uudelleenkäynnistyksen
+  jälkeen; jo umpeutunut määräaika kuitataan heti, kun peli ladataan. Pelitilanteen palautus
+  antaa odottaville poistumisille uuden 60 sekunnin määräajan. Ajastettu kuittaus lähettää
+  `/topic/refresh`-viestin kuten muutkin toiminnot.
 - Erän ensimmäinen häviö on keppi, saman pelaajan toinen häviö kirves (viesti
   `<nimi> sai kirveen`). Kirves päättää erän: kaikkien kepit nollautuvat ja seuraava erä alkaa.
   Pelaamista voi jatkaa rajatta, ja koko historia säilyy.
@@ -44,7 +52,7 @@ katsojan mukaan kierrettynä), ja `scoresHistory` on lista päättyneitä pelej�
 Tallennettu pelidata käyttää samaa muotoa. Pelaajan `inGame` kertoo, onko hän vielä mukana
 pelissä. `folded` kertoo pakkaan menosta; kolmen pisteen takia sivussa oleva pelaaja
 tunnistetaan `inGame: false` -arvosta, ja `departurePending` kertoo kuittaamattomasta
-poistumisesta. `players` sisältää aina kaikki pelaajat istumajärjestyksessä katsojasta alkaen,
+poistumisesta ja `departureSecondsLeft` sekunnit automaattiseen kuittaukseen. `players` sisältää aina kaikki pelaajat istumajärjestyksessä katsojasta alkaen,
 myös sivussa olevat.
 
 ## Tietokantaskeema ja lempinimet

@@ -111,12 +111,14 @@ Käden kortteja voi valita vain `PLAY_CARD`- tai `DISCARD`-toiminnon ollessa sal
 Voitetut tikit ovat kuvapuoli alaspäin; viimeisen voittokortin voi paljastaa 1,5 sekunniksi.
 Viiden tikin jälkeen Näytä kortit paljastaa kaikki pöytäkortit.
 Kolmeen pisteeseen päässyt pelaaja saa painikkeen Kuittaa poistuminen; muut näkevät tekstin
-`Odotetaan poistumisen kuittausta: <nimet>`. Kuittausta odotettaessa Näytä kortit on käytössä,
+`Odotetaan poistumisen kuittausta: <nimet>`. Kaikille näytetään paikallisesti laskeva
+`Peli jatkuu automaattisesti <n> s kuluttua`, ja pelin ylläpitäjä saa painikkeen Jatka peliä
+(`CONTINUE_GAME`), joka ei korosta häntä vuorossa olevaksi. Kuittausta odotettaessa Näytä kortit on käytössä,
 vaikka jako olisi päättynyt ennen viittä tikkiä.
 
 Esikatselun `Table` näyttää kaikki pelaajamäärät sekä odotuksen, noston, puheen,
 valttivalinnan, jakajavalinnan, ylimääräisen kortin, hylkäyksen, sivustakatsojan, uusinnan
-ja poistumisen kuittauksen tilat (oma, muiden odotus, usea poistuja, kuitattu, ennenaikainen
+ja poistumisen kuittauksen tilat (oma, muiden odotus, ylläpitäjän jatko, usea poistuja, kuitattu, ennenaikainen
 jaon loppu ja pelin päättävä poistuminen).
 `Seat` näyttää pelaajan eri tilat ja `Icon` kaikki kuvakkeet.
 `Hand` esittelee oman käden erikseen: pelattava käsi, vuoron odotus, hylkäys, ylimääräinen

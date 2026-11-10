@@ -254,6 +254,7 @@ const departure = (count, pending, { acknowledged = [], tricks = 5, folded = [] 
     myAvailableActions: players[0].availableActions,
     myCardsInHand: players[0].cardsInHand ? handCards[0].slice(tricks) : [],
     numOfPlayedRounds: winner.roundsWon.length,
+    departureSecondsLeft: 60,
     firstCardSuit: "",
     scores: players.map((p, i) => ({
       email: p.email,
@@ -264,6 +265,15 @@ const departure = (count, pending, { acknowledged = [], tricks = 5, folded = [] 
 }
 export const departureGame = departure(3, [0])
 export const departureWaitingGame = departure(3, [1])
+const adminContinue = departure(3, [1])
+export const departureAdminGame = {
+  ...adminContinue,
+  myAvailableActions: ["CONTINUE_GAME"],
+  players: adminContinue.players.map((p, i) =>
+    i === 0 ? { ...p, availableActions: ["CONTINUE_GAME"] } : p,
+  ),
+  departureSecondsLeft: 42,
+}
 export const departureMultipleGame = departure(4, [0, 2])
 export const departureAcknowledgedGame = departure(4, [2], { acknowledged: [0] })
 export const departureEarlyEndGame = departure(3, [0], { tricks: 2, folded: [1, 2] })

@@ -22,6 +22,14 @@ test("FOLD alone does not put a player in turn", () => {
   assert.deepEqual([...playersInTurn(game)], ["a"])
 })
 
+test("CONTINUE_GAME alone does not put the admin in turn", () => {
+  const game = {
+    turn: "a",
+    players: [player("a", ["CONTINUE_GAME"]), player("b", ["ACKNOWLEDGE_DEPARTURE"])],
+  }
+  assert.deepEqual([...playersInTurn(game)], ["b"])
+})
+
 test("several players can be in turn at once", () => {
   const game = { turn: "a", players: [player("a", ["CUT"]), player("b", ["SET_DEALER"])] }
   assert.deepEqual([...playersInTurn(game)].sort(), ["a", "b"])
