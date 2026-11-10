@@ -54,10 +54,15 @@ const cutSequence = sequence(new KirvesGame({ count: 3, dealer: "Vesa" }), [
   g => g.deal({}, "8S"),
 ])
 
+const cutExtraSequence = sequence(
+  new KirvesGame({ count: 3, dealer: "Vesa" }).cut("JC", "9H"),
+  [g => g.deal({}, "8S")],
+)
+
 // After five tricks; "Näytä kortit" reveals the concealed won cards.
 const revealState = playSequence[tricks.length]
 
-const Sequence = ({ steps, viewers = ["Ville"], rapid }) => {
+const Sequence = ({ steps, viewers = ["Ville"], rapid, isReplay = false }) => {
   const [step, setStep] = useState(0)
   const [cardsVisible, setCardsVisible] = useState(false)
   const timer = useRef()
@@ -103,6 +108,7 @@ const Sequence = ({ steps, viewers = ["Ville"], rapid }) => {
           <RenderGame
             {...props}
             game={steps[step].view(viewer)}
+            isReplay={isReplay}
             cardsVisible={cardsVisible}
             showAllCards={() => setCardsVisible(true)}
           />
@@ -120,8 +126,10 @@ export default {
     trumpChange: () => <Sequence steps={trumpSequence} />,
     extraCard: () => <Sequence steps={extraSequence} />,
     cutAndDeal: () => <Sequence steps={cutSequence} />,
+    cutExtraDeal: () => <Sequence steps={cutExtraSequence} />,
     revealAndConceal: () => <Sequence steps={[revealState, revealState]} />,
     rapidUpdates: () => <Sequence steps={playSequence} rapid />,
+    replayJumps: () => <Sequence steps={playSequence} isReplay />,
     participantsAndSpectator: () => (
       <Sequence steps={playSequence} viewers={["Ville", "Terhi", "Katsoja"]} />
     ),

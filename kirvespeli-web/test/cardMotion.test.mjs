@@ -2,6 +2,8 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { planCardMotion, SNAP } from "../src/components/kirves/cardMotion.js"
 import { sortHandCards } from "../src/components/kirves/handOrder.js"
+import { KirvesGame } from "../src/preview/data/kirves.js"
+import { threePlayerHand, tricks } from "../src/preview/data/games.js"
 
 const A = "a@example.com"
 const B = "b@example.com"
@@ -80,6 +82,17 @@ test("skipped plays and rewritten rows snap", () => {
   assert.equal(planCardMotion(prev, rewritten), SNAP)
 })
 
+test("skipped plays across different players snap for participants and spectators", () => {
+  for (const viewer of ["Ville", "Terhi", "Katsoja"]) {
+    for (const count of [2, 3]) {
+      const game = threePlayerHand()
+      const prev = game.view(viewer)
+      game.plays(...tricks.slice(0, count))
+      assert.equal(planCardMotion(prev, game.view(viewer)), SNAP)
+    }
+  }
+})
+
 test("trump change reorders kept cards without entering or leaving cards", () => {
   const prev = snapshot({ hand: ["AH", "AS", "JD"] })
   const next = snapshot({ hand: ["AH", "AS", "JD"], trump: "SPADES", trumpCard: "3S" })
@@ -104,6 +117,23 @@ test("new hand is a deal; the cleared table fades", () => {
     `played:${B}:2C`,
     `played:${B}:3C`,
   ])
+})
+
+test("a retained cut extra does not prevent the five new hand cards being dealt", () => {
+  const game = new KirvesGame({ count: 3, dealer: "Vesa" }).cut("JC", "9H")
+  const prev = game.view("Ville")
+  assert.deepEqual(prev.myCardsInHand, [])
+  assert.equal(prev.myExtraCard, "JC")
+  game.deal({}, "8S")
+  const next = game.view("Ville")
+  const plan = planCardMotion(prev, next)
+  assert.equal(plan.own.deal, true)
+  assert.deepEqual(
+    plan.own.entering,
+    next.myCardsInHand.map(card => `own:${card}`),
+  )
+  assert.ok(!plan.own.entering.includes("own:JC"))
+  assert.deepEqual(plan.own.leaving, [])
 })
 
 test("keeping the extra card is a move, discarding a hand card is a leave", () => {

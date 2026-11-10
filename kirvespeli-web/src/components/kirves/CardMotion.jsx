@@ -20,9 +20,11 @@ import { MOTION, prefersReducedMotion } from "./motion"
 // the deck. Redux state is never delayed: motion only decorates the already rendered state.
 
 const MotionContext = createContext(null)
+const MotionEnabledContext = createContext(true)
 
 // Returns key => ref callback, or undefined outside a CardMotion table.
 export const useMotionRef = () => useContext(MotionContext)
+export const useCardMotionEnabled = () => useContext(MotionEnabledContext)
 
 const center = rect => [rect.x + rect.w / 2, rect.y + rect.h / 2]
 
@@ -288,7 +290,9 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
   const context = useMemo(() => ref, [ref])
   return (
     <div className={className} ref={rootRef}>
-      <MotionContext.Provider value={context}>{children}</MotionContext.Provider>
+      <MotionEnabledContext.Provider value={enabled}>
+        <MotionContext.Provider value={context}>{children}</MotionContext.Provider>
+      </MotionEnabledContext.Provider>
       <div className="card-motion-overlay" ref={overlayRef} aria-hidden="true" inert />
     </div>
   )

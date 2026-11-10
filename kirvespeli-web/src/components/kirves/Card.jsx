@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from "react"
 import { SvgImage } from "../shared/images"
 import { prefersReducedMotion } from "./motion"
+import { useCardMotionEnabled } from "./CardMotion"
 
 // Face changes after mount fold the previous face away and unfold the new one. Only the
 // shown face is rendered, so a concealed card has no face image in the DOM.
-const useFlip = face => {
+const useFlip = (face, enabled) => {
   const [state, setState] = useState({ face, flip: null })
   let flip = state.flip
-  if (state.face !== face) {
+  if (state.face !== face || (!enabled && flip)) {
     // adjust state during render so the new face never mounts without its animation
-    flip = prefersReducedMotion() ? null : { from: state.face, id: (flip?.id ?? 0) + 1 }
+    flip = !enabled || prefersReducedMotion() ? null : { from: state.face, id: (flip?.id ?? 0) + 1 }
     setState({ face, flip })
   }
   const done = () =>
@@ -36,7 +37,8 @@ const Card = ({
   }, [card, won])
   const faceUp = !won || cardsVisible || flipped
   const face = faceUp ? card : "back"
-  const [flip, flipDone] = useFlip(face)
+  const motionEnabled = useCardMotionEnabled()
+  const [flip, flipDone] = useFlip(face, motionEnabled)
   const playable = !won && Boolean(action && actionName)
   const canFlip = won && lastCard && !cardsVisible
   const click = () => {

@@ -146,6 +146,7 @@ liikkeet Web Animations -rajapinnalla. Ajoitukset ovat `motion.js`:ssä.
   pelaama kortti ilmestyy suoraan pöytäriviin lyhyellä häivytyksellä.
 - Uusi jako tulee pakasta omaan käteen porrastetusti (enintään noin 0,6 s). Pidetty
   ylimääräinen kortti siirtyy käteen; hylätty ja pöydältä poistuva kortti häivytetään.
+  Nostossa saatu ylimääräinen kortti ei estä uusien käsikorttien jakoanimaatiota.
 - Nosto- ja valttikortti häivytetään paikalleen, ja pakka siirtyy jakajan vaihtuessa.
 - Kortti kääntyy kuva- ja selkäpuolen välillä (voitetut tikit, 1,5 s paljastus, Näytä kortit).
   Piilotetun kortin kuvaa ei ole DOM:ssa.
@@ -157,8 +158,8 @@ tai ylimääräisen kortin sijainnista. Testit tarkistavat, että samat julkiset
 kaikille katsojille samat julkiset ohjeet.
 
 Ilman animaatiota näytetään: ensimmäinen tilannekuva, pelin tai pelaajien vaihtuminen,
-WebSocket-yhteyden palautuminen (tilanne haetaan uudelleen), uusinta, piilossa oleva
-välilehti sekä epäselvät muutokset (esim. pelaajalla useampi uusi pöytäkortti kerralla, eli
+WebSocket-yhteyden palautuminen (tilanne haetaan uudelleen), uusinta (myös korttien käännöt), piilossa oleva
+välilehti sekä epäselvät muutokset (esim. pöydällä useampi uusi pelattu kortti kerralla, eli
 välistä puuttuu tilannekuvia). Backend voi pisteyttää ja jakaa uuden käden samassa
 toiminnossa, jolloin viimeistä tikkiä ei näytetä vaan pöytä häivytetään ja uusi käsi jaetaan.
 Uusi tilannekuva keskeyttää käynnissä olevat liikkeet, ja leveyden muutos mittaa paikat
@@ -166,5 +167,5 @@ uudelleen. Vähennetyn liikkeen asetuksella kaikki tilat näytetään heti ilman
 kääntöjä; asetuksen muutos huomioidaan heti.
 
 Esikatselun `CardMotion` käy läpi tilannekuvasarjoja painikkeilla: pelatut kortit ja uusi
-jako, valtin vaihto ja ylimääräinen kortti, nosto, paljastus, nopeat päivitykset sekä samat
+jako, valtin vaihto ja ylimääräinen kortti, nosto, paljastus, nopeat päivitykset, uusintahypyt sekä samat
 julkiset tapahtumat kahden pelaajan ja sivustakatsojan näkymissä.

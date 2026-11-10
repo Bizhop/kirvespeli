@@ -36,7 +36,7 @@ export const planCardMotion = (prev, next) => {
   if (prevEmails.length !== nextEmails.length || prevEmails.some((e, i) => e !== nextEmails[i]))
     return SNAP
 
-  // Public played cards: at most one appended card per player, or a cleared row.
+  // Public played cards: at most one appended card across the whole table, or cleared rows.
   const plays = []
   const cleared = []
   for (const [i, player] of next.players.entries()) {
@@ -51,11 +51,14 @@ export const planCardMotion = (prev, next) => {
       before.forEach(card => cleared.push(playedKey(player.email, card)))
     } else return SNAP
   }
+  if (plays.length > 1) return SNAP
 
   // The viewer's own cards; the extra card shares the hand identity so keeping it moves it in.
   const before = ownCards(prev)
   const after = ownCards(next)
-  const kept = after.filter(card => before.includes(card))
+  const keptHandCard = (next.myCardsInHand ?? []).some(card =>
+    (prev.myCardsInHand ?? []).includes(card),
+  )
   const entering = difference(after, before)
   const leaving = difference(before, after)
   const ownPlays = plays.filter(play => leaving.includes(play.card))
@@ -71,8 +74,8 @@ export const planCardMotion = (prev, next) => {
   return {
     snap: false,
     own: {
-      // a fresh hand: cards arrive and none of the previous own cards remain
-      deal: entering.length > 0 && kept.length === 0,
+      // A cut extra can survive a deal; only retained hand cards rule out a fresh hand.
+      deal: entering.length > 0 && !keptHandCard,
       entering: entering.map(ownKey),
       leaving: leaving.filter(card => !flown.has(card)).map(ownKey),
       flights,
