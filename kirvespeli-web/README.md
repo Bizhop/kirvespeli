@@ -15,7 +15,7 @@ Sovellus käynnistyy osoitteeseen http://localhost:1234 ja käyttää backendiä
 npm run build            # tuotantoversio hakemistoon dist/
 npm run preview          # komponenttien esikatselu osoitteeseen http://localhost:1235
 npm run format           # prettier
-npm test                 # käden järjestys ja alkuperäisten kortti-indeksien säilyminen
+npm test                 # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
 ```
 
 ## Pelaajamäärä ja liittyminen
@@ -52,6 +52,14 @@ Uusi sivu lisätään listaan `src/preview/pages/index.js`. Variantti valitaan v
 vain valittu variantti on kerrallaan renderöitynä omassa `MemoryRouter`issaan.
 Vaihto nollaa variantin paikallisen tilan. Callback-propseina käytetään
 `logAction("nimi")`, joka kirjoittaa kutsun konsoliin ja sivun alareunaan.
+Sivuvalikon (‹) ja otsikon välilehtineen (▴) voi piilottaa mobiiliasettelun tarkistamista
+varten; yläkulmiin jäävät pienet palautuspainikkeet, ja valinta muistetaan selaimessa.
+Esikatselun pelitilanteet (`src/preview/data/`) tehdään pelaamalla toimintoja pienellä
+Kirves-moottorilla (`kirves.js`), joka noudattaa backendin sääntöjä: nosto, jako, ässä tai
+kakkonen valttikorttina, hylkäys, puhe, valtin vaihto, tikit, pakkaan meno, pisteytys,
+poistumiset ja pelin loppu. Korttimäärät, pakan koko, tikkien voittajat, vuorot, toiminnot,
+pisteet, viestit ja toimintoloki seuraavat pelatuista toiminnoista. Sääntöjä rikkova toiminto
+kaatuu jo datan latauksessa, ja `npm test` tarkistaa kaikki tilanteet.
 Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vierivää
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
 
@@ -123,4 +131,41 @@ jaon loppu ja pelin päättävä poistuminen).
 `Seat` näyttää pelaajan eri tilat ja `Icon` kaikki kuvakkeet.
 `Hand` esittelee oman käden erikseen: pelattava käsi, vuoron odotus, hylkäys, ylimääräinen
 kortti, viimeinen kortti ja tyhjä käsi. Esikatselu käyttää pelin korttikokoa ja käsiasettelua. Mukana ovat myös
-jokerit ja jätkät, valintaa edeltävä järjestys sekä valtin vaihdon vaikutus käteen.
+jokerit ja jätkät sekä valtin vaihdon vaikutus käteen.
+
+## Korttien animaatiot
+
+Animaatiot kuvaavat vain backendin vahvistamia tilannekuvia; Redux-tilaa tai toimintoja ei
+viivytetä animaatioiden takia. `cardMotion.js` vertaa edellistä ja uutta tilannekuvaa ja
+kertoo sallitut liikkeet, `CardMotion.jsx` mittaa korttien paikat pöydän suhteen ja toteuttaa
+liikkeet Web Animations -rajapinnalla. Ajoitukset ovat `motion.js`:ssä.
+
+- Oman käden kortit tunnistetaan kortin koodista; `PLAY_CARD`- ja `DISCARD`-indeksit ovat
+  erillään. Kortit siirtyvät uusille paikoilleen valtin vaihtuessa ja korttien poistuessa.
+- Oma pelattu kortti lentää kädestä omaan pöytäriviin vasta vahvistuksen jälkeen. Muiden
+  pelaama kortti ilmestyy suoraan pöytäriviin lyhyellä häivytyksellä.
+- Uusi jako tulee pakasta omaan käteen porrastetusti (enintään noin 0,6 s). Pidetty
+  ylimääräinen kortti siirtyy käteen; hylätty ja pöydältä poistuva kortti häivytetään.
+  Nostossa saatu ylimääräinen kortti ei estä uusien käsikorttien jakoanimaatiota.
+- Nosto- ja valttikortti häivytetään paikalleen, ja pakka siirtyy jakajan vaihtuessa.
+- Kortti kääntyy kuva- ja selkäpuolen välillä (voitetut tikit, 1,5 s paljastus, Näytä kortit).
+  Piilotetun kortin kuvaa ei ole DOM:ssa.
+
+Yksityisyys: liikkeeseen rekisteröidään vain oma käsi, pöytärivit, pakka sekä nosto- ja
+valttikortit. Muiden pelaajien korttiselät ja oman paikan korttimäärä päivittyvät heti ilman
+liikettä, eikä mikään liike riipu toisen pelaajan piilotetuista korteista, niiden järjestyksestä
+tai ylimääräisen kortin sijainnista. Testit tarkistavat, että samat julkiset muutokset antavat
+kaikille katsojille samat julkiset ohjeet.
+
+Ilman animaatiota näytetään: ensimmäinen tilannekuva, pelin tai pelaajien vaihtuminen,
+WebSocket-yhteyden palautuminen (tilanne haetaan uudelleen), uusinta (myös korttien käännöt), piilossa oleva
+välilehti sekä epäselvät muutokset (esim. pöydällä useampi uusi pelattu kortti kerralla, eli
+välistä puuttuu tilannekuvia). Backend voi pisteyttää ja jakaa uuden käden samassa
+toiminnossa, jolloin viimeistä tikkiä ei näytetä vaan pöytä häivytetään ja uusi käsi jaetaan.
+Uusi tilannekuva keskeyttää käynnissä olevat liikkeet, ja leveyden muutos mittaa paikat
+uudelleen. Vähennetyn liikkeen asetuksella kaikki tilat näytetään heti ilman siirtoja tai
+kääntöjä; asetuksen muutos huomioidaan heti.
+
+Esikatselun `CardMotion` käy läpi tilannekuvasarjoja painikkeilla: pelatut kortit ja uusi
+jako, valtin vaihto ja ylimääräinen kortti, nosto, paljastus, nopeat päivitykset, uusintahypyt sekä samat
+julkiset tapahtumat kahden pelaajan ja sivustakatsojan näkymissä.

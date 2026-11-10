@@ -50,9 +50,24 @@ a {
   align-items: start;
 }
 .table-area {
+  position: relative;
   container-type: inline-size;
   min-width: 0;
   --card-w: clamp(44px, 16cqw, 100px);
+}
+/* decorative copies of moving cards; above the table and the hand */
+.card-motion-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+/* game surface, not text: clicks must not select text or place a caret */
+.card-table,
+.seat,
+.hand-area {
+  -webkit-user-select: none;
+  user-select: none;
 }
 .card-table {
   position: relative;
@@ -209,6 +224,9 @@ a {
   align-items: center;
   gap: 8px;
 }
+.card-slot {
+  flex: 0 0 auto;
+}
 .playing-card {
   position: relative;
   display: block;
@@ -238,18 +256,41 @@ a {
   display: block;
   object-fit: contain;
 }
-.won-card {
+/* Card flip: the old face folds to its edge, then the new face unfolds (100 + 100 ms). */
+.card-flip-out {
   position: absolute;
-  right: 3px;
-  bottom: 2px;
-  background: #42550d;
-  border-radius: 50%;
-  line-height: 1;
+  inset: 0;
+  animation: card-fold 100ms ease-in forwards;
+}
+.card-flip-in {
+  animation: card-unfold 100ms ease-out 100ms backwards;
+}
+@keyframes card-fold {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes card-unfold {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-out {
+    display: none;
+  }
+  .card-flip-in {
+    animation: none;
+  }
+}
+/* revealed trick-winning cards are raised from their row, in proportion to the card size */
+.playing-card.won-visible {
+  transform: translateY(calc(var(--card-w) * -0.15));
 }
 .played-cards .cards {
   gap: 0;
 }
-.played-cards .playing-card + .playing-card {
+.played-cards .card-slot + .card-slot {
   margin-left: calc(var(--card-w) * -0.62);
 }
 .table-center {
@@ -388,19 +429,19 @@ a {
   transform: rotate(-3deg);
   box-shadow: 0 4px 8px #17260744;
 }
-.own-hand .playing-card + .playing-card {
+.own-hand .card-slot + .card-slot {
   margin-left: calc(var(--card-w) * -0.22);
 }
-.own-hand .playing-card:nth-child(2) {
+.own-hand .card-slot:nth-child(2) .playing-card {
   transform: translateY(-5px) rotate(-2deg);
 }
-.own-hand .playing-card:nth-child(3) {
+.own-hand .card-slot:nth-child(3) .playing-card {
   transform: translateY(-8px);
 }
-.own-hand .playing-card:nth-child(4) {
+.own-hand .card-slot:nth-child(4) .playing-card {
   transform: translateY(-5px) rotate(2deg);
 }
-.own-hand .playing-card:nth-child(5) {
+.own-hand .card-slot:nth-child(5) .playing-card {
   transform: rotate(3deg);
 }
 .own-hand .playing-card.playable:hover {

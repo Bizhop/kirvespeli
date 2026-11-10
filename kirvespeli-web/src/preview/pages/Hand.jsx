@@ -1,6 +1,16 @@
 import React from "react"
 import Hand from "../../components/kirves/Hand"
-import { game, discardGame, extraCardGame, handSortingGame, handPowerGame } from "../data/games"
+import {
+  game,
+  discardGame,
+  extraCardGame,
+  handSortingGame,
+  handPowerGame,
+  changedTrumpGame,
+  firstTrickGame,
+  lastCardGame,
+  handEndGame,
+} from "../data/games"
 import { logAction } from "../logAction"
 
 const action = logAction("selectCard")
@@ -21,16 +31,15 @@ export default {
     playable: () => renderHand(game),
     sortedByPower: () => renderHand(handSortingGame),
     jokersAndJacks: () => renderHand(handPowerGame),
-    beforeTrump: () => renderHand({ ...handSortingGame, trump: "", myAvailableActions: [] }),
-    changedTrump: () => renderHand({ ...handSortingGame, trump: "SPADES" }),
-    waitingForTurn: () => renderHand({ ...game, myAvailableActions: [] }),
+    changedTrump: () => renderHand(changedTrumpGame),
+    waitingForTurn: () => renderHand(firstTrickGame),
     discard: () => renderHand(discardGame),
     extraCard: () => renderHand(extraCardGame),
-    lastCard: () => renderHand({ ...game, myCardsInHand: ["QS"] }),
+    lastCard: () => renderHand(lastCardGame),
     empty: () => (
       <>
         <p>Ei kortteja kädessä.</p>
-        {renderHand({ ...game, myCardsInHand: [], myExtraCard: null })}
+        {renderHand(handEndGame)}
       </>
     ),
   },

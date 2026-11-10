@@ -4,17 +4,23 @@ import Icon from "../shared/Icon"
 import { SvgImage } from "../shared/images"
 import Cards from "./Cards"
 import { hasPlayStarted, playersInTurn } from "./turnState"
+import { useMotionRef } from "./CardMotion"
+import { playedKey } from "./cardMotion"
 
-export const PlayedCards = ({ player, game, cardsVisible }) => (
-  <div className="played-cards">
-    <Cards
-      cards={player.playedCards}
-      roundsWon={player.roundsWon}
-      numOfPlayedRounds={game.numOfPlayedRounds}
-      cardsVisible={cardsVisible}
-    />
-  </div>
-)
+export const PlayedCards = ({ player, game, cardsVisible }) => {
+  const motionRef = useMotionRef()
+  return (
+    <div className="played-cards">
+      <Cards
+        cards={player.playedCards}
+        roundsWon={player.roundsWon}
+        numOfPlayedRounds={game.numOfPlayedRounds}
+        cardsVisible={cardsVisible}
+        slotRef={motionRef && (card => motionRef(playedKey(player.email, card)))}
+      />
+    </div>
+  )
+}
 
 const Seat = ({
   player,
@@ -67,6 +73,7 @@ const Seat = ({
             {!playing && player.speak && <Icon name={player.speak} />}
           </span>
           {state && <span className="seat-state">{state}</span>}
+          {/* public card counts only: never registered for motion */}
           <span className="seat-hand" aria-label={`${player.cardsInHand ?? 0} korttia kädessä`}>
             {Array.from({ length: player.cardsInHand ?? 0 }, (_, i) => (
               <SvgImage key={i} name="back" className="seat-card" />

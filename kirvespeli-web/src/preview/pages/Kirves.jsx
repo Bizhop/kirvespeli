@@ -2,7 +2,7 @@ import React from "react"
 
 import { KirvesContainer } from "../../components/kirves/KirvesContainer"
 import { user } from "../data/users"
-import { games, game } from "../data/games"
+import { games, hand } from "../data/games"
 import { logId, logItems } from "../data/logs"
 import { logAction } from "../logAction"
 
@@ -25,10 +25,10 @@ export default {
   group: "Containers",
   variants: {
     initial: () => <KirvesContainer {...baseData} />,
-    error: () => <KirvesContainer {...baseData} error="Some random error!" />,
+    error: () => <KirvesContainer {...baseData} error="Nickname on jo käytössä" />,
     withLog: () => <KirvesContainer {...baseData} logVisible selectedLogIndex={0} />,
     withLogAndReplay: () => (
-      <KirvesContainer {...baseData} logVisible selectedLogIndex={2} replay={game} />
+      <KirvesContainer {...baseData} logVisible selectedLogIndex={2} replay={hand.replays[2]} />
     ),
   },
 }

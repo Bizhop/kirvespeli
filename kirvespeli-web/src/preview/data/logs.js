@@ -1,52 +1,6 @@
-export const logId = {
-  gameId: 2,
-  handId: 0,
-}
+import { games, hand } from "./games.js"
 
-export const logItems = [
-  {
-    user: {
-      email: "ville.piispa@gmail.com",
-      jwt: null,
-      nickname: "Ville",
-    },
-    input: {
-      action: "DEAL",
-      index: 0,
-      keepExtraCard: false,
-      suit: null,
-      declineCut: false,
-      speak: null,
-    },
-  },
-  {
-    user: {
-      email: "ville.piispa@gmail.com",
-      jwt: null,
-      nickname: "Ville",
-    },
-    input: {
-      action: "SPEAK",
-      index: 0,
-      keepExtraCard: false,
-      suit: null,
-      declineCut: false,
-      speak: "KEEP",
-    },
-  },
-  {
-    user: {
-      email: "ville.piispa@gmail.com",
-      jwt: null,
-      nickname: "Ville",
-    },
-    input: {
-      action: "PLAY_CARD",
-      index: 3,
-      keepExtraCard: false,
-      suit: null,
-      declineCut: false,
-      speak: null,
-    },
-  },
-]
+// Action log of the three-player hand in game 12 (its latest hand): DEAL, Ville's speech and
+// the fifteen plays with their backend indexes.
+export const logId = { gameId: games[0].id, handId: games[0].lastHandId }
+export const logItems = hand.log

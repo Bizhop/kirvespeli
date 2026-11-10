@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Navigate, useParams } from "react-router"
 import { path } from "ramda"
@@ -26,7 +26,16 @@ export const KirvesGame = ({
       getGame(id)
     }
   }, [id, game?.id])
-  useGameRefresh(game?.id, refresh, !socketDisabled)
+  // a resync renders the next snapshot without card motion
+  const [resyncKey, setResyncKey] = useState(0)
+  const resync = useCallback(
+    gameId => {
+      setResyncKey(key => key + 1)
+      refresh(gameId)
+    },
+    [refresh],
+  )
+  useGameRefresh(game?.id, refresh, !socketDisabled, resync)
   return (
     <div>
       {game && (
@@ -42,6 +51,7 @@ export const KirvesGame = ({
             join={join}
             showAllCards={showAllCards}
             cardsVisible={cardsVisible}
+            motionResetKey={resyncKey}
           />
         </Box>
       )}

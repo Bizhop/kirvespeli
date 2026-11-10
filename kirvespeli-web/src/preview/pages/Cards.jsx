@@ -1,33 +1,44 @@
 import React from "react"
 
 import Cards from "../../components/kirves/Cards"
+import { handStartGame, handEndGame } from "../data/games"
 import { logAction } from "../logAction"
 
-const cardsInHand = ["AD", "JC", "2H", "7H", "KS"]
-const otherCardsInPlay = ["AC", "BJ", "3S", "9H", "QD"]
-
 const action = logAction("selectCard")
+// rows after the three-player hand: Ville took tricks 1, 2 and 4, Terhi the last one
+const [ville, , terhi] = handEndGame.players
+const row = (player, extra = {}) => (
+  <Cards
+    cards={player.playedCards}
+    roundsWon={player.roundsWon}
+    numOfPlayedRounds={handEndGame.numOfPlayedRounds}
+    {...extra}
+  />
+)
 
 export default {
   title: "Cards",
   group: "Components",
   variants: {
-    myCards: () => <Cards scale={0.5} cards={cardsInHand} roundsWon={[]} action={action} />,
-    myCardsWithSuit: () => <Cards cards={cardsInHand} roundsWon={[]} action={action} />,
-    otherCards: () => (
-      <Cards cards={otherCardsInPlay} roundsWon={[1, 3]} scale={2} numOfPlayedRounds={5} />
-    ),
-    otherCardsWithLastCard: () => (
-      <Cards cards={otherCardsInPlay} roundsWon={[2, 4]} scale={2} numOfPlayedRounds={5} />
-    ),
-    otherCardsVisible: () => (
+    myCards: () => (
       <Cards
-        cards={otherCardsInPlay}
-        roundsWon={[2, 4]}
-        scale={2}
-        numOfPlayedRounds={5}
-        cardsVisible
+        cards={handStartGame.myCardsInHand}
+        roundsWon={[]}
+        action={action}
+        actionName="PLAY_CARD"
       />
     ),
+    myCardsWithSuit: () => (
+      <Cards
+        cards={handStartGame.myCardsInHand}
+        handTrump={handStartGame.trump}
+        roundsWon={[]}
+        action={action}
+        actionName="PLAY_CARD"
+      />
+    ),
+    otherCards: () => row(ville),
+    otherCardsWithLastCard: () => row(terhi),
+    otherCardsVisible: () => row(ville, { cardsVisible: true }),
   },
 }

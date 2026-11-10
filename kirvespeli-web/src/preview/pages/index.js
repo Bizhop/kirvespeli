@@ -18,11 +18,13 @@ import KirvesGame from "./KirvesGame"
 import RenderGame from "./RenderGame"
 
 import Table from "./Table"
+import CardMotion from "./CardMotion"
 import Seat from "./Seat"
 import Icon from "./Icon"
 
 export default [
   Table,
+  CardMotion,
   Seat,
   Icon,
   ActionButton,

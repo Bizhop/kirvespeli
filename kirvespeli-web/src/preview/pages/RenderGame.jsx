@@ -2,30 +2,27 @@ import React from "react"
 import { Box } from "@mui/system"
 
 import RenderGame from "../../components/kirves/RenderGame"
-import { game, game2 } from "../data/games"
+import { handStartGame, firstTrickGame, midHandGame, handEndGame } from "../data/games"
 import { logAction } from "../logAction"
 
 const action = logAction("action")
 const showAllCards = logAction("showAllCards")
 
+// One three-player hand from Ville's seat, from the first lead to the end of the hand.
+const render = (game, extra = {}) => (
+  <Box className="kirves-container">
+    <RenderGame game={game} action={action} showAllCards={showAllCards} {...extra} />
+  </Box>
+)
+
 export default {
   title: "RenderGame",
   group: "Containers",
   variants: {
-    gameStart: () => (
-      <Box className="kirves-container">
-        <RenderGame game={game} action={action} />
-      </Box>
-    ),
-    gameEnd: () => (
-      <Box className="kirves-container">
-        <RenderGame game={game2} action={action} showAllCards={showAllCards} />
-      </Box>
-    ),
-    gameEndCardsVisible: () => (
-      <Box className="kirves-container">
-        <RenderGame game={game2} action={action} showAllCards={showAllCards} cardsVisible />
-      </Box>
-    ),
+    gameStart: () => render(handStartGame),
+    firstTrick: () => render(firstTrickGame),
+    midHand: () => render(midHandGame),
+    gameEnd: () => render(handEndGame),
+    gameEndCardsVisible: () => render(handEndGame, { cardsVisible: true }),
   },
 }
