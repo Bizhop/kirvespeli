@@ -110,6 +110,27 @@ export const game2 = {
   scores: scores(1, 2, 1),
 }
 
+// Finished games as [loser email, loser's points]; everyone else reached three points, so a
+// finished game has exactly one loser. A player's second loss within a match is the axe,
+// which ends the match.
+const completedGames = (players, losses) => {
+  let sticks = new Set()
+  return losses.map(([loser, points]) => {
+    const axe = sticks.has(loser)
+    if (axe) sticks = new Set()
+    else sticks.add(loser)
+    return {
+      scores: players.map(({ email, nickname }) => ({
+        email,
+        nickname,
+        score: email === loser ? points : 3,
+      })),
+      loser,
+      axe,
+    }
+  })
+}
+
 // Complete seat fixtures; preserve the older fixtures used by individual previews.
 const tablePlayers = ["Ville", "Vesa", "Terhi", "Kalle", "Sanna", "Matti"].map((nickname, i) => ({
   email: i === 0 ? VILLE : `${nickname.toLowerCase()}@example.com`,
@@ -142,17 +163,24 @@ export const tableGames = Object.fromEntries(
       numOfPlayedRounds: 2,
       firstCardSuit: "HEARTS",
       dealer: tablePlayers[count - 1].email,
+      // Terhi sits out with three points in five- and six-player games
       scores: tablePlayers.slice(0, count).map((p, i) => ({
         email: p.email,
         nickname: p.nickname,
         score: count >= 5 && i === 2 ? 3 : i % 3,
       })),
-      scoresHistory: [],
+      // Vesa and Ville have lost one game each in this match
+      scoresHistory: completedGames(tablePlayers.slice(0, count), [
+        [VESA, 2],
+        [VILLE, 1],
+      ]),
     },
   ]),
 )
+// Before play everyone is in the hand, so nobody has three points yet.
 const phase = (count, actions, extra = {}) => ({
   ...tableGames[count],
+  scores: tableGames[count].scores.map(s => ({ ...s, score: Math.min(s.score, 2) })),
   myAvailableActions: actions,
   firstCardSuit: "",
   numOfPlayedRounds: 0,
@@ -179,11 +207,20 @@ export const waitingGame = phase(2, [], {
   trumpCard: "",
   cardsInDeck: 52,
   scores: [{ email: VILLE, nickname: "Ville", score: 0 }],
+  scoresHistory: [],
 })
+// Ville just lost the game (his second loss, the axe) and chooses the next dealer; the new
+// game starts from zero.
 export const dealerGame = phase(6, ["SET_DEALER", "CUT"], {
   myCardsInHand: [],
   trumpCard: "",
   trump: "",
+  scores: tableGames[6].scores.map(s => ({ ...s, score: 0 })),
+  scoresHistory: completedGames(tablePlayers, [
+    [VESA, 2],
+    [VILLE, 1],
+    [VILLE, 2],
+  ]),
 })
 export const cutGame = phase(2, ["DEAL"], {
   myCardsInHand: [],
