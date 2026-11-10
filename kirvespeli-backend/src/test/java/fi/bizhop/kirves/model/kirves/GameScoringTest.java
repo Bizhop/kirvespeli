@@ -131,6 +131,70 @@ public class GameScoringTest {
     }
 
     @Test
+    public void testAdminCanContinueForDepartingPlayers() throws Exception {
+        var game = withScores(newGame(List.of(A, B, C)), 0, 2, 2);
+
+        game.handleScoring(Set.of(player(game, B), player(game, C)));
+        game = roundTrip(game);
+        assertTrue(game.userHasActionAvailable(A, CONTINUE_GAME));
+        assertFalse(game.userHasActionAvailable(B, CONTINUE_GAME));
+        var paused = game;
+        assertThrows(KirvesGameException.class, () -> paused.continueGame(B));
+
+        game.acknowledgeDeparture(B);
+        assertTrue(game.userHasActionAvailable(A, CONTINUE_GAME));
+        game.continueGame(A);
+
+        var out = game.out();
+        assertTrue(out.getPlayers().stream().noneMatch(p -> p.isDeparturePending()));
+        assertNull(out.getDepartureSecondsLeft());
+        assertEquals(A.getEmail(), out.getScoresHistory().get(0).loser());
+        assertTrue(out.getMessages().contains(A.getNickname() + " jatkoi peliä"));
+        assertFalse(game.userHasActionAvailable(A, CONTINUE_GAME));
+    }
+
+    @Test
+    public void testDepartingAdminGetsContinueAfterOwnAcknowledgement() throws Exception {
+        var game = withScores(newGame(List.of(A, B, C, user("d@example.com", "D"))), 2, 2, 0, 0);
+
+        game.handleScoring(Set.of(player(game, A), player(game, B)));
+        assertEquals(1, game.out(A).getMyAvailableActions().size());
+        assertTrue(game.userHasActionAvailable(A, ACKNOWLEDGE_DEPARTURE));
+        assertFalse(game.userHasActionAvailable(A, CONTINUE_GAME));
+
+        game.acknowledgeDeparture(A);
+        assertTrue(game.userHasActionAvailable(A, CONTINUE_GAME));
+        game.continueGame(A);
+        assertEquals(2, game.out().getPlayers().stream().filter(p -> p.isInGame()).count());
+        assertEquals(1, game.getUserWithAction(CUT).stream().count());
+    }
+
+    @Test
+    public void testDeparturesExpireAfterTimeout() throws Exception {
+        var game = withScores(newGame(List.of(A, B, C)), 0, 2, 0);
+
+        game.handleScoring(Set.of(player(game, B)));
+        game = roundTrip(game);
+        var deadline = game.getDepartureDeadline();
+        assertNotNull(deadline);
+        var secondsLeft = game.out().getDepartureSecondsLeft();
+        assertTrue(secondsLeft > 55 && secondsLeft <= 60, "seconds left: " + secondsLeft);
+
+        assertFalse(game.expireDepartures(deadline - 1));
+        assertTrue(game.out(B).getPlayers().get(0).isDeparturePending());
+
+        assertTrue(game.expireDepartures(deadline));
+        assertFalse(game.expireDepartures(deadline + 1));
+        var out = game.out();
+        assertTrue(out.getPlayers().stream().noneMatch(p -> p.isDeparturePending()));
+        assertNull(out.getDepartureSecondsLeft());
+        assertNull(game.getDepartureDeadline());
+        assertTrue(out.getMessages().contains("Poistuminen kuitattiin automaattisesti"));
+        assertEquals(C.getEmail(), out.getDealer());
+        assertTrue(game.userHasActionAvailable(A, CUT));
+    }
+
+    @Test
     public void testScoringBelowThreeContinuesImmediately() throws Exception {
         var game = newGame(List.of(A, B, C));
 

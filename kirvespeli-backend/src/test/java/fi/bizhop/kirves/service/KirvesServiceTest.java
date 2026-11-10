@@ -48,6 +48,9 @@ public class KirvesServiceTest {
     @MockitoBean
     UserService userService;
 
+    @MockitoBean
+    MessageService messageService;
+
     Map<Integer, Exception> threadExceptions = new HashMap<>();
 
     @Captor
@@ -57,7 +60,7 @@ public class KirvesServiceTest {
     public void setup() {
         //SpringExtension no longer initializes @Captor fields
         MockitoAnnotations.openMocks(this);
-        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo);
+        this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo, this.messageService);
     }
 
     @Test
@@ -92,22 +95,7 @@ public class KirvesServiceTest {
     public void testAcknowledgeDeparture() throws Exception {
         var a = getTestUser("a@example.com");
         var b = getTestUser("b@example.com");
-        var game = new Game(a);
-        game.addPlayer(b);
-        game.cut(b, false);
-        game.deal(a, safeCards());
-        game.speak(b, Game.Speak.KEEP);
-        var pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
-        pojo.scores.get(1).score = 2;
-        game = new Game(pojo);
-        game.fold(a);
-
-        var db = new KirvesGameDB();
-        db.id = 0L;
-        db.admin = getTestUserDB(a.getEmail());
-        db.active = true;
-        db.gameData = game.toJson();
-        when(this.kirvesGameRepo.findByIdAndActiveTrue(0L)).thenReturn(Optional.of(db));
+        mockGame(pendingDepartureGame(a, b, null));
 
         var acknowledge = GameIn.builder().action(ACKNOWLEDGE_DEPARTURE).build();
         assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, a));
@@ -120,6 +108,64 @@ public class KirvesServiceTest {
         assertEquals(a.getEmail(), result.out().getScoresHistory().get(0).loser());
         assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, b));
         assertEquals(1, this.kirvesService.getGame(0L).out().getScoresHistory().size());
+    }
+
+    @Test
+    public void testAdminContinuesGame() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        mockGame(pendingDepartureGame(a, b, null));
+
+        var continueGame = GameIn.builder().action(CONTINUE_GAME).build();
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, continueGame, b));
+        var result = this.kirvesService.action(0L, continueGame, a);
+        assertEquals(1, result.out().getScoresHistory().size());
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, continueGame, a));
+    }
+
+    @Test
+    public void testExpireDepartures() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        mockGame(pendingDepartureGame(a, b, null));
+        assertFalse(this.kirvesService.expireDepartures(0L));
+        assertTrue(this.kirvesService.getGame(0L).out().getScoresHistory().isEmpty());
+
+        this.setup();
+        var db = mockGame(pendingDepartureGame(a, b, System.currentTimeMillis() - 1));
+        assertTrue(this.kirvesService.expireDepartures(0L));
+        var out = this.kirvesService.getGame(0L).out();
+        assertEquals(1, out.getScoresHistory().size());
+        assertNull(out.getDepartureSecondsLeft());
+        assertFalse(db.gameData.contains("\"departurePending\":true"));
+        //the transaction was released
+        this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), getTestUser(out.getTurn()));
+    }
+
+    //a and b play; a folds when b has two points, so b must acknowledge their departure
+    private static String pendingDepartureGame(fi.bizhop.kirves.model.User a, fi.bizhop.kirves.model.User b, Long deadline) throws Exception {
+        var game = new Game(a);
+        game.addPlayer(b);
+        game.cut(b, false);
+        game.deal(a, safeCards());
+        game.speak(b, Game.Speak.KEEP);
+        var pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        pojo.scores.get(1).score = 2;
+        game = new Game(pojo);
+        game.fold(a);
+        pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        if(deadline != null) pojo.departureDeadline = deadline;
+        return JsonUtil.getJson(pojo).orElseThrow();
+    }
+
+    private KirvesGameDB mockGame(String gameData) {
+        var db = new KirvesGameDB();
+        db.id = 0L;
+        db.admin = getTestUserDB("a@example.com");
+        db.active = true;
+        db.gameData = gameData;
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(0L)).thenReturn(Optional.of(db));
+        return db;
     }
 
     private static List<Card> safeCards() throws CardException {

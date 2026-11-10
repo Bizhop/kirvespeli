@@ -14,6 +14,8 @@ public class GameDataPOJO {
     public String trump;
     public String cutCard;
     public String secondCutCard;
+    //epoch millis when pending departures are acknowledged automatically; wall-clock, not compared
+    public Long departureDeadline;
 
     //these values are updated running the game and evaluated for GameDataPOJO equality
     //scores in seating order

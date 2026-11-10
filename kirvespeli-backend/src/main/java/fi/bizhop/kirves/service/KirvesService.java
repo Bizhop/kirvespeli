@@ -18,9 +18,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static fi.bizhop.kirves.exception.KirvesGameException.Type.BAD_REQUEST;
@@ -39,11 +43,27 @@ public class KirvesService {
 
     private final ActionLogRepo ACTION_LOG_REPO;
     private final ActionLogItemRepo ACTION_LOG_ITEM_REPO;
+    private final MessageService MESSAGE_SERVICE;
 
     private final Map<Long, Game> IN_MEMORY_GAMES = new ConcurrentHashMap<>();
     private final Map<String, ActionLog> IN_MEMORY_ACTION_LOGS = new HashMap<>();
 
     private final TransactionHandler TRANSACTION_HANDLER = new TransactionHandler();
+
+    //acting user for automatic departure acknowledgements
+    private static final User DEPARTURE_TIMEOUT_USER = new User("departure-timeout", null);
+    private static final long DEPARTURE_RETRY_MS = 1000;
+    private final ScheduledExecutorService DEPARTURE_SCHEDULER = Executors.newSingleThreadScheduledExecutor(runnable -> {
+        var thread = new Thread(runnable, "departure-timeout");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private final Map<Long, Long> SCHEDULED_DEPARTURES = new ConcurrentHashMap<>();
+
+    @PreDestroy
+    public void shutdown() {
+        this.DEPARTURE_SCHEDULER.shutdownNow();
+    }
 
     public Long init(User admin) throws CardException, KirvesGameException, TransactionException {
         var game = new Game(admin);
@@ -101,6 +121,7 @@ public class KirvesService {
         var deserializedGame = new Game(pojo);
         this.IN_MEMORY_GAMES.put(id, deserializedGame);
         this.TRANSACTION_HANDLER.registerGame(id);
+        this.scheduleDepartureTimeout(id, deserializedGame);
         return deserializedGame;
     }
 
@@ -167,7 +188,63 @@ public class KirvesService {
             case DISCARD: game.discard(user, in.getIndex()); break;
             case SET_DEALER: game.chooseDealer(user, in.getDealer()); break;
             case ACKNOWLEDGE_DEPARTURE: game.acknowledgeDeparture(user); break;
+            case CONTINUE_GAME: game.continueGame(user); break;
         }
+    }
+
+    private void scheduleDepartureTimeout(Long id, Game game) {
+        var deadline = game.getDepartureDeadline();
+        if(deadline == null || deadline.equals(this.SCHEDULED_DEPARTURES.put(id, deadline))) return;
+        var delay = Math.max(0, deadline - System.currentTimeMillis());
+        this.DEPARTURE_SCHEDULER.schedule(() -> this.runDepartureTimeout(id, deadline), delay, TimeUnit.MILLISECONDS);
+    }
+
+    private void runDepartureTimeout(Long id, long deadline) {
+        try {
+            if(this.expireDepartures(id)) {
+                this.MESSAGE_SERVICE.send("/topic/refresh", id.toString());
+            }
+            this.SCHEDULED_DEPARTURES.remove(id, deadline);
+        } catch (TransactionException e) {
+            //another action is in progress, try again shortly
+            this.DEPARTURE_SCHEDULER.schedule(() -> this.runDepartureTimeout(id, deadline), DEPARTURE_RETRY_MS, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            this.SCHEDULED_DEPARTURES.remove(id, deadline);
+            LOG.error(String.format("Departure timeout failed for game id=%d", id), e);
+        }
+    }
+
+    /**
+     * Acknowledge the game's pending departures if their timeout has expired.
+     *
+     * @return true if the game continued
+     */
+    public boolean expireDepartures(Long id) throws KirvesGameException, TransactionException {
+        var game = this.getGame(id);
+        var deadline = game.getDepartureDeadline();
+        if(deadline == null || System.currentTimeMillis() < deadline) return false;
+
+        try {
+            this.TRANSACTION_HANDLER.begin(id, DEPARTURE_TIMEOUT_USER, game.toJson());
+        } catch (TransactionException e) {
+            if(e.getType() != TIMEOUT) throw e;
+            this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
+            game = this.getGame(id);
+            this.TRANSACTION_HANDLER.begin(id, DEPARTURE_TIMEOUT_USER, game.toJson());
+        }
+        boolean continued;
+        try {
+            continued = game.expireDepartures(System.currentTimeMillis());
+        } catch (Exception e) {
+            this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
+            throw e;
+        }
+        this.TRANSACTION_HANDLER.end(id);
+        if(continued) {
+            this.saveGame(id, game, null, DEPARTURE_TIMEOUT_USER);
+            LOG.info(String.format("Departures acknowledged automatically for game id=%d", id));
+        }
+        return continued;
     }
 
     public void inactivateGame(Long id, User me) throws KirvesGameException, TransactionException {
@@ -194,6 +271,7 @@ public class KirvesService {
         gameDB.lastHandId = game.getCurrentHandId();
         this.GAME_REPO.save(gameDB);
         this.IN_MEMORY_GAMES.put(id, game);
+        this.scheduleDepartureTimeout(id, game);
 
         if(in != null) {
             if (List.of(PLAY_CARD, FOLD, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD).contains(in.getAction())) {
@@ -295,7 +373,8 @@ public class KirvesService {
         this.TRANSACTION_HANDLER.begin(id, user, null);
 
         try {
-            //save game
+            //save game, giving restored pending departures a fresh timeout
+            game.restartDepartureTimeout();
             this.saveGame(id, game, null, user);
 
             //clear items from in-memory action log

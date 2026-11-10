@@ -27,6 +27,8 @@ public class GameOut {
     String firstCardSuit;
     List<ScoreOut> scores;
     List<ScoreHistoryOut> scoresHistory;
+    //seconds until pending departures are acknowledged automatically, null when none are pending
+    Integer departureSecondsLeft;
 
     public int getNumOfPlayedRounds() {
         if(this.players == null) {
