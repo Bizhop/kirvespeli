@@ -64,6 +64,7 @@ a {
 }
 /* game surface, not text: clicks must not select text or place a caret */
 .card-table,
+.seat,
 .hand-area {
   -webkit-user-select: none;
   user-select: none;
