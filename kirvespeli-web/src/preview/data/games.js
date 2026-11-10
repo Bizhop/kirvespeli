@@ -278,3 +278,85 @@ export const departureMultipleGame = departure(4, [0, 2])
 export const departureAcknowledgedGame = departure(4, [2], { acknowledged: [0] })
 export const departureEarlyEndGame = departure(3, [0], { tricks: 2, folded: [1, 2] })
 export const departureGameEndGame = departure(2, [0])
+
+// One realistic three-player hand (Ville, Vesa, Terhi; Terhi deals, spades are trump, Ville
+// declared). Tricks: Ville QH, QC; Vesa KD; Ville trumps TD with 4S; Terhi takes the last
+// trick with JS. Seat order is the viewer's (Ville first); score lists are in seating order.
+const handPlayers = [
+  { email: VILLE, nickname: "Ville", speak: "KEEP", declaredPlayer: true },
+  { email: VESA, nickname: "Vesa", speak: "PASS", declaredPlayer: false },
+  { email: TERHI, nickname: "Terhi", speak: "PASS", declaredPlayer: false },
+]
+const handPlays = {
+  [VILLE]: ["QH", "QC", "4D", "4S", "QS"],
+  [VESA]: ["7H", "2C", "KD", "TD", "9S"],
+  [TERHI]: ["6H", "8C", "3D", "AH", "JS"],
+}
+const trickWinners = [VILLE, VILLE, VESA, VILLE, TERHI]
+// played[email] = number of cards that player has played so far
+const handState = ({ played, turn, actions = {}, ...rest }) => {
+  const rounds = Math.min(...Object.values(played))
+  const players = handPlayers.map(p => ({
+    ...p,
+    cardsInHand: 5 - played[p.email],
+    playedCards: handPlays[p.email].slice(0, played[p.email]),
+    roundsWon: trickWinners.slice(0, rounds).flatMap((w, i) => (w === p.email ? [i] : [])),
+    availableActions: actions[p.email] ?? [],
+    extraCard: null,
+    folded: false,
+    inGame: true,
+  }))
+  return {
+    id: 12,
+    players,
+    messages: [],
+    cardsInDeck: 38,
+    turn,
+    dealer: TERHI,
+    myCardsInHand: handPlays[VILLE].slice(played[VILLE]),
+    myExtraCard: null,
+    myAvailableActions: actions[VILLE] ?? [],
+    canJoin: false,
+    canDeclineCut: false,
+    trumpCard: "3S",
+    trump: "SPADES",
+    cutCard: "",
+    secondCutCard: "",
+    playersTotal: 3,
+    firstCardSuit: "",
+    scores: scores(1, 2, 0),
+    scoresHistory: game.scoresHistory,
+    numOfPlayedRounds: rounds,
+    ...rest,
+  }
+}
+export const handStartGame = handState({
+  played: { [VILLE]: 0, [VESA]: 0, [TERHI]: 0 },
+  turn: VILLE,
+  actions: { [VILLE]: ["PLAY_CARD"] },
+})
+export const firstTrickGame = handState({
+  played: { [VILLE]: 1, [VESA]: 1, [TERHI]: 0 },
+  turn: TERHI,
+  actions: { [TERHI]: ["PLAY_CARD"] },
+  firstCardSuit: "HEARTS",
+})
+// Vesa led TD in the fourth trick and Terhi discarded AH; Ville has no diamonds left.
+export const midHandGame = handState({
+  played: { [VILLE]: 3, [VESA]: 4, [TERHI]: 4 },
+  turn: VILLE,
+  actions: { [VILLE]: ["PLAY_CARD"] },
+  firstCardSuit: "DIAMONDS",
+})
+// After the fifth trick: Ville won the hand, Ville deals next and Terhi cuts. The played
+// cards stay on the table until the cut.
+export const handEndGame = handState({
+  played: { [VILLE]: 5, [VESA]: 5, [TERHI]: 5 },
+  turn: TERHI,
+  actions: { [TERHI]: ["CUT"] },
+  dealer: VILLE,
+  trumpCard: "",
+  trump: "",
+  messages: ["Voittaja: Ville"],
+  scores: scores(2, 2, 0),
+})
