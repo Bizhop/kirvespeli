@@ -1,6 +1,10 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { hasPlayStarted, playersInTurn } from "../src/components/kirves/turnState.js"
+import {
+  departingPlayers,
+  hasPlayStarted,
+  playersInTurn,
+} from "../src/components/kirves/turnState.js"
 
 const player = (email, availableActions = [], playedCards = []) => ({
   email,
@@ -32,4 +36,21 @@ test("play has started once a card is playable or played", () => {
   assert.equal(hasPlayStarted({ players: [player("a", ["SPEAK"])] }), false)
   assert.equal(hasPlayStarted({ players: [player("a", ["PLAY_CARD"])] }), true)
   assert.equal(hasPlayStarted({ players: [player("a", [], ["AS"])] }), true)
+})
+
+test("departing players are in turn until they acknowledge, regardless of game.turn", () => {
+  const game = {
+    turn: "c",
+    players: [
+      { ...player("a", [], ["AS"]), inGame: false },
+      { ...player("b", ["ACKNOWLEDGE_DEPARTURE"], ["KS"]), departurePending: true },
+      player("c", [], ["QS"]),
+    ],
+  }
+  assert.deepEqual([...playersInTurn(game)], ["b"])
+  assert.deepEqual(
+    departingPlayers(game).map(p => p.email),
+    ["b"],
+  )
+  assert.equal(departingPlayers({ players: [player("c")] }).length, 0)
 })

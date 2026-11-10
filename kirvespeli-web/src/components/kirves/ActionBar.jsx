@@ -2,9 +2,11 @@ import React from "react"
 import { Button } from "@mui/material"
 import ActionButton from "./ActionButton"
 import SuitSelector from "./SuitSelector"
+import { departingPlayers } from "./turnState"
 
 const ActionBar = ({ game, action, join, showAllCards }) => {
   const actions = game.myAvailableActions ?? []
+  const departing = departingPlayers(game)
   const button = (name, label, extra = {}) =>
     actions.includes(name) && (
       <ActionButton
@@ -44,7 +46,13 @@ const ActionBar = ({ game, action, join, showAllCards }) => {
       )}
       {actions.includes("PLAY_CARD") && <span>Valitse pelattava kortti</span>}
       {actions.includes("DISCARD") && <span>Valitse hylättävä kortti</span>}
-      {game.numOfPlayedRounds === 5 && (
+      {button("ACKNOWLEDGE_DEPARTURE", "Kuittaa poistuminen")}
+      {departing.length > 0 && !actions.includes("ACKNOWLEDGE_DEPARTURE") && (
+        <span>
+          Odotetaan poistumisen kuittausta: {departing.map(p => p.nickname || p.email).join(", ")}
+        </span>
+      )}
+      {(game.numOfPlayedRounds === 5 || departing.length > 0) && (
         <Button variant="outlined" onClick={() => showAllCards?.()}>
           Näytä kortit
         </Button>

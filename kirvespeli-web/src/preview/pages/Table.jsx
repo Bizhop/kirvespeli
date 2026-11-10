@@ -10,6 +10,12 @@ import {
   spectatorGame,
   extraCardGame,
   discardGame,
+  departureGame,
+  departureWaitingGame,
+  departureMultipleGame,
+  departureAcknowledgedGame,
+  departureEarlyEndGame,
+  departureGameEndGame,
 } from "../data/games"
 import { logAction } from "../logAction"
 const props = {
@@ -35,6 +41,12 @@ export default {
     extraCard: () => <RenderGame game={extraCardGame} {...props} />,
     discard: () => <RenderGame game={discardGame} {...props} />,
     spectator: () => <RenderGame game={spectatorGame} {...props} />,
+    departure: () => <RenderGame game={departureGame} {...props} />,
+    departureWaiting: () => <RenderGame game={departureWaitingGame} {...props} />,
+    departureMultiple: () => <RenderGame game={departureMultipleGame} {...props} />,
+    departureAcknowledged: () => <RenderGame game={departureAcknowledgedGame} {...props} />,
+    departureEarlyEnd: () => <RenderGame game={departureEarlyEndGame} {...props} />,
+    departureGameEnd: () => <RenderGame game={departureGameEndGame} {...props} />,
     replay: () => <RenderGame game={tableGames[6]} isReplay cardsVisible />,
   },
 }

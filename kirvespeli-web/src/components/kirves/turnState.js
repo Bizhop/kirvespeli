@@ -12,3 +12,6 @@ export const playersInTurn = game => {
   const acting = (game.players ?? []).filter(mustAct).map(p => p.email)
   return new Set(acting.length > 0 ? acting : [game.turn].filter(Boolean))
 }
+
+// Players who reached three points and must acknowledge leaving before the next hand starts.
+export const departingPlayers = game => (game.players ?? []).filter(p => p.departurePending)
