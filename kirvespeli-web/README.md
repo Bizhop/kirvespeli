@@ -86,6 +86,8 @@ paikkamerkki; lopullisen kuvan voi vaihtaa kuvakarttaan.
 Jakaja- ja puhekuvakkeet piilotetaan tikkejä pelattaessa. Vuoro näkyy pelaajan paikan
 hehkukorostuksena, ja pisteet näytetään vain pistetaulukossa.
 `folded` himmentää pakkaan menneen ja `inGame: false` sivussa olevan pelaajan.
+Poistumistaan kuittaamaton pelaaja (`departurePending`) näytetään tilalla Poistumassa
+himmentämättä, jotta hänen korttinsa näkyvät.
 
 Kortin leveys tulee CSS-muuttujasta `--card-w`, korkeus suhteesta 10/7. Käden, pöydälle
 pelattujen korttien, pakan ja pelaajan korttiselkien koot säädetään `style.css`:ssä.
@@ -108,9 +110,14 @@ ylimääräinen kortti pysyy erillisenä käden vieressä.
 Käden kortteja voi valita vain `PLAY_CARD`- tai `DISCARD`-toiminnon ollessa sallittu.
 Voitetut tikit ovat kuvapuoli alaspäin; viimeisen voittokortin voi paljastaa 1,5 sekunniksi.
 Viiden tikin jälkeen Näytä kortit paljastaa kaikki pöytäkortit.
+Kolmeen pisteeseen päässyt pelaaja saa painikkeen Kuittaa poistuminen; muut näkevät tekstin
+`Odotetaan poistumisen kuittausta: <nimet>`. Kuittausta odotettaessa Näytä kortit on käytössä,
+vaikka jako olisi päättynyt ennen viittä tikkiä.
 
 Esikatselun `Table` näyttää kaikki pelaajamäärät sekä odotuksen, noston, puheen,
-valttivalinnan, jakajavalinnan, ylimääräisen kortin, hylkäyksen, sivustakatsojan ja uusinnan.
+valttivalinnan, jakajavalinnan, ylimääräisen kortin, hylkäyksen, sivustakatsojan, uusinnan
+ja poistumisen kuittauksen tilat (oma, muiden odotus, usea poistuja, kuitattu, ennenaikainen
+jaon loppu ja pelin päättävä poistuminen).
 `Seat` näyttää pelaajan eri tilat ja `Icon` kaikki kuvakkeet.
 `Hand` esittelee oman käden erikseen: pelattava käsi, vuoron odotus, hylkäys, ylimääräinen
 kortti, viimeinen kortti ja tyhjä käsi. Esikatselu käyttää pelin korttikokoa ja käsiasettelua. Mukana ovat myös
