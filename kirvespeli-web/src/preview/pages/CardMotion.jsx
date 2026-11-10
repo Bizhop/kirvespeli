@@ -2,18 +2,12 @@ import React, { useEffect, useRef, useState } from "react"
 import { Button, Stack } from "@mui/material"
 import RenderGame from "../../components/kirves/RenderGame"
 import { logAction } from "../logAction"
+import { KirvesGame, ROSTER } from "../data/kirves"
+import { threePlayerHand, tricks } from "../data/games"
 
 // Short snapshot sequences for checking card motion. Every step is a complete confirmed
-// snapshot, as the backend would send it; motion comes only from comparing snapshots.
-
-const VILLE = "ville.piispa@gmail.com"
-const VESA = "vesa@example.com"
-const TERHI = "terhi@example.com"
-const seats = [
-  [VILLE, "Ville"],
-  [VESA, "Vesa"],
-  [TERHI, "Terhi"],
-]
+// snapshot from the preview engine, as the backend would send it; motion comes only from
+// comparing snapshots.
 
 const props = {
   action: logAction("action"),
@@ -21,181 +15,49 @@ const props = {
   showAllCards: logAction("showAllCards"),
 }
 
-// Public table state plus every player's private hand; `view` turns it into one viewer's
-// snapshot (seats rotated to start from the viewer, only the viewer's own cards included).
-const table = ({ hands, played = {}, won = {}, extra = {}, actions = {}, ...rest }) => ({
-  hands,
-  played,
-  won,
-  extra,
-  actions,
-  public: {
-    id: 900,
-    messages: [],
-    cardsInDeck: 37,
-    turn: VILLE,
-    dealer: TERHI,
-    canJoin: false,
-    canDeclineCut: false,
-    trumpCard: "3S",
-    trump: "SPADES",
-    cutCard: "",
-    secondCutCard: "",
-    playersTotal: 3,
-    firstCardSuit: "",
-    scores: seats.map(([email, nickname]) => ({ email, nickname, score: 0 })),
-    scoresHistory: [],
-    ...rest,
-  },
-})
-
-const view = (state, viewer) => {
-  const players = seats.map(([email, nickname]) => ({
-    email,
-    nickname,
-    cardsInHand: state.hands[email]?.length ?? 0,
-    playedCards: state.played[email] ?? [],
-    roundsWon: state.won[email] ?? [],
-    availableActions: state.actions[email] ?? [],
-    extraCard: null,
-    declaredPlayer: false,
-    folded: false,
-    inGame: true,
-    speak: null,
-  }))
-  const start = Math.max(
-    0,
-    players.findIndex(p => p.email === viewer),
-  )
-  const rotated = [...players.slice(start), ...players.slice(0, start)]
-  return {
-    ...state.public,
-    players: rotated,
-    numOfPlayedRounds: Object.values(state.won).reduce((sum, rounds) => sum + rounds.length, 0),
-    myCardsInHand: state.hands[viewer] ?? [],
-    myExtraCard: state.extra[viewer] ?? null,
-    myAvailableActions: state.actions[viewer] ?? [],
+// the game before each step and after every step
+const sequence = (game, steps) => {
+  const out = [game.clone()]
+  for (const step of steps) {
+    step(game)
+    out.push(game.clone())
   }
+  return out
 }
 
-const hands = {
-  [VILLE]: ["QC", "QH", "4S", "4D", "QS"],
-  [VESA]: ["7H", "KD", "9S", "2C", "TD"],
-  [TERHI]: ["AH", "8C", "JS", "3D", "6H"],
-}
-const without = (list, card) => list.filter(c => c !== card)
+// The three-player hand card by card, then Terhi cuts and Ville deals the next hand.
+const playSequence = sequence(threePlayerHand(), [
+  ...tricks.map(card => g => g.play(card)),
+  g => g.cut("KC"),
+  g => g.deal({}, "5S"),
+])
 
-const playSequence = [
-  table({ hands, actions: { [VILLE]: ["PLAY_CARD"] } }),
-  table({
-    hands: { ...hands, [VILLE]: without(hands[VILLE], "QH") },
-    played: { [VILLE]: ["QH"] },
-    actions: { [VESA]: ["PLAY_CARD"] },
-    turn: VESA,
-    firstCardSuit: "HEARTS",
-  }),
-  table({
-    hands: { ...hands, [VILLE]: without(hands[VILLE], "QH"), [VESA]: without(hands[VESA], "7H") },
-    played: { [VILLE]: ["QH"], [VESA]: ["7H"] },
-    actions: { [TERHI]: ["PLAY_CARD"] },
-    turn: TERHI,
-    firstCardSuit: "HEARTS",
-  }),
-  table({
-    hands: {
-      [VILLE]: without(hands[VILLE], "QH"),
-      [VESA]: without(hands[VESA], "7H"),
-      [TERHI]: without(hands[TERHI], "AH"),
-    },
-    played: { [VILLE]: ["QH"], [VESA]: ["7H"], [TERHI]: ["AH"] },
-    won: { [TERHI]: [0] },
-    actions: { [TERHI]: ["PLAY_CARD"] },
-    turn: TERHI,
-  }),
-  table({
-    hands: {
-      [VILLE]: without(hands[VILLE], "QH"),
-      [VESA]: without(hands[VESA], "7H"),
-      [TERHI]: without(without(hands[TERHI], "AH"), "8C"),
-    },
-    played: { [VILLE]: ["QH"], [VESA]: ["7H"], [TERHI]: ["AH", "8C"] },
-    won: { [TERHI]: [0] },
-    actions: { [VILLE]: ["PLAY_CARD"] },
-    firstCardSuit: "CLUBS",
-  }),
-  table({
-    hands: {
-      [VILLE]: without(without(hands[VILLE], "QH"), "QC"),
-      [VESA]: without(hands[VESA], "7H"),
-      [TERHI]: without(without(hands[TERHI], "AH"), "8C"),
-    },
-    played: { [VILLE]: ["QH", "QC"], [VESA]: ["7H"], [TERHI]: ["AH", "8C"] },
-    won: { [TERHI]: [0] },
-    actions: { [VESA]: ["PLAY_CARD"] },
-    turn: VESA,
-    firstCardSuit: "CLUBS",
-  }),
-  // the hand ended and a new one was dealt within one action
-  table({
-    hands: {
-      [VILLE]: ["2H", "JD", "AS", "9C", "TS"],
-      [VESA]: ["5C", "6C", "7C", "8D", "9D"],
-      [TERHI]: ["KS", "KH", "2S", "3C", "4H"],
-    },
-    actions: { [VILLE]: ["PLAY_CARD"] },
-    dealer: VILLE,
-    trumpCard: "5S",
-    cardsInDeck: 37,
-  }),
-]
+// Ville deals and turns the ace of spades, keeps it and discards the seven of clubs.
+const extraSequence = sequence(new KirvesGame({ count: 3, dealer: "Ville" }).cut("9C"), [
+  g => g.deal({ Ville: ["QD", "7C", "KH", "4H", "JC"] }, "AS"),
+  g => g.aceOrTwo(true),
+  g => g.discard("Ville", "7C"),
+])
 
-const extraHands = { ...hands, [VILLE]: ["4D", "QS", "QC", "4S", "QH"] }
-const handSequence = [
-  table({ hands: extraHands, trump: "", trumpCard: "", actions: { [VILLE]: ["SPEAK"] } }),
-  table({ hands: extraHands, trump: "HEARTS", trumpCard: "3H" }),
-  table({ hands: extraHands, trump: "SPADES", trumpCard: "3S" }),
-  table({
-    hands: extraHands,
-    extra: { [VILLE]: "AS" },
-    actions: { [VILLE]: ["ACE_OR_TWO_DECISION"] },
-  }),
-  table({
-    hands: { ...extraHands, [VILLE]: [...extraHands[VILLE], "AS"] },
-    actions: { [VILLE]: ["DISCARD"] },
-  }),
-  table({
-    hands: { ...extraHands, [VILLE]: [...without(extraHands[VILLE], "4D"), "AS"] },
-    actions: { [VILLE]: ["PLAY_CARD"] },
-  }),
-]
+// Everyone wants to change hearts; Ville picks spades and his hand reorders.
+const trumpSequence = sequence(new KirvesGame({ count: 3, dealer: "Terhi" }).cut("TC"), [
+  g => g.deal({ Ville: ["2D", "AH", "JC", "9H", "AS"] }, "5H"),
+  g => g.speak("Ville", "CHANGE"),
+  g => g.speak("Vesa", "PASS"),
+  g => g.speak("Terhi", "PASS"),
+  g => g.speakSuit("Ville", "SPADES"),
+])
 
-const cutSequence = [
-  table({ hands: {}, trump: "", trumpCard: "", cardsInDeck: 52, actions: { [VILLE]: ["CUT"] } }),
-  table({ hands: {}, trump: "", trumpCard: "", cardsInDeck: 52, cutCard: "AS" }),
-  table({
-    hands: {},
-    trump: "",
-    trumpCard: "",
-    cardsInDeck: 52,
-    cutCard: "AS",
-    secondCutCard: "2S",
-    actions: { [VILLE]: ["DEAL"] },
-  }),
-  table({ hands, cardsInDeck: 37, trump: "", trumpCard: "3S", actions: { [VILLE]: ["SPEAK"] } }),
-]
+// Ville cuts for Vesa, who deals.
+const cutSequence = sequence(new KirvesGame({ count: 3, dealer: "Vesa" }), [
+  g => g.cut("KD"),
+  g => g.deal({}, "8S"),
+])
 
 // After five tricks; "Näytä kortit" reveals the concealed won cards.
-const revealState = table({
-  hands: {},
-  played: {
-    [VILLE]: ["QH", "QC", "4S", "4D", "QS"],
-    [VESA]: ["7H", "KD", "9S", "2C", "TD"],
-    [TERHI]: ["AH", "8C", "JS", "3D", "6H"],
-  },
-  won: { [VILLE]: [3, 4], [TERHI]: [0, 1, 2] },
-})
+const revealState = playSequence[tricks.length]
 
-const Sequence = ({ steps, viewers = [VILLE], rapid }) => {
+const Sequence = ({ steps, viewers = ["Ville"], rapid }) => {
   const [step, setStep] = useState(0)
   const [cardsVisible, setCardsVisible] = useState(false)
   const timer = useRef()
@@ -236,11 +98,11 @@ const Sequence = ({ steps, viewers = [VILLE], rapid }) => {
       {viewers.map(viewer => (
         <div key={viewer}>
           {viewers.length > 1 && (
-            <h3>{seats.find(([email]) => email === viewer)?.[1] ?? "Sivustakatsoja"}</h3>
+            <h3>{ROSTER.some(p => p.nickname === viewer) ? viewer : "Sivustakatsoja"}</h3>
           )}
           <RenderGame
             {...props}
-            game={view(steps[step], viewer)}
+            game={steps[step].view(viewer)}
             cardsVisible={cardsVisible}
             showAllCards={() => setCardsVisible(true)}
           />
@@ -255,13 +117,14 @@ export default {
   group: "Containers",
   variants: {
     plays: () => <Sequence steps={playSequence} />,
-    trumpAndExtraCard: () => <Sequence steps={handSequence} />,
+    trumpChange: () => <Sequence steps={trumpSequence} />,
+    extraCard: () => <Sequence steps={extraSequence} />,
     cutAndDeal: () => <Sequence steps={cutSequence} />,
     revealAndConceal: () => <Sequence steps={[revealState, revealState]} />,
     rapidUpdates: () => <Sequence steps={playSequence} rapid />,
     participantsAndSpectator: () => (
-      <Sequence steps={playSequence} viewers={[VILLE, TERHI, "spectator@example.com"]} />
+      <Sequence steps={playSequence} viewers={["Ville", "Terhi", "Katsoja"]} />
     ),
-    privateExtraCard: () => <Sequence steps={handSequence} viewers={[VILLE, VESA]} />,
+    privateExtraCard: () => <Sequence steps={extraSequence} viewers={["Ville", "Vesa"]} />,
   },
 }

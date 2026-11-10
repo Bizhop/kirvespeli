@@ -11,6 +11,8 @@ export default {
   group: "Containers",
   variants: {
     loggedIn: () => <DashContainer user={user} updateUser={updateUser} />,
-    error: () => <DashContainer user={user} updateUser={updateUser} error="Error text!" />,
+    error: () => (
+      <DashContainer user={user} updateUser={updateUser} error="Nickname on jo käytössä" />
+    ),
   },
 }
