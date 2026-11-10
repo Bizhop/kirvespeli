@@ -126,7 +126,7 @@ public class Game {
         }
 
         return GameOut.builder()
-                .players(this.getPlayersStartingFrom(user == null ? null : user.getEmail()).stream().map(PlayerOut::new).collect(toList()))
+                .players(this.getSeatsStartingFrom(user).stream().map(PlayerOut::new).collect(toList()))
                 .messages(this.data.messages)
                 .cardsInDeck(this.deck.size())
                 .turn(this.turn.getUserEmail())
@@ -145,6 +145,18 @@ public class Game {
                 .scores(this.data.scores.stream().map(ScoreOut::new).toList())
                 .scoresHistory(this.data.scoresHistory.stream().map(ScoreHistoryOut::new).toList())
                 .build();
+    }
+
+    //every seat, including players who are out of the hand, rotated to start from the viewer
+    private List<Player> getSeatsStartingFrom(User user) {
+        int start = 0;
+        while(user != null && start < this.players.size() && !this.players.get(start).getUserEmail().equals(user.getEmail())) {
+            start++;
+        }
+        if(user == null || start == 0 || start == this.players.size()) return this.players;
+        var seats = new ArrayList<>(this.players.subList(start, this.players.size()));
+        seats.addAll(this.players.subList(0, start));
+        return seats;
     }
 
     private ScorePOJO getScore(String email) throws KirvesGameException {
@@ -294,7 +306,8 @@ public class Game {
         } else {
             this.data.messages.add(String.format("%s kieltäytyi nostosta", cutter.getNickname()));
         }
-        this.getPlayersStartingFrom(this.dealer.getUserEmail()).forEach(player -> {
+        //all seats, so that departed players' cards from the previous hand are cleared too
+        this.players.forEach(player -> {
             player.setDeclaredPlayer(false);
             player.resetAvailableActions();
             player.getPlayedCards().clear();
@@ -450,13 +463,44 @@ public class Game {
         var label = winners.size() == 1 ? "Voittaja" : "Voittajat";
         var winnerNicks = winners.stream().map(Player::getUserNickname).collect(toList());
         this.data.messages.add(String.format("%s: %s", label, String.join(",", winnerNicks)));
+        var departing = new ArrayList<Player>();
         for(var winner : winners) {
             var score = this.getScore(winner.getUserEmail());
             score.score++;
             if(score.score == 3) {
-                winner.inactivate();
+                departing.add(winner);
             }
         }
+        if(departing.isEmpty()) {
+            this.continueAfterHand();
+        } else {
+            //the table stays as it is until every departing player has acknowledged
+            this.resetActions();
+            departing.forEach(Player::depart);
+        }
+    }
+
+    public void acknowledgeDeparture(User user) throws KirvesGameException {
+        var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        if(!player.isDeparturePending()) {
+            throw new KirvesGameException("Poistumista ei voi kuitata nyt", BAD_REQUEST);
+        }
+        player.acknowledgeDeparture();
+        if(this.isDeparturePending()) return;
+
+        for(var departed : this.players) {
+            if(!departed.isInGame() && !departed.isFolded()) {
+                departed.discardHand();
+            }
+        }
+        this.continueAfterHand();
+    }
+
+    private boolean isDeparturePending() {
+        return this.players.stream().anyMatch(Player::isDeparturePending);
+    }
+
+    private void continueAfterHand() throws KirvesGameException {
         this.startNextRound();
         if(this.getNumberOfPlayers(true) < 2) {
             this.endGame();
@@ -730,7 +774,7 @@ public class Game {
     }
 
     public enum Action {
-        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, SET_DEALER
+        DEAL, PLAY_CARD, FOLD, CUT, ACE_OR_TWO_DECISION, SPEAK, SPEAK_SUIT, DISCARD, SET_DEALER, ACKNOWLEDGE_DEPARTURE
     }
 
     public enum Speak {

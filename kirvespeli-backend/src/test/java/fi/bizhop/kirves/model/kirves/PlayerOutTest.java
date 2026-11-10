@@ -21,4 +21,18 @@ class PlayerOutTest {
         assertFalse(new PlayerOut(player).isInGame());
         assertTrue(new PlayerOut(player).isFolded());
     }
+
+    @Test
+    void exposesPendingDeparture() {
+        var player = new Player(new UserPOJO("seat@example.com", "Seat"));
+        player.depart();
+        var departing = new PlayerOut(player);
+        assertFalse(departing.isInGame());
+        assertFalse(departing.isFolded());
+        assertTrue(departing.isDeparturePending());
+        assertEquals(java.util.List.of("ACKNOWLEDGE_DEPARTURE"), departing.getAvailableActions());
+        player.acknowledgeDeparture();
+        assertFalse(new PlayerOut(player).isDeparturePending());
+        assertTrue(new PlayerOut(player).getAvailableActions().isEmpty());
+    }
 }

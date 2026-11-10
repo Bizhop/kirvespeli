@@ -4,6 +4,7 @@ import fi.bizhop.kirves.db.*;
 import fi.bizhop.kirves.exception.CardException;
 import fi.bizhop.kirves.exception.KirvesGameException;
 import fi.bizhop.kirves.exception.TransactionException;
+import fi.bizhop.kirves.model.Card;
 import fi.bizhop.kirves.model.kirves.ActionLogItem;
 import fi.bizhop.kirves.model.kirves.Game;
 import fi.bizhop.kirves.model.kirves.in.GameIn;
@@ -24,6 +25,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fi.bizhop.kirves.model.Card.Rank.*;
+import static fi.bizhop.kirves.model.Card.Suit.*;
 import static fi.bizhop.kirves.model.kirves.Game.Action.*;
 import static fi.bizhop.kirves.util.TestUserUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,6 +86,50 @@ public class KirvesServiceTest {
                 () -> this.kirvesService.joinGame(0L, spectator));
         assertEquals("Peli on täynnä", error.getMessage());
         verify(this.kirvesGameRepo, times(4)).save(any());
+    }
+
+    @Test
+    public void testAcknowledgeDeparture() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        var game = new Game(a);
+        game.addPlayer(b);
+        game.cut(b, false);
+        game.deal(a, safeCards());
+        game.speak(b, Game.Speak.KEEP);
+        var pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        pojo.scores.get(1).score = 2;
+        game = new Game(pojo);
+        game.fold(a);
+
+        var db = new KirvesGameDB();
+        db.id = 0L;
+        db.admin = getTestUserDB(a.getEmail());
+        db.active = true;
+        db.gameData = game.toJson();
+        when(this.kirvesGameRepo.findByIdAndActiveTrue(0L)).thenReturn(Optional.of(db));
+
+        var acknowledge = GameIn.builder().action(ACKNOWLEDGE_DEPARTURE).build();
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, a));
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, getTestUser("other@example.com")));
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), a));
+        assertTrue(this.kirvesService.getGame(0L).out().getScoresHistory().isEmpty());
+
+        var result = this.kirvesService.action(0L, acknowledge, b);
+        assertEquals(1, result.out().getScoresHistory().size());
+        assertEquals(a.getEmail(), result.out().getScoresHistory().get(0).loser());
+        assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, acknowledge, b));
+        assertEquals(1, this.kirvesService.getGame(0L).out().getScoresHistory().size());
+    }
+
+    private static List<Card> safeCards() throws CardException {
+        var cards = new ArrayList<Card>();
+        for(var suit : List.of(SPADES, HEARTS, CLUBS, DIAMONDS)) {
+            for(var rank : List.of(THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, QUEEN, KING)) {
+                cards.add(new Card(suit, rank));
+            }
+        }
+        return cards;
     }
 
     @Test

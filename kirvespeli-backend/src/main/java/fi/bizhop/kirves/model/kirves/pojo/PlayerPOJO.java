@@ -21,6 +21,7 @@ public class PlayerPOJO {
     public boolean declaredPlayer = false;
     public boolean inGame = true;
     public boolean folded = false;
+    public boolean departurePending = false;
     public Game.Speak speak = null;
 
     public PlayerPOJO() {}
@@ -47,6 +48,7 @@ public class PlayerPOJO {
                 && this.declaredPlayer == other.declaredPlayer
                 && this.inGame == other.inGame
                 && this.folded == other.folded
+                && this.departurePending == other.departurePending
                 && this.speak == other.speak;
     }
 }

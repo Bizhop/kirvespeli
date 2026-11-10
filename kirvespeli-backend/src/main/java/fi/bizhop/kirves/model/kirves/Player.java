@@ -239,11 +239,34 @@ public class Player {
     }
 
     public void inactivate() {
-        this.hand.clear();
+        this.discardHand();
         this.playedCards.clear();
+        this.data.inGame = false;
+    }
+
+    /**
+     * Leave the game after reaching three points. Cards and won tricks stay on the table until
+     * the player acknowledges the departure.
+     */
+    public void depart() {
+        this.data.inGame = false;
+        this.data.departurePending = true;
+        this.setAvailableActions(List.of(Game.Action.ACKNOWLEDGE_DEPARTURE));
+    }
+
+    public boolean isDeparturePending() {
+        return this.data.departurePending;
+    }
+
+    public void acknowledgeDeparture() {
+        this.data.departurePending = false;
+        this.removeAvailableAction(Game.Action.ACKNOWLEDGE_DEPARTURE);
+    }
+
+    public void discardHand() {
+        this.hand.clear();
         this.extraCard = null;
         this.invisibleCards.clear();
-        this.data.inGame = false;
     }
 
     public void fold() {

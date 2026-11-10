@@ -166,6 +166,7 @@ public class KirvesService {
             case SPEAK_SUIT: game.speakSuit(user, in.getSuit()); break;
             case DISCARD: game.discard(user, in.getIndex()); break;
             case SET_DEALER: game.chooseDealer(user, in.getDealer()); break;
+            case ACKNOWLEDGE_DEPARTURE: game.acknowledgeDeparture(user); break;
         }
     }
 
