@@ -3,11 +3,7 @@ import { Tooltip } from "@mui/material"
 import Icon from "../shared/Icon"
 import { SvgImage } from "../shared/images"
 import Cards from "./Cards"
-
-export const hasPlayStarted = game =>
-  (game.players ?? []).some(
-    p => p.availableActions?.includes("PLAY_CARD") || p.playedCards?.length > 0,
-  )
+import { hasPlayStarted, playersInTurn } from "./turnState"
 
 export const PlayedCards = ({ player, game, cardsVisible }) => (
   <div className="played-cards">
@@ -20,20 +16,26 @@ export const PlayedCards = ({ player, game, cardsVisible }) => (
   </div>
 )
 
-const Seat = ({ player, game, cardsVisible, position = "bottom", onSelectDealer }) => {
+const Seat = ({
+  player,
+  game,
+  cardsVisible,
+  position = "bottom",
+  onSelectDealer,
+  playing = hasPlayStarted(game),
+  inTurn = playersInTurn(game).has(player.email),
+}) => {
   const selectable = Boolean(onSelectDealer)
   const currentDealer = game.dealer === player.email
   const SeatInfo = selectable ? "button" : "div"
   const nickname = player.nickname || player.email
-  const playing = hasPlayStarted(game)
-  const inTurn = game.turn ? game.turn === player.email : player.availableActions?.length > 0
   const state = player.folded ? "Pakassa" : player.inGame === false ? "Sivussa" : ""
   return (
     <div
       className={`seat seat-${position}${state ? " seat-inactive" : ""}${inTurn ? " seat-turn" : ""}${selectable ? " seat-selectable" : ""}`}
       data-email={player.email}
       role="group"
-      aria-label={`${player.nickname || player.email}${inTurn ? ", vuorossa" : ""}`}
+      aria-label={`${nickname}${inTurn ? ", vuorossa" : ""}`}
     >
       <Tooltip title={state}>
         <SeatInfo
@@ -52,7 +54,7 @@ const Seat = ({ player, game, cardsVisible, position = "bottom", onSelectDealer 
         >
           <span className="seat-name">{nickname}</span>
           <span className="seat-status">
-            {!playing && game.dealer === player.email && <Icon name="dealer" />}
+            {!playing && currentDealer && <Icon name="dealer" />}
             {player.declaredPlayer && <Icon name="declared" />}
             {!playing && player.speak && <Icon name={player.speak} />}
           </span>

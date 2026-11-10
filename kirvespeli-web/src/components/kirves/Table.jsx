@@ -1,5 +1,6 @@
 import React from "react"
 import Seat from "./Seat"
+import { hasPlayStarted, playersInTurn } from "./turnState"
 import TableCenter, { Deck } from "./TableCenter"
 import Hand from "./Hand"
 import ActionBar from "./ActionBar"
@@ -18,6 +19,8 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => 
   const actions = game.myAvailableActions ?? []
   const selectingDealer = !isReplay && actions.includes("SET_DEALER")
   const dealerIndex = game.players.findIndex(p => p.email === game.dealer)
+  const playing = hasPlayStarted(game)
+  const inTurn = playersInTurn(game)
   return (
     <div className="table-area">
       <div className={`card-table seats-${game.players.length}`} aria-label="Pelipöytä">
@@ -27,6 +30,8 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => 
             player={player}
             game={game}
             position={positions[i]}
+            playing={playing}
+            inTurn={inTurn.has(player.email)}
             cardsVisible={cardsVisible}
             onSelectDealer={
               selectingDealer
@@ -43,12 +48,7 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => 
         <div className={`deck-position deck-${positions[Math.max(0, dealerIndex)]}`}>
           <Deck game={game} />
         </div>
-        <TableCenter
-          game={game}
-          join={join}
-          isReplay={isReplay}
-          selectingDealer={selectingDealer}
-        />
+        <TableCenter game={game} selectingDealer={selectingDealer} />
       </div>
       {!isReplay && (
         <div className="hand-area">

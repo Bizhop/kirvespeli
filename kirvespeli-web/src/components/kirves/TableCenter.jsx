@@ -1,5 +1,4 @@
 import React from "react"
-import { Button } from "@mui/material"
 import { SvgImage } from "../shared/images"
 import DealerSelector from "./DealerSelector"
 
@@ -21,17 +20,12 @@ export const Deck = ({ game }) => {
     </div>
   )
 }
-const TableCenter = ({ game, join, isReplay, selectingDealer }) => (
+const TableCenter = ({ game, selectingDealer }) => (
   <div className="table-center">
     {selectingDealer && <DealerSelector />}
-    {game.playersTotal < 2 && (
+    {(game.playersTotal ?? game.players?.length ?? 0) < 2 && (
       <div className="waiting-panel">
         <p>Odotetaan pelaajia (vähintään 2)</p>
-        {!isReplay && game.canJoin && (
-          <Button variant="contained" onClick={() => join?.(game.id)}>
-            Liity peliin
-          </Button>
-        )}
       </div>
     )}
     <div className="table-suits">

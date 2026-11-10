@@ -1,5 +1,6 @@
 {
   "name": "kirvespeli-web",
+  "type": "module",
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",

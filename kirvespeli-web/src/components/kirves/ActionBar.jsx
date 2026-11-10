@@ -18,7 +18,7 @@ const ActionBar = ({ game, action, join, showAllCards }) => {
     )
   return (
     <div className="action-bar">
-      {game.canJoin && game.playersTotal >= 2 && (
+      {game.canJoin && (
         <Button variant="contained" onClick={() => join?.(game.id)}>
           Liity peliin
         </Button>

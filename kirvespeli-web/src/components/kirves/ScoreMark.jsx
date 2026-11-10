@@ -1,5 +1,5 @@
 import React, { useId } from "react"
-import axe from "url:../shared/icons/kirves-valk.png"
+import { icons } from "../shared/Icon"
 import stick from "url:../shared/icons/keppi.png"
 
 // Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes.
@@ -125,7 +125,7 @@ const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
               style={{ maskType: "alpha" }}
             >
               <image
-                href={loss === "axe" ? axe : stick}
+                href={loss === "axe" ? icons.axe[0] : stick}
                 x="2"
                 y="2"
                 width="36"

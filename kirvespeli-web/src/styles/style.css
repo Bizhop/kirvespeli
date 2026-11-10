@@ -594,14 +594,6 @@ a {
   transform: rotate(7deg);
 }
 
-.player-preview {
-  position: relative;
-  height: 260px;
-}
-.player-preview > .seat {
-  top: 65%;
-}
-
 .seat-selectable .seat-info:not([aria-disabled="true"]) {
   cursor: pointer;
 }

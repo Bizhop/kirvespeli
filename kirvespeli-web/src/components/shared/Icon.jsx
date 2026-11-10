@@ -5,7 +5,6 @@ import keep from "url:./icons/paalta.png"
 import change from "url:./icons/varjays.png"
 import pass from "url:./icons/viisi.png"
 import axe from "url:./icons/kirves-valk.png"
-import turn from "url:./icons/turn.svg"
 import declared from "url:./icons/declared.svg"
 
 export const icons = {
@@ -14,7 +13,6 @@ export const icons = {
   CHANGE: [change, "Värjäisin"],
   PASS: [pass, "Viitenä"],
   axe: [axe, "Kirves"],
-  turn: [turn, "Vuorossa"],
   declared: [declared, "Pelaaja"],
 }
 const Icon = ({ name, size = 24, decorative = false }) => {

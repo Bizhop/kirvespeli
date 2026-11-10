@@ -15,7 +15,6 @@ import Dash from "./Dash"
 import Header from "./Header"
 import Kirves from "./Kirves"
 import KirvesGame from "./KirvesGame"
-import Player from "./Player"
 import RenderGame from "./RenderGame"
 
 import Table from "./Table"
@@ -42,6 +41,5 @@ export default [
   Header,
   Kirves,
   KirvesGame,
-  Player,
   RenderGame,
 ]
