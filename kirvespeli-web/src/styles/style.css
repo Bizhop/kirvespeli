@@ -295,15 +295,6 @@ a {
     inset 0 0 12px 4px #a8dcffcc;
   pointer-events: none;
 }
-.won-card {
-  position: absolute;
-  z-index: 1;
-  right: 3px;
-  bottom: 2px;
-  background: #42550d;
-  border-radius: 50%;
-  line-height: 1;
-}
 .played-cards .cards {
   gap: 0;
 }

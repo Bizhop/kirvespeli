@@ -59,7 +59,8 @@ const Card = ({
           : canFlip
             ? "Näytä voittokortti"
             : faceUp
-              ? card
+              ? // the glow marks a revealed winning card visually; say it in the label too
+                `${card}${won ? ", voitettu tikki" : ""}`
               : "Voittokortti"
       }
     >
@@ -77,11 +78,6 @@ const Card = ({
           className="card-image card-flip-out"
           onAnimationEnd={flipDone}
         />
-      )}
-      {won && cardsVisible && (
-        <span className="won-card" title="Voitettu tikki">
-          ✓
-        </span>
       )}
     </button>
   )
