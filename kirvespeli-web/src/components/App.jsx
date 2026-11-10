@@ -35,7 +35,7 @@ const App = () => (
   <Provider store={store}>
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme}>
-        <GoogleOAuthProvider clientId="266150004835-ijh2ibgdsa9timu7cmak0udc76hnhldb.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId="266150004835-mke4j8q77p37nqlgaaer1aplhaijro84.apps.googleusercontent.com">
           <Router>
             <CssBaseline />
             <Container maxWidth="xl">
