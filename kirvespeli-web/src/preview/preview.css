@@ -1,5 +1,8 @@
-body {
+/* One variant is mounted at a time, so an ordinary scrolling background suffices.
+   Avoid a forced compositing layer: it can corrupt animated cards on some GPUs. */
+body.component-preview {
   margin: 0;
+  background-attachment: scroll;
 }
 
 .preview-layout {
@@ -39,11 +42,9 @@ body {
   padding: 8px 16px 48px;
 }
 
-.preview-variant-title {
-  font-family: monospace;
-  color: gray;
-  border-bottom: 1px dashed lightgray;
-  margin: 24px 0 8px;
+.preview-variant-tabs {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ffffff66;
 }
 
 .preview-action-bar {
@@ -59,4 +60,33 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.preview-nav h2 {
+  color: #d9e6a5;
+}
+.preview-nav a.selected {
+  color: #fff3bd;
+}
+@media (max-width: 700px) {
+  .preview-layout {
+    display: block;
+  }
+  .preview-nav {
+    display: flex;
+    gap: 16px;
+    overflow: auto;
+    max-height: 130px;
+    border-bottom: 1px solid #ffffff66;
+  }
+  .preview-nav > div {
+    flex-shrink: 0;
+  }
+  .preview-main {
+    padding: 8px 8px 48px;
+  }
+}
+
+.seat-preview .seat {
+  top: 65%;
 }

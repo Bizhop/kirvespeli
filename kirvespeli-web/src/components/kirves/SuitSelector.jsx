@@ -1,31 +1,31 @@
 import React from "react"
-import { without } from "ramda"
-import { Box, Grid } from "@mui/material"
-
 import { SvgImage } from "../shared/images"
+import translate from "../shared/translate"
+import SelectionButton from "./SelectionButton"
 
-const SuitSelector = ({ currentTrump, action, gameId }) => {
-  const suits = without([currentTrump], ["CLUBS", "SPADES", "HEARTS", "DIAMONDS"])
-  return (
-    <Box sx={{ flexGrow: 1 }}>
-      <h3>Valitse valtti</h3>
-      <Grid container spacing={1}>
-        {suits.map(suit => (
-          <Grid
-            key={`suit-${suit}`}
-            size={{
-              md: 4,
-            }}
+const SuitSelector = ({ currentTrump, action, gameId }) => (
+  <div className="selection-group" role="group" aria-label="Valitse valtti">
+    <h3 className="selection-label">Valitse valtti</h3>
+    <div className="selection-options suit-options">
+      {["CLUBS", "SPADES", "HEARTS", "DIAMONDS"]
+        .filter(suit => suit !== currentTrump)
+        .map(suit => (
+          <SelectionButton
+            key={suit}
+            label={translate(suit)}
+            onClick={() => action({ gameId, action: "SPEAK_SUIT", suit })}
           >
             <SvgImage
               name={`Suit${suit}`}
-              onClick={() => action({ gameId, action: "SPEAK_SUIT", suit })}
+              className="status-icon"
+              width={48}
+              height={48}
+              alt=""
+              aria-hidden="true"
             />
-          </Grid>
+          </SelectionButton>
         ))}
-      </Grid>
-    </Box>
-  )
-}
-
+    </div>
+  </div>
+)
 export default SuitSelector

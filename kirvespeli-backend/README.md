@@ -36,7 +36,9 @@ liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
 Pelin tulosteessa `scores` on lista `{email, nickname, score}` istumajärjestyksessä (ei
 katsojan mukaan kierrettynä), ja `scoresHistory` on lista päättyneitä pelejä
 `{scores, loser, axe}`, jossa `loser` on häviäjän sähköposti ja `axe` kertoo kirveestä.
-Tallennettu pelidata käyttää samaa muotoa.
+Tallennettu pelidata käyttää samaa muotoa. Pelaajan `inGame` kertoo, onko hän vielä mukana
+pelissä. `folded` kertoo pakkaan menosta; kolmen pisteen takia sivussa oleva pelaaja
+tunnistetaan `inGame: false` -arvosta.
 
 ## Tietokantaskeema ja lempinimet
 

@@ -1,43 +1,13 @@
 import React, { useEffect } from "react"
 import { connect } from "react-redux"
 import { Navigate, useParams } from "react-router"
-import { path, includes, pathOr, omit } from "ramda"
-import { Grid, Box, Button } from "@mui/material"
+import { path } from "ramda"
+import { Box } from "@mui/material"
 
 import { getGame, joinGame, action, showAllCards } from "./kirvesActions"
 import RenderGame from "./RenderGame"
-import ScoreCard from "./ScoreCard"
-import ActionButton from "./ActionButton"
-import Messages from "./Messages"
-import SuitSelector from "./SuitSelector"
-import DealerSelector from "./DealerSelector"
+import Icon from "../shared/Icon"
 import useGameRefresh from "./useGameRefresh"
-
-const makeButton = props => {
-  const buttonProps = omit(["type", "label"], props)
-  switch (props.type) {
-    case "button":
-      return (
-        <Button {...buttonProps} variant="contained">
-          {props.label}
-        </Button>
-      )
-    case "action":
-      return <ActionButton {...buttonProps} label={props.label} />
-    default:
-      return null
-  }
-}
-
-const ButtonWrapper = props => (
-  <Grid
-    size={{
-      md: 2,
-    }}
-  >
-    {makeButton(props)}
-  </Grid>
-)
 
 export const KirvesGame = ({
   user,
@@ -61,151 +31,18 @@ export const KirvesGame = ({
     <div>
       {game && (
         <Box sx={{ flexGrow: 1 }} className="kirves-container">
-          <h1>Kirves (Peli {game.id})</h1>
-          {game.playersTotal < 2 && <p>Odotetaan pelaajia (vähintään 2)</p>}
-          <Grid container spacing={1}>
-            {game.canJoin && (
-              <ButtonWrapper type="button" label="Liity peliin" onClick={() => join(game.id)} />
-            )}
-            {includes("DEAL", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="DEAL"
-                gameId={game.id}
-                label="Jaa"
-              />
-            )}
-            {includes("FOLD", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="FOLD"
-                gameId={game.id}
-                label="Mene pakkaan"
-              />
-            )}
-            {includes("CUT", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="CUT"
-                gameId={game.id}
-                label="Nosta"
-              />
-            )}
-            {includes("CUT", game.myAvailableActions) && game.canDeclineCut && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="CUT"
-                gameId={game.id}
-                declineCut="true"
-                label="Älä nosta"
-              />
-            )}
-            {includes("ACE_OR_TWO_DECISION", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="ACE_OR_TWO_DECISION"
-                gameId={game.id}
-                keepExtraCard="true"
-                label="Pidä"
-              />
-            )}
-            {includes("ACE_OR_TWO_DECISION", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="ACE_OR_TWO_DECISION"
-                gameId={game.id}
-                keepExtraCard="false"
-                label="Hylkää"
-              />
-            )}
-            {includes("SPEAK", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="SPEAK"
-                gameId={game.id}
-                speak="KEEP"
-                label="Päältä"
-              />
-            )}
-            {includes("SPEAK", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="SPEAK"
-                gameId={game.id}
-                speak="CHANGE"
-                label="Värjäisin"
-              />
-            )}
-            {includes("SPEAK", game.myAvailableActions) && (
-              <ButtonWrapper
-                type="action"
-                action={action}
-                actionName="SPEAK"
-                gameId={game.id}
-                speak="PASS"
-                label="Viitenä"
-              />
-            )}
-            {includes("SET_DEALER", game.myAvailableActions) && (
-              <Grid size={12}>
-                <DealerSelector
-                  players={game.scores}
-                  dealer={game.dealer}
-                  action={action}
-                  gameId={game.id}
-                />
-              </Grid>
-            )}
-            {includes("SPEAK_SUIT", game.myAvailableActions) && (
-              <SuitSelector
-                action={action}
-                actionName="SPEAK_SUIT"
-                gameId={game.id}
-                currentTrump={game.trump}
-              />
-            )}
-            <Grid container spacing={1} size={12}>
-              <Grid
-                size={{
-                  md: "grow",
-                }}
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <Messages messages={pathOr([], ["messages"], game)} />
-              </Grid>
-            </Grid>
-          </Grid>
+          <h1 className="game-heading">
+            <Icon name="axe" size={44} />
+            Kirves (Peli {game.id})
+          </h1>
           <RenderGame
             game={game}
             isReplay={false}
             action={action}
+            join={join}
             showAllCards={showAllCards}
             cardsVisible={cardsVisible}
           />
-          <Grid container spacing={1}>
-            <Grid
-              size={{
-                md: "grow",
-              }}
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
-              <ScoreCard game={game} />
-            </Grid>
-          </Grid>
         </Box>
       )}
       {!user.loading && !user.email && <Navigate to="/" />}

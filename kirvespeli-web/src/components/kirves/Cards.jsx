@@ -1,55 +1,20 @@
 import React from "react"
-import { Grid, Box } from "@mui/material"
-
 import Card from "./Card"
+import { sortHandCards } from "./handOrder"
 import { SvgImage } from "../shared/images"
 
-const Cards = ({
-  scale,
-  cards,
-  gameId,
-  action,
-  actionName,
-  roundsWon,
-  cardsVisible,
-  numOfPlayedRounds,
-  firstCardSuit,
-}) => {
-  const s = scale || 1
-  return (
-    <Grid container spacing={1}>
-      {cards.map((card, index) => (
-        <Card
-          key={index}
-          index={index}
-          scale={s}
-          card={card}
-          gameId={gameId}
-          action={action}
-          actionName={actionName}
-          roundsWon={roundsWon}
-          cardsVisible={cardsVisible}
-          lastCard={numOfPlayedRounds - 1 == index}
-        />
-      ))}
-      {firstCardSuit && (
-        <Grid
-          size={{
-            md: "grow",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <SvgImage name={`Suit${firstCardSuit}`} className="opaque50" />
-          </Box>
-        </Grid>
-      )}
-    </Grid>
-  )
-}
-
+const Cards = ({ cards = [], handTrump, numOfPlayedRounds, firstCardSuit, ...props }) => (
+  <div className="cards">
+    {sortHandCards(cards, handTrump).map(({ card, index }) => (
+      <Card
+        key={`${index}:${card}`}
+        {...props}
+        card={card}
+        index={index}
+        lastCard={numOfPlayedRounds - 1 === index}
+      />
+    ))}
+    {firstCardSuit && <SvgImage name={`Suit${firstCardSuit}`} className="suit-indicator" />}
+  </div>
+)
 export default Cards
