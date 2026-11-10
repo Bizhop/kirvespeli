@@ -21,6 +21,15 @@ nostoon. Aulan rajapinta palauttaa pelaajamäärän (`players`), enimmäismäär
 (`maxPlayers`) ja käyttäjäkohtaisen liittymistilan (`canJoin`). Täyteen peliin
 liittyminen hylätään HTTP 400 -virheellä: `Peli on täynnä`.
 
+## Maan tunnustaminen
+
+Pyydettyä maata on pelattava, jos sitä on kädessä. Kaikki jätkät ja molemmat jokerit
+kuuluvat valttimaahan, eivät korttiin painettuun maahan. Jos pyydettyä maata ei ole,
+saa pelata minkä tahansa kortin. Virheellinen valinta hylätään HTTP 400 -virheellä
+`Pitää pelata pyydettyä maata` ennen pelitilan muuttamista. Uuden tikin aloittaja saa
+valita minkä tahansa kortin. Vanhojen toimintolokien toisto ja palautus säilyttävät
+myös ennen maapakon tarkistusta hyväksytyt peluut; palautetun pelin uudet siirrot tarkistetaan.
+
 ## Pisteytys
 
 - Jaon voittaja(t) saa pisteen. Kolmen pisteen pelaaja on sivussa, kunnes häviäjä selviää.

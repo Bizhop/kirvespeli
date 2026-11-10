@@ -256,14 +256,14 @@ a {
   display: block;
   object-fit: contain;
 }
-/* Card flip: the old face folds to its edge, then the new face unfolds (100 + 100 ms). */
+/* Card flip: fold the old face to its edge, then unfold the new face. */
 .card-flip-out {
   position: absolute;
   inset: 0;
-  animation: card-fold 100ms ease-in forwards;
+  animation: card-fold 250ms ease-in forwards;
 }
 .card-flip-in {
-  animation: card-unfold 100ms ease-out 100ms backwards;
+  animation: card-unfold 250ms ease-out 250ms backwards;
 }
 @keyframes card-fold {
   to {
@@ -286,6 +286,23 @@ a {
 /* revealed trick-winning cards are raised from their row, in proportion to the card size */
 .playing-card.won-visible {
   transform: translateY(calc(var(--card-w) * -0.15));
+}
+.playing-card.illegal-play {
+  opacity: 0.45;
+}
+.playing-card.trick-winner {
+  z-index: 2;
+  filter: drop-shadow(0 0 6px #ffe08a);
+  animation: trick-winner-bounce 700ms ease-in-out 2;
+}
+@keyframes trick-winner-bounce {
+  0%, 100% { transform: translateY(calc(var(--card-w) * -0.15)); }
+  50% { transform: translateY(calc(var(--card-w) * -0.4)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .playing-card.trick-winner {
+    animation: none;
+  }
 }
 .played-cards .cards {
   gap: 0;

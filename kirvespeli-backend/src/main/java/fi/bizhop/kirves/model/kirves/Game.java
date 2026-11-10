@@ -172,11 +172,7 @@ public class Game {
         if(this.firstPlayerOfRound == null || this.trump == null) return "";
         var firstCard = this.firstPlayerOfRound.equals(this.turn) ? null : this.firstPlayerOfRound.getLastPlayedCard();
         if(firstCard == null) return "";
-        if(firstCard.getSuit() == JOKER || firstCard.getRank() == JACK) {
-            return this.trump.name();
-        } else {
-            return firstCard.getSuit().name();
-        }
+        return firstCard.getPlayingSuit(this.trump).name();
     }
 
     public Optional<Player> getPlayer(String email) {
@@ -387,6 +383,25 @@ public class Game {
     }
 
     public void playCard(User user, int index) throws KirvesGameException, CardException {
+        var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
+        var card = player.getHand().get(index);
+        var firstSuit = this.getFirstCardSuit();
+        if(!firstSuit.isEmpty()) {
+            var requiredSuit = Card.Suit.valueOf(firstSuit);
+            if(card.getPlayingSuit(this.trump) != requiredSuit) {
+                for(int i = 0; i < player.cardsInHand(); i++) {
+                    if(player.getHand().get(i).getPlayingSuit(this.trump) == requiredSuit) {
+                        throw new KirvesGameException("Pitää pelata pyydettyä maata", BAD_REQUEST);
+                    }
+                }
+            }
+        }
+        this.replayCard(user, index);
+    }
+
+    // Historical logs may contain off-suit plays accepted before suit enforcement.
+    // Replay calls this directly; live actions first validate the suit in playCard.
+    public void replayCard(User user, int index) throws KirvesGameException, CardException {
         var player = this.getPlayer(user.getEmail()).orElseThrow(() -> new KirvesGameException("Pelaajaa ei löytynyt"));
         player.playCard(index);
         this.setCardPlayer(player.getNext(this.players.size()));

@@ -30,6 +30,11 @@ public class Card implements Comparable<Card> {
         return this.RANK;
     }
 
+    // All jacks and both jokers belong to the trump suit in Kirves.
+    public Suit getPlayingSuit(Suit trump) {
+        return this.SUIT == Suit.JOKER || this.RANK == Rank.JACK ? trump : this.SUIT;
+    }
+
     public Card(Suit suit, Rank rank) throws CardException {
         if(suit == Suit.JOKER && rank.VALUE < 15) {
             throw new CardException("Joker must be rank 15 or 16");

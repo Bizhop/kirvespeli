@@ -207,7 +207,7 @@ public class KirvesTest {
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(1), PLAY_CARD));
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), FOLD));
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), FOLD));
-        game.playCard(TEST_USERS.get(1), 0);
+        game.playCard(TEST_USERS.get(1), legalCardIndex(game, TEST_USERS.get(1)));
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
         var firstCardSuit = getFirstCardSuit(game);
@@ -215,12 +215,12 @@ public class KirvesTest {
 
         assertEquals(firstCardSuit, game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), PLAY_CARD));
-        game.playCard(TEST_USERS.get(2), 0);
+        game.playCard(TEST_USERS.get(2), legalCardIndex(game, TEST_USERS.get(2)));
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
         assertEquals(firstCardSuit, game.out().getFirstCardSuit());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(3), PLAY_CARD));
-        game.playCard(TEST_USERS.get(3), 0);
+        game.playCard(TEST_USERS.get(3), legalCardIndex(game, TEST_USERS.get(3)));
         assertEquals(0, game.out().getNumOfPlayedRounds());
 
         assertEquals(firstCardSuit, game.out().getFirstCardSuit());
@@ -260,8 +260,8 @@ public class KirvesTest {
         game.fold(TEST_USERS.get(1));
         assertEquals(0, game.out().getNumOfPlayedRounds());
         assertTrue(game.userHasActionAvailable(TEST_USERS.get(2), PLAY_CARD));
-        game.playCard(TEST_USERS.get(2), 0);
-        game.playCard(TEST_USERS.get(3), 0);
+        game.playCard(TEST_USERS.get(2), legalCardIndex(game, TEST_USERS.get(2)));
+        game.playCard(TEST_USERS.get(3), legalCardIndex(game, TEST_USERS.get(3)));
         assertEquals(1, game.out().getNumOfPlayedRounds());
     }
 
@@ -273,10 +273,10 @@ public class KirvesTest {
         game.cut(cutter, false, getRandomCard(OTHER_CARDS), null);
         game.deal(TEST_USERS.get(0), OTHER_CARDS);
         game.speak(TEST_USERS.get(1), KEEP);
-        game.playCard(TEST_USERS.get(1), 0);
-        game.playCard(TEST_USERS.get(2), 0);
-        game.playCard(TEST_USERS.get(3), 0);
-        game.playCard(TEST_USERS.get(0), 0);
+        game.playCard(TEST_USERS.get(1), legalCardIndex(game, TEST_USERS.get(1)));
+        game.playCard(TEST_USERS.get(2), legalCardIndex(game, TEST_USERS.get(2)));
+        game.playCard(TEST_USERS.get(3), legalCardIndex(game, TEST_USERS.get(3)));
+        game.playCard(TEST_USERS.get(0), legalCardIndex(game, TEST_USERS.get(0)));
         assertEquals(1, game.out().getNumOfPlayedRounds());
 
         //round winner starts next round and folds; previous round cards must not be evaluated again
@@ -814,6 +814,15 @@ public class KirvesTest {
         }
     }
 
+    private static int legalCardIndex(Game game, User user) throws KirvesGameException, CardException {
+        var hand = game.getPlayer(user.getEmail()).orElseThrow().getHand();
+        var firstSuit = game.out().getFirstCardSuit();
+        for(int i = 0; i < hand.size(); i++) {
+            if(hand.get(i).getPlayingSuit(game.getTrump()).name().equals(firstSuit)) return i;
+        }
+        return 0;
+    }
+
     private static void playRound(Game game, List<User> players) throws KirvesGameException, CardException {
         var turn = players.stream()
                 .filter(user -> game.userHasActionAvailable(user, PLAY_CARD))
@@ -832,7 +841,7 @@ public class KirvesTest {
             if(!game.userHasActionAvailable(player, PLAY_CARD)) {
                 throw new KirvesGameException(String.format("TEST: user %s is not in turn", player.getEmail()));
             }
-            game.playCard(player, 0);
+            game.playCard(player, legalCardIndex(game, player));
         }
     }
 

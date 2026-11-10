@@ -3,6 +3,7 @@ import Cards from "./Cards"
 import { SvgImage } from "../shared/images"
 import { useMotionRef } from "./CardMotion"
 import { ownKey } from "./cardMotion"
+import { playableCardIndexes } from "./playableCards"
 const Hand = ({ game, action }) => {
   const motionRef = useMotionRef()
   const actions = game.myAvailableActions ?? []
@@ -20,6 +21,11 @@ const Hand = ({ game, action }) => {
         roundsWon={[]}
         action={action}
         actionName={actionName}
+        playableIndexes={
+          actionName === "PLAY_CARD"
+            ? playableCardIndexes(game.myCardsInHand, game.firstCardSuit, game.trump)
+            : undefined
+        }
         gameId={game.id}
         slotRef={motionRef && (card => motionRef(ownKey(card)))}
       />

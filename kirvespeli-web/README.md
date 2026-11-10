@@ -116,7 +116,14 @@ säilyttää korttien alkuperäiset indeksit `PLAY_CARD`- ja `DISCARD`-kutsuja v
 muuta backendin korttilistaa tai pöydälle pelattujen korttien järjestystä. Päätöstä odottava
 ylimääräinen kortti pysyy erillisenä käden vieressä.
 Käden kortteja voi valita vain `PLAY_CARD`- tai `DISCARD`-toiminnon ollessa sallittu.
-Voitetut tikit ovat kuvapuoli alaspäin; viimeisen voittokortin voi paljastaa 1,5 sekunniksi.
+Pelatessa pyydettyä maata on tunnustettava: muut kortit himmennetään ja niiden valinta estetään,
+jos kädessä on pyydettyä maata. Jätkät ja jokerit ovat aina valttia. Poisheitossa (`DISCARD`)
+maapakkoa ei käytetä. Backend tarkistaa peluun myös palvelimella.
+Tikin voittokortti pysyy kuvapuoli ylöspäin kolme sekuntia, korostuu ja pomppaa kahdesti.
+Sen jälkeen se kääntyy selkäpuoli ylöspäin puolen sekunnin animaatiolla. Seuraavat päivitykset
+eivät aloita korostusta uudelleen. Vähennetty liike poistaa pompun ja käännösanimaation,
+mutta säilyttää kolmen sekunnin näyttöajan; lokitoistossa viivettä ei käytetä.
+Viimeisen voittokortin voi paljastaa uudelleen 1,5 sekunniksi.
 Viiden tikin jälkeen Näytä kortit paljastaa kaikki pöytäkortit.
 Kolmeen pisteeseen päässyt pelaaja saa painikkeen Kuittaa poistuminen; muut näkevät tekstin
 `Odotetaan poistumisen kuittausta: <nimet>`. Kaikille näytetään paikallisesti laskeva

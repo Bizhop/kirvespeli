@@ -27,19 +27,32 @@ const Card = ({
   roundsWon = [],
   cardsVisible,
   lastCard,
+  legal = true,
 }) => {
   const won = roundsWon.includes(index)
+  const motionEnabled = useCardMotionEnabled()
+  // Also reveal a winning card that arrives already won in the last player's snapshot.
+  const [win, setWin] = useState({ card, won, revealing: won && lastCard && motionEnabled })
+  const winChanged = win.card !== card || win.won !== won
+  if (winChanged) {
+    setWin({ card, won, revealing: won && motionEnabled })
+  }
+  const revealing = (winChanged ? won : win.revealing) && motionEnabled
+  useEffect(() => {
+    if (!revealing) return
+    const timeout = setTimeout(() => setWin(current => ({ ...current, revealing: false })), 3000)
+    return () => clearTimeout(timeout)
+  }, [card, won, revealing])
   const [flipped, setFlipped] = useState(false)
   const timer = useRef()
   useEffect(() => {
     setFlipped(false)
     return () => clearTimeout(timer.current)
   }, [card, won])
-  const faceUp = !won || cardsVisible || flipped
+  const faceUp = !won || cardsVisible || flipped || revealing
   const face = faceUp ? card : "back"
-  const motionEnabled = useCardMotionEnabled()
   const [flip, flipDone] = useFlip(face, motionEnabled)
-  const playable = !won && Boolean(action && actionName)
+  const playable = !won && legal && Boolean(action && actionName)
   const canFlip = won && lastCard && !cardsVisible
   const click = () => {
     if (playable) action({ gameId, action: actionName, index })
@@ -52,13 +65,13 @@ const Card = ({
   return (
     <button
       type="button"
-      className={`playing-card${playable ? " playable" : ""}${won && cardsVisible ? " won-visible" : ""}`}
+      className={`playing-card${playable ? " playable" : ""}${!legal ? " illegal-play" : ""}${won && faceUp ? " won-visible" : ""}${revealing ? " trick-winner" : ""}`}
       disabled={!playable && !canFlip}
       onClick={click}
       aria-label={
         playable
           ? `Valitse ${card}`
-          : canFlip
+          : canFlip && !faceUp
             ? "Näytä voittokortti"
             : faceUp
               ? // a revealed winning card is raised; say it in the label too

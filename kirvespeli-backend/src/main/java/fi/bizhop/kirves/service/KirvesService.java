@@ -174,12 +174,19 @@ public class KirvesService {
     }
 
     private void executeAction(GameIn in, User user, Game game) throws KirvesGameException, CardException {
+        this.executeAction(in, user, game, false);
+    }
+
+    private void executeAction(GameIn in, User user, Game game, boolean replay) throws KirvesGameException, CardException {
         if(!game.userHasActionAvailable(user, in.getAction())) {
             throw new KirvesGameException(String.format("Toiminto %s ei ole mahdollinen nyt", in.getAction()), BAD_REQUEST);
         }
         switch (in.getAction()) {
             case DEAL: game.deal(user); break;
-            case PLAY_CARD: game.playCard(user, in.getIndex()); break;
+            case PLAY_CARD:
+                if(replay) game.replayCard(user, in.getIndex());
+                else game.playCard(user, in.getIndex());
+                break;
             case FOLD: game.fold(user); break;
             case CUT: game.cut(user, in.isDeclineCut()); break;
             case ACE_OR_TWO_DECISION: game.aceOrTwoDecision(user, in.isKeepExtraCard()); break;
@@ -360,7 +367,7 @@ public class KirvesService {
         //start iteration from index 1, skippind DEAL
         for(int i = 1; i <= actionLogItemIndex; i++) {
             var item = actionLog.getItems().get(i);
-            this.executeAction(item.getInput(), item.getUser(), game);
+            this.executeAction(item.getInput(), item.getUser(), game, true);
         }
 
         return game;
