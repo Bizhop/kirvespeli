@@ -62,6 +62,12 @@ a {
   z-index: 5;
   pointer-events: none;
 }
+/* game surface, not text: clicks must not select text or place a caret */
+.card-table,
+.hand-area {
+  -webkit-user-select: none;
+  user-select: none;
+}
 .card-table {
   position: relative;
   height: 610px;
