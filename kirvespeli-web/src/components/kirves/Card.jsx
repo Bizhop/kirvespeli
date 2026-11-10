@@ -59,7 +59,7 @@ const Card = ({
           : canFlip
             ? "Näytä voittokortti"
             : faceUp
-              ? // the glow marks a revealed winning card visually; say it in the label too
+              ? // a revealed winning card is raised; say it in the label too
                 `${card}${won ? ", voitettu tikki" : ""}`
               : "Voittokortti"
       }

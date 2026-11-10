@@ -283,17 +283,9 @@ a {
     animation: none;
   }
 }
-/* revealed trick-winning cards glow light blue inwards from their edges; drawn over the
-   card image because an inset shadow on the button itself would be covered by it */
-.playing-card.won-visible::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  box-shadow:
-    inset 0 0 0 2px #a8dcff,
-    inset 0 0 12px 4px #a8dcffcc;
-  pointer-events: none;
+/* revealed trick-winning cards are raised from their row, in proportion to the card size */
+.playing-card.won-visible {
+  transform: translateY(calc(var(--card-w) * -0.15));
 }
 .played-cards .cards {
   gap: 0;
