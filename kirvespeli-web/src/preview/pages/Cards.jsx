@@ -13,9 +13,7 @@ export default {
   group: "Components",
   variants: {
     myCards: () => <Cards scale={0.5} cards={cardsInHand} roundsWon={[]} action={action} />,
-    myCardsWithSuit: () => (
-      <Cards cards={cardsInHand} roundsWon={[]} action={action} firstCardSuit="HEARTS" />
-    ),
+    myCardsWithSuit: () => <Cards cards={cardsInHand} roundsWon={[]} action={action} />,
     otherCards: () => (
       <Cards cards={otherCardsInPlay} roundsWon={[1, 3]} scale={2} numOfPlayedRounds={5} />
     ),

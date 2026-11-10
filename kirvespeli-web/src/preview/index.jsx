@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client"
 import { MemoryRouter } from "react-router"
 
 import pages from "./pages"
+import { CssBaseline, Tab, Tabs, ThemeProvider } from "@mui/material"
+import theme from "../theme"
 
 const groups = [...new Set(pages.map(page => page.group))]
 
@@ -29,17 +31,44 @@ const Nav = ({ selectedId }) => (
   </nav>
 )
 
-const Page = ({ page }) => (
-  <>
-    <h1>{page.title}</h1>
-    {Object.entries(page.variants).map(([name, render]) => (
-      <section key={name}>
-        <h3 className="preview-variant-title">{name}</h3>
-        <MemoryRouter initialEntries={["/"]}>{render()}</MemoryRouter>
+const Page = ({ page }) => {
+  const names = Object.keys(page.variants)
+  const [selected, setSelected] = useState(names[0])
+  const index = names.indexOf(selected)
+  return (
+    <>
+      <h1>{page.title}</h1>
+      <Tabs
+        className="preview-variant-tabs"
+        value={selected}
+        onChange={(_, name) => setSelected(name)}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        aria-label={`${page.title} variants`}
+      >
+        {names.map((name, i) => (
+          <Tab
+            key={name}
+            value={name}
+            label={name}
+            id={`preview-variant-tab-${i}`}
+            aria-controls={`preview-variant-panel-${i}`}
+          />
+        ))}
+      </Tabs>
+      <section
+        role="tabpanel"
+        id={`preview-variant-panel-${index}`}
+        aria-labelledby={`preview-variant-tab-${index}`}
+      >
+        <MemoryRouter key={selected} initialEntries={["/"]}>
+          {page.variants[selected]()}
+        </MemoryRouter>
       </section>
-    ))}
-  </>
-)
+    </>
+  )
+}
 
 const ActionBar = () => {
   const [last, setLast] = useState(null)
@@ -75,4 +104,9 @@ const Preview = () => {
   )
 }
 
-createRoot(document.getElementById("preview")).render(<Preview />)
+createRoot(document.getElementById("preview")).render(
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <Preview />
+  </ThemeProvider>,
+)

@@ -15,7 +15,7 @@ const marks = [
 ]
 
 const Row = ({ size, seed = "preview" }) => (
-  <Box sx={{ display: "flex", gap: 2, alignItems: "center", p: 1 }}>
+  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center", p: 1 }}>
     {marks.map(mark => (
       <ScoreMark key={`${mark.score}${mark.loss}`} {...mark} seed={seed} size={size} />
     ))}

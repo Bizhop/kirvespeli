@@ -1,7 +1,7 @@
 import React from "react"
 
 import { KirvesGame } from "../../components/kirves/KirvesGame"
-import { game, game2 } from "../data/games"
+import { game, game2, dealerGame } from "../data/games"
 import { user } from "../data/users"
 import { logAction } from "../logAction"
 
@@ -45,7 +45,7 @@ export default {
     speak: () => <KirvesGame {...baseData} game={withMyActions(["SPEAK"])} />,
     speakSuit: () => <KirvesGame {...baseData} game={withMyActions(["SPEAK_SUIT"])} />,
     lostGameChooseDealer: () => (
-      <KirvesGame {...baseData} game={{ ...withMyActions(["SET_DEALER"]), myCardsInHand: [] }} />
+      <KirvesGame {...baseData} game={{ ...dealerGame, myAvailableActions: ["SET_DEALER"] }} />
     ),
   },
 }

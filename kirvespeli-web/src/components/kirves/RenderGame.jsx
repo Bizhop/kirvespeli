@@ -1,117 +1,19 @@
 import React from "react"
-import { includes } from "ramda"
-import { Grid, Box, Tooltip, IconButton } from "@mui/material"
-import PreviewIcon from "@mui/icons-material/Preview"
+import Table from "./Table"
+import ScoreCard from "./ScoreCard"
+import Messages from "./Messages"
 
-import { SvgImage } from "../shared/images"
-import Cards from "./Cards"
-import Player from "./Player"
-
-export const RenderGame = ({ game, isReplay, action, cardsVisible, showAllCards }) => (
-  <Box sx={{ flexGrow: 1 }}>
-    {game.cutCard && (
-      <Grid container spacing={1}>
-        <Grid
-          size={{
-            md: 1,
-          }}
-        >
-          Nostokortti:
-        </Grid>
-        <Grid
-          size={{
-            md: 2,
-          }}
-        >
-          <SvgImage name={game.cutCard} />
-        </Grid>
-        {game.secondCutCard && (
-          <Grid
-            size={{
-              md: 2,
-            }}
-          >
-            <SvgImage name={game.secondCutCard} className="opaque50" />
-          </Grid>
-        )}
-      </Grid>
-    )}
-    <Grid container spacing={1}>
-      <Grid
-        size={{
-          md: 1,
-        }}
-      >
-        Valtti:
-      </Grid>
-      {game.trumpCard && (
-        <Grid
-          size={{
-            md: 2,
-          }}
-        >
-          <SvgImage name={game.trumpCard} />
-        </Grid>
-      )}
-      {game.trump && (
-        <Grid
-          size={{
-            md: 2,
-          }}
-        >
-          <SvgImage name={`Suit${game.trump}`} className="opaque50" />
-        </Grid>
-      )}
-    </Grid>
-    {!isReplay && (
-      <Box>
-        <h4>Omat kortit:</h4>
-        <Box>
-          <Cards
-            cards={game.myCardsInHand}
-            action={action}
-            gameId={game.id}
-            roundsWon={[]}
-            actionName={includes("DISCARD", game.myAvailableActions) ? "DISCARD" : "PLAY_CARD"}
-            firstCardSuit={game.firstCardSuit}
-          />
-        </Box>
-      </Box>
-    )}
-    {!isReplay && game.myExtraCard && (
-      <Grid container spacing={1}>
-        <Grid
-          size={{
-            md: 1,
-          }}
-        >
-          Ylimääräinen kortti:
-        </Grid>
-        <Grid
-          size={{
-            md: 2,
-          }}
-        >
-          <SvgImage name={game.myExtraCard} />
-        </Grid>
-      </Grid>
-    )}
-    <h2>
-      Pelaajat
-      {!isReplay && game.numOfPlayedRounds == 5 && (
-        <Tooltip title="Näytä kortit">
-          <IconButton onClick={() => showAllCards()}>
-            <PreviewIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </h2>
-    <Box>
-      {game.players.map((player, idx) => (
-        <Player key={`player-${idx}`} player={player} game={game} cardsVisible={cardsVisible} />
-      ))}
-    </Box>
-  </Box>
+// Both live games and log replays use the same seat order and table rendering.
+export const RenderGame = props => (
+  <div className="game-layout">
+    <Table {...props} />
+    <aside className="game-sidebar">
+      <h2>Pisteet</h2>
+      <ScoreCard game={props.game} />
+      <div className="messages-panel">
+        <Messages messages={props.game.messages ?? []} />
+      </div>
+    </aside>
+  </div>
 )
-
 export default RenderGame

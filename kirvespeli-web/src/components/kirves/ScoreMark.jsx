@@ -1,9 +1,12 @@
-import React from "react"
+import React, { useId } from "react"
+import { icons } from "../shared/Icon"
+import stick from "url:../shared/icons/keppi.png"
 
 // Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes.
 //   score 0: empty, 1: circle, 2: + vertical stroke, 3: + horizontal stroke
 //   loss "stick" (first loss of a match) or "axe" (second loss) is drawn over a faded tally.
-// Strokes use currentColor; the loss symbol can be recolored with --score-loss-color.
+// Tallies use currentColor. Loss marks mask the supplied axe art / extracted handle
+// with --score-loss-color, preserving the original outlines while allowing recoloring.
 
 const hash = text => {
   let h = 2166136261
@@ -78,31 +81,15 @@ const tallyPaths = (rand, score) => {
   return paths
 }
 
-// drawn upright around (20, 20), then tilted: the handle, and for the axe a filled blade
-// with a curved cutting edge
-const lossPaths = (rand, loss) => {
-  const handle = { d: linePath(rand, 20, 37, 20, 3), fill: false }
-  if (loss !== "axe") return [handle]
-  const j = () => jitter(rand, 0.4)
-  const blade =
-    `M${f(19 + j())},${f(7 + j())} L${f(26 + j())},${f(7 + j())}` +
-    ` Q${f(30 + j())},${f(5 + j())} ${f(33 + j())},${f(1 + j())}` +
-    ` Q${f(38 + j())},${f(11 + j())} ${f(33 + j())},${f(21 + j())}` +
-    ` Q${f(30 + j())},${f(16 + j())} ${f(26 + j())},${f(15 + j())}` +
-    ` L${f(19 + j())},${f(15 + j())} Z`
-  return [handle, { d: blade, fill: true }]
-}
-
 const label = (score, loss) =>
   [score > 0 ? `${score} p` : null, loss === "axe" ? "kirves" : loss === "stick" ? "keppi" : null]
     .filter(Boolean)
     .join(", ") || "0 p"
 
 const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
+  const lossMaskId = useId()
   const rand = random(`${seed}:${score}:${loss}`)
   const tally = tallyPaths(rand, score)
-  const lossStrokes = loss ? lossPaths(rand, loss) : []
-  const tilt = 28 + jitter(rand, 6)
   return (
     <svg
       width={size}
@@ -126,17 +113,34 @@ const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
         ))}
       </g>
       {loss && (
-        <g
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          transform={`rotate(${f(tilt)} 20 20)`}
-          style={{ color: "var(--score-loss-color, currentColor)" }}
-        >
-          {lossStrokes.map(({ d, fill }, i) => (
-            <path key={i} d={d} stroke="currentColor" fill={fill ? "currentColor" : "none"} />
-          ))}
-        </g>
+        <>
+          <defs>
+            <mask
+              id={lossMaskId}
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="0"
+              width="40"
+              height="40"
+              style={{ maskType: "alpha" }}
+            >
+              <image
+                href={loss === "axe" ? icons.axe[0] : stick}
+                x="2"
+                y="2"
+                width="36"
+                height="36"
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </mask>
+          </defs>
+          <rect
+            width="40"
+            height="40"
+            mask={`url(#${lossMaskId})`}
+            style={{ fill: "var(--score-loss-color, currentColor)" }}
+          />
+        </>
       )}
     </svg>
   )

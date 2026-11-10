@@ -18,6 +18,7 @@ public class PlayerOut {
     String extraCard;
     boolean declaredPlayer;
     boolean folded;
+    boolean inGame;
     String speak;
 
     public PlayerOut(Player player) {
@@ -32,6 +33,7 @@ public class PlayerOut {
         this.extraCard = player.getExtraCard() != null ? player.getExtraCard().toString() : null;
         this.declaredPlayer = player.isDeclaredPlayer();
         this.folded = player.isFolded();
+        this.inGame = player.isInGame();
         this.speak = player.getSpeak() == null ? null : player.getSpeak().name();
     }
 }

@@ -109,3 +109,113 @@ export const game2 = {
   myCardsInHand: [],
   scores: scores(1, 2, 1),
 }
+
+// Complete seat fixtures; preserve the older fixtures used by individual previews.
+const tablePlayers = ["Ville", "Vesa", "Terhi", "Kalle", "Sanna", "Matti"].map((nickname, i) => ({
+  email: i === 0 ? VILLE : `${nickname.toLowerCase()}@example.com`,
+  nickname,
+  cardsInHand: 3,
+  playedCards: ["7H", "QC"],
+  roundsWon: i === 0 ? [0, 1] : [],
+  availableActions: i === 0 ? ["PLAY_CARD"] : [],
+  extraCard: null,
+  declaredPlayer: i === 0,
+  folded: false,
+  inGame: true,
+  speak: "KEEP",
+}))
+export const tableGames = Object.fromEntries(
+  [2, 3, 4, 5, 6].map(count => [
+    count,
+    {
+      ...game,
+      players: tablePlayers.slice(0, count).map((p, i) => ({
+        ...p,
+        folded: count >= 4 && i === 1,
+        inGame: !(count >= 4 && i === 1) && !(count >= 5 && i === 2),
+        cardsInHand: (count >= 4 && i === 1) || (count >= 5 && i === 2) ? 0 : 3,
+        playedCards: (count >= 4 && i === 1) || (count >= 5 && i === 2) ? [] : p.playedCards,
+      })),
+      playersTotal: count,
+      myCardsInHand: ["QC", "QH", "4S"],
+      cardsInDeck: 52 - count * 5,
+      numOfPlayedRounds: 2,
+      firstCardSuit: "HEARTS",
+      dealer: tablePlayers[count - 1].email,
+      scores: tablePlayers.slice(0, count).map((p, i) => ({
+        email: p.email,
+        nickname: p.nickname,
+        score: count >= 5 && i === 2 ? 3 : i % 3,
+      })),
+      scoresHistory: [],
+    },
+  ]),
+)
+const phase = (count, actions, extra = {}) => ({
+  ...tableGames[count],
+  myAvailableActions: actions,
+  firstCardSuit: "",
+  numOfPlayedRounds: 0,
+  players: tableGames[count].players.map((p, i) => ({
+    ...p,
+    playedCards: [],
+    roundsWon: [],
+    folded: false,
+    inGame: true,
+    cardsInHand: 5,
+    speak: i === 1 ? "CHANGE" : null,
+    availableActions: i === 0 ? actions : [],
+  })),
+  ...extra,
+})
+export const waitingGame = phase(2, [], {
+  players: [
+    { ...tablePlayers[0], availableActions: [], playedCards: [], roundsWon: [], cardsInHand: 0 },
+  ],
+  playersTotal: 1,
+  canJoin: true,
+  myCardsInHand: [],
+  trump: "",
+  trumpCard: "",
+  cardsInDeck: 52,
+  scores: [{ email: VILLE, nickname: "Ville", score: 0 }],
+})
+export const dealerGame = phase(6, ["SET_DEALER", "CUT"], {
+  myCardsInHand: [],
+  trumpCard: "",
+  trump: "",
+})
+export const cutGame = phase(2, ["DEAL"], {
+  myCardsInHand: [],
+  cutCard: "AS",
+  secondCutCard: "2S",
+  trumpCard: "",
+  trump: "",
+})
+export const speakingGame = phase(3, ["SPEAK"])
+export const suitGame = phase(4, ["SPEAK_SUIT"])
+export const extraCardGame = phase(5, ["ACE_OR_TWO_DECISION"], {
+  myExtraCard: "AH",
+  myCardsInHand: ["QC", "QH", "4S", "4D", "QS"],
+})
+export const discardGame = phase(6, ["DISCARD"], {
+  myCardsInHand: ["AH", "QC", "QH", "4S", "4D", "QS"],
+})
+export const spectatorGame = {
+  ...tableGames[6],
+  myCardsInHand: [],
+  myAvailableActions: [],
+  turn: tablePlayers[3].email,
+}
+
+// Unsorted server hands for checking display order and original action indexes.
+export const handSortingGame = {
+  ...game,
+  trump: "HEARTS",
+  myCardsInHand: ["2D", "AH", "JC", "9H", "AS"],
+}
+export const handPowerGame = {
+  ...discardGame,
+  trump: "HEARTS",
+  myCardsInHand: ["9H", "JD", "BJ", "2C", "RJ", "JC"],
+}

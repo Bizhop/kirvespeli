@@ -1,93 +1,614 @@
-ul#message-log {
-  height: 160px;
-  overflow: auto;
-  overflow-x: hidden;
+:root {
+  --card-w: 140px;
+  --score-loss-color: #ffe6a0;
 }
-
-table.custom-table {
-  width: auto;
-  table-layout: fixed;
-  word-wrap: normal;
-  white-space: nowrap;
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Alegreya Sans SC", sans-serif;
+  font-weight: 700;
 }
-
-table.score {
-  background-color: white;
-  border: gray 1px solid;
-  border-collapse: separate;
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
-
-.btn-th {
-  padding: 0px;
+.status-icon {
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
-
+.opaque50 {
+  opacity: 0.5;
+}
+.rai-spinner {
+  margin: 10px;
+}
+.mb-10 {
+  margin-bottom: 10px;
+}
 .smaller {
   font-size: 75%;
 }
-
-.table-striped > tbody > tr:nth-child(odd) > td,
-.table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: lightgray;
-}
-
-img.on-table {
-  width: 20px;
-  height: 20px;
-}
-
-/* Front and back faces are stacked inside a relatively positioned, fixed height Card grid item */
-.card {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-img.opaque50 {
-  opacity: 50%;
-}
-
-div.kirves-container {
-  background-color: mediumseagreen;
-  padding: 10px;
-}
-
-div.rai-spinner {
-  margin: 10px;
-}
-
-div.card {
-  text-align: center;
-  padding: 5px;
-}
-
-div.cards {
-  margin-top: 5px;
-}
-
-div.action-buttons {
-  margin-top: 10px;
-}
-
-div.overlay {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 5%;
-  right: 0;
-  height: 15%;
-  width: 90%;
-  opacity: 0;
-  background-color: yellow;
-}
-
-div.held {
-  opacity: 0.6;
-}
-
-img.image100 {
+.image100 {
   width: 100%;
 }
+.kirves-container {
+  padding: 8px 0;
+  min-width: 0;
+}
+.game-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 24px;
+  align-items: start;
+}
+.table-area {
+  container-type: inline-size;
+  min-width: 0;
+  --card-w: clamp(44px, 16cqw, 100px);
+}
+.card-table {
+  position: relative;
+  height: 610px;
+  isolation: isolate;
+}
+.card-table::before {
+  content: "";
+  position: absolute;
+  inset: 65px 24px 50px;
+  z-index: -1;
+  border: 7px solid #26390b;
+  border-radius: 48%;
+  background: radial-gradient(ellipse, #6a8314, #42550d);
+  box-shadow:
+    inset 0 0 0 2px #ffffff30,
+    inset 0 0 35px #162506aa,
+    0 9px 20px #19250666;
+}
+.seat {
+  position: absolute;
+  width: 140px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+.seat-info {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  padding: 6px 8px;
+  border: 1px solid #ffffff66;
+  border-radius: 12px;
+  background: #42550ded;
+  box-shadow: 0 3px 10px #15230566;
+}
+.seat-turn .seat-info {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  border-color: #fff3bd;
+  box-shadow:
+    0 0 0 2px #fff3bd55,
+    0 0 20px #fff3bd55;
+}
+.seat-inactive .seat-info {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  opacity: 0.5;
+}
+.seat-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.1rem;
+}
+.seat-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 26px;
+  gap: 3px;
+}
+.seat-state {
+  font-size: 0.8rem;
+}
+.seat-hand {
+  display: flex;
+  justify-content: center;
+  min-height: 29px;
+  padding: 3px 6px;
+}
+.seat-card {
+  width: 23px;
+  height: auto;
+  aspect-ratio: 7 / 10;
+  object-fit: contain;
+  transform: rotate(-5deg);
+}
+.seat-card + .seat-card {
+  margin-left: -13px;
+}
+.seat-card.extra-card {
+  margin-left: 7px;
+  transform: rotate(8deg);
+}
+.seat-bottom {
+  left: 50%;
+  top: 89%;
+}
+.seat-top {
+  left: 50%;
+  top: 10%;
+}
+.seat-left {
+  left: 12%;
+  top: 48%;
+}
+.seat-right {
+  left: 88%;
+  top: 48%;
+}
+.seat-top-left {
+  left: 22%;
+  top: 20%;
+}
+.seat-top-right {
+  left: 78%;
+  top: 20%;
+}
+.seat-bottom-left {
+  left: 13%;
+  top: 65%;
+}
+.seat-bottom-right {
+  left: 87%;
+  top: 65%;
+}
+.played-cards {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+  --card-w: 46px;
+}
+.seat-bottom .played-cards,
+.seat-bottom-left .played-cards,
+.seat-bottom-right .played-cards {
+  top: auto;
+  bottom: calc(100% + 12px);
+}
+.seat-left .played-cards {
+  left: calc(100% + 12px);
+  top: 20%;
+  transform: none;
+}
+.seat-right .played-cards {
+  left: auto;
+  right: calc(100% + 12px);
+  top: 20%;
+  transform: none;
+}
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.playing-card {
+  position: relative;
+  display: block;
+  flex: 0 0 var(--card-w);
+  width: var(--card-w);
+  height: calc(var(--card-w) * 10 / 7);
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  background: transparent;
+  transition: transform 0.15s;
+}
+.playing-card:disabled {
+  opacity: 1;
+}
+.playing-card:not(:disabled) {
+  cursor: pointer;
+}
+.playing-card:focus-visible {
+  outline: 3px solid #fff3bd;
+  outline-offset: 3px;
+}
+.card-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.won-card {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  background: #42550d;
+  border-radius: 50%;
+  line-height: 1;
+}
+.played-cards .cards {
+  gap: 0;
+}
+.played-cards .playing-card + .playing-card {
+  margin-left: calc(var(--card-w) * -0.62);
+}
+.table-center {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  transform: translate(-50%, -50%);
+  width: 44%;
+  text-align: center;
+}
+.table-suits {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 0.9rem;
+}
+.table-suits > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.suit-indicator {
+  display: block;
+  width: 36px;
+  height: 46px;
+  object-fit: contain;
+}
+.cut-cards {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.center-card {
+  width: 52px;
+  height: auto;
+}
+.waiting-panel {
+  padding: 8px;
+  border-radius: 12px;
+  background: #42550dcc;
+}
+.deck-position {
+  position: absolute;
+  z-index: 1;
+  --deck-w: 38px;
+}
+.table-deck {
+  position: relative;
+  width: calc(var(--deck-w) * 1.9);
+  height: calc(var(--deck-w) * 10 / 7);
+}
+.deck-card,
+.deck-trump {
+  position: absolute;
+  width: var(--deck-w);
+  height: auto;
+  left: 0;
+  top: 0;
+}
+.deck-trump {
+  left: 23px;
+  transform: rotate(65deg);
+}
+.deck-count {
+  position: absolute;
+  top: 100%;
+  left: 8px;
+  font-size: 0.8rem;
+}
+.deck-bottom {
+  left: 64%;
+  top: 73%;
+}
+.deck-top {
+  left: 62%;
+  top: 16%;
+}
+.deck-left {
+  left: 20%;
+  top: 57%;
+}
+.deck-right {
+  left: 70%;
+  top: 57%;
+}
+.deck-top-left {
+  left: 28%;
+  top: 32%;
+}
+.deck-top-right {
+  left: 62%;
+  top: 32%;
+}
+.deck-bottom-left {
+  left: 23%;
+  top: 72%;
+}
+.deck-bottom-right {
+  left: 66%;
+  top: 72%;
+}
+.selection-group {
+  max-width: 100%;
+  text-align: center;
+}
+.selection-label {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+.selection-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hand-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 8px 0 18px;
+}
+.own-hand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 8px 4px;
+}
+.own-hand .cards {
+  gap: 0;
+  padding: 0 8px;
+}
+.own-hand .playing-card {
+  transform: rotate(-3deg);
+  box-shadow: 0 4px 8px #17260744;
+}
+.own-hand .playing-card + .playing-card {
+  margin-left: calc(var(--card-w) * -0.22);
+}
+.own-hand .playing-card:nth-child(2) {
+  transform: translateY(-5px) rotate(-2deg);
+}
+.own-hand .playing-card:nth-child(3) {
+  transform: translateY(-8px);
+}
+.own-hand .playing-card:nth-child(4) {
+  transform: translateY(-5px) rotate(2deg);
+}
+.own-hand .playing-card:nth-child(5) {
+  transform: rotate(3deg);
+}
+.own-hand .playing-card.playable:hover {
+  transform: translateY(-20px);
+  z-index: 1;
+}
+.hand-extra {
+  width: var(--card-w);
+  font-size: 0.8rem;
+  text-align: center;
+}
+.hand-extra .card-image {
+  height: calc(var(--card-w) * 10 / 7);
+}
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.game-sidebar {
+  min-width: 0;
+}
+.game-sidebar h2 {
+  margin: 0 0 8px;
+}
+.messages-panel {
+  max-height: 290px;
+  overflow: auto;
+  margin-top: 16px;
+  padding: 0 12px;
+  background: #42550d99;
+  border: 1px solid #ffffff66;
+  border-radius: 12px;
+}
+.messages-panel h4 {
+  text-align: left !important;
+  margin: 12px 0 0;
+}
+@container (max-width: 600px) {
+  .card-table {
+    height: 560px;
+  }
+  .card-table::before {
+    inset: 64px 8px 45px;
+    border-width: 5px;
+  }
+  .seat {
+    width: 96px;
+  }
+  .seat-info {
+    display: block;
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    padding: 4px;
+  }
+  .seat-name {
+    display: block;
+    font-size: 0.95rem;
+  }
+  .seat-status {
+    gap: 1px;
+  }
+  .seat-status .status-icon {
+    width: 19px;
+    height: 19px;
+  }
+  .seat-status svg {
+    width: 20px;
+    height: 20px;
+  }
+  .seat-card {
+    width: 20px;
+  }
+  .seat-card + .seat-card {
+    margin-left: -13px;
+  }
+  .seat-left,
+  .seat-bottom-left {
+    left: 15%;
+  }
+  .seat-right,
+  .seat-bottom-right {
+    left: 85%;
+  }
+  .seat-top-left {
+    left: 16%;
+    top: 23%;
+  }
+  .seat-top-right {
+    left: 84%;
+    top: 23%;
+  }
+  .played-cards {
+    --card-w: 33px;
+  }
+  .seat-left .played-cards {
+    left: 78%;
+    top: calc(100% + 6px);
+  }
+  .seat-right .played-cards {
+    right: 78%;
+    top: calc(100% + 6px);
+  }
+  .seat-bottom-left .played-cards {
+    left: 70%;
+  }
+  .seat-bottom-right .played-cards {
+    left: 30%;
+  }
+  .table-suits {
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+  .suit-indicator {
+    width: 28px;
+    height: 36px;
+  }
+  .center-card {
+    width: 40px;
+  }
+  .deck-position {
+    --deck-w: 28px;
+  }
+  .deck-top-left,
+  .deck-top-right {
+    top: 35%;
+  }
+  .deck-top {
+    top: 13%;
+    left: 68%;
+  }
+  .deck-trump {
+    left: 15px;
+  }
+}
+@media (max-width: 1100px) {
+  .game-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .game-sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .game-sidebar h2 {
+    grid-column: 1 / -1;
+  }
+  .messages-panel {
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .game-heading {
+    font-size: 1.65rem;
+  }
+  .game-sidebar {
+    display: block;
+  }
+  .messages-panel {
+    margin-top: 12px;
+  }
+  .game-layout {
+    gap: 8px;
+  }
+  .hand-area {
+    gap: 10px;
+  }
+}
 
-.mb-10 {
-  margin-bottom: 10px;
+/* Keep overlapping rows intact; standalone card previews may wrap. */
+.played-cards .cards,
+.own-hand .cards {
+  flex-wrap: nowrap;
+}
+.seat-card:nth-child(2) {
+  transform: rotate(-2deg);
+}
+.seat-card:nth-child(3) {
+  transform: rotate(1deg);
+}
+.seat-card:nth-child(4) {
+  transform: rotate(4deg);
+}
+.seat-card:nth-child(5) {
+  transform: rotate(7deg);
+}
+
+.seat-selectable .seat-info:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+.seat-selectable .seat-info:not([aria-disabled="true"]):hover,
+.seat-selectable .seat-info[aria-pressed="true"] {
+  border-color: #fff3bd;
+  background: #34460b;
+}
+.seat-selectable .seat-info:focus-visible {
+  outline: 2px solid #fff3bd;
+  outline-offset: 3px;
+}
+.dealer-selection-prompt h3 {
+  margin: 0 0 6px;
+}
+.dealer-selection-prompt p {
+  margin: 0 0 12px;
 }

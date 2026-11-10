@@ -9,6 +9,7 @@ import {
   TableCell,
   TableBody,
   IconButton,
+  Button,
   Tooltip,
 } from "@mui/material"
 import CheckIcon from "@mui/icons-material/Check"
@@ -34,7 +35,16 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => (
         {games.map(game => (
           <TableRow key={`game-${game.id}`}>
             <TableCell>
-              <NavLink to={`/kirves/${game.id}`}>{game.id}</NavLink>
+              <Button
+                component={NavLink}
+                to={`/kirves/${game.id}`}
+                variant="contained"
+                size="small"
+                aria-label={`Avaa peli ${game.id}`}
+                sx={{ minWidth: 44 }}
+              >
+                {game.id}
+              </Button>
             </TableCell>
             <TableCell>{formatString(game.createdAt)}</TableCell>
             <TableCell>

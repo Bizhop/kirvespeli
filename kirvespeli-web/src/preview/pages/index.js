@@ -2,6 +2,7 @@
 import ActionButton from "./ActionButton"
 import Card from "./Card"
 import Cards from "./Cards"
+import Hand from "./Hand"
 import KirvesGames from "./KirvesGames"
 import Log from "./Log"
 import Messages from "./Messages"
@@ -14,13 +15,20 @@ import Dash from "./Dash"
 import Header from "./Header"
 import Kirves from "./Kirves"
 import KirvesGame from "./KirvesGame"
-import Player from "./Player"
 import RenderGame from "./RenderGame"
 
+import Table from "./Table"
+import Seat from "./Seat"
+import Icon from "./Icon"
+
 export default [
+  Table,
+  Seat,
+  Icon,
   ActionButton,
   Card,
   Cards,
+  Hand,
   KirvesGames,
   Log,
   Messages,
@@ -33,6 +41,5 @@ export default [
   Header,
   Kirves,
   KirvesGame,
-  Player,
   RenderGame,
 ]

@@ -1,4 +1,4 @@
-import { assoc, prop } from "ramda"
+import { prop } from "ramda"
 import React from "react"
 
 import svgImages from "./svg/svgImages"
@@ -24,15 +24,17 @@ export const minus =
 export const view =
   "data:image/png;base64,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"
 
-export const SvgImage = props => {
-  if (props.name == null || props.name.length == 0) {
-    return null
-  }
-  if (!props.height) {
-    props = assoc("height", 200)(props)
-  }
-  if (!props.width) {
-    props = assoc("width", 140)(props)
-  }
-  return <img {...props} src={prop(props.name, svgImages)} />
+export const SvgImage = ({ name, className, width, height, ...props }) => {
+  if (!name) return null
+  const defaultSize = !className && !width && !height
+  return (
+    <img
+      {...props}
+      className={className}
+      alt={props.alt ?? name}
+      width={width ?? (defaultSize ? 140 : undefined)}
+      height={height ?? (defaultSize ? 200 : undefined)}
+      src={prop(name, svgImages)}
+    />
+  )
 }
