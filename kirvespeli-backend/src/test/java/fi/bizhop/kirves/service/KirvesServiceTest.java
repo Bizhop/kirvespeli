@@ -10,8 +10,10 @@ import fi.bizhop.kirves.model.kirves.Game;
 import fi.bizhop.kirves.model.kirves.in.GameIn;
 import fi.bizhop.kirves.model.kirves.pojo.GameDataPOJO;
 import fi.bizhop.kirves.util.JsonUtil;
+import fi.bizhop.kirves.util.TransactionHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,6 +21,7 @@ import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,9 +61,15 @@ public class KirvesServiceTest {
 
     @BeforeEach
     public void setup() {
+        if(this.kirvesService != null) this.kirvesService.shutdown();
         //SpringExtension no longer initializes @Captor fields
         MockitoAnnotations.openMocks(this);
         this.kirvesService = new KirvesService(this.userService, this.kirvesGameRepo, this.actionLogRepo, this.actionLogItemRepo, this.messageService);
+    }
+
+    @AfterEach
+    public void shutdown() {
+        this.kirvesService.shutdown();
     }
 
     @Test
@@ -140,6 +149,38 @@ public class KirvesServiceTest {
         assertFalse(db.gameData.contains("\"departurePending\":true"));
         //the transaction was released
         this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), getTestUser(out.getTurn()));
+    }
+
+    @Test
+    public void testDepartureTransactionTimeoutRollsBackAndCanRetry() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        var db = mockGame(pendingDepartureGame(a, b, null));
+        var game = this.kirvesService.getGame(0L);
+        //Drive expiry directly so the scheduler cannot race the test.
+        this.kirvesService.shutdown();
+        var data = (GameDataPOJO) ReflectionTestUtils.getField(game, "data");
+        data.departureDeadline = System.currentTimeMillis() - 1;
+        var pending = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
+        var transactions = mock(TransactionHandler.class);
+        ReflectionTestUtils.setField(this.kirvesService, "TRANSACTION_HANDLER", transactions);
+        doThrow(new TransactionException(TransactionException.Type.TIMEOUT))
+                .doNothing().when(transactions).end(0L);
+        when(transactions.rollback(0L, GameDataPOJO.class)).thenReturn(pending);
+
+        assertThrows(TransactionException.class, () -> this.kirvesService.expireDepartures(0L));
+
+        var restored = this.kirvesService.getGame(0L);
+        assertTrue(restored.userHasActionAvailable(b, ACKNOWLEDGE_DEPARTURE));
+        assertTrue(restored.out().getScoresHistory().isEmpty());
+        assertNotNull(restored.getDepartureDeadline());
+        verify(this.kirvesGameRepo, never()).save(any());
+
+        assertTrue(this.kirvesService.expireDepartures(0L));
+        assertFalse(this.kirvesService.expireDepartures(0L));
+        assertEquals(1, this.kirvesService.getGame(0L).out().getScoresHistory().size());
+        assertFalse(db.gameData.contains("\"departurePending\":true"));
+        verify(this.kirvesGameRepo, times(1)).save(any());
     }
 
     //a and b play; a folds when b has two points, so b must acknowledge their departure

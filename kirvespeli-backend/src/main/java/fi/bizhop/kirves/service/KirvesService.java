@@ -235,11 +235,11 @@ public class KirvesService {
         boolean continued;
         try {
             continued = game.expireDepartures(System.currentTimeMillis());
+            this.TRANSACTION_HANDLER.end(id);
         } catch (Exception e) {
             this.IN_MEMORY_GAMES.put(id, new Game(this.TRANSACTION_HANDLER.rollback(id, GameDataPOJO.class)));
             throw e;
         }
-        this.TRANSACTION_HANDLER.end(id);
         if(continued) {
             this.saveGame(id, game, null, DEPARTURE_TIMEOUT_USER);
             LOG.info(String.format("Departures acknowledged automatically for game id=%d", id));
