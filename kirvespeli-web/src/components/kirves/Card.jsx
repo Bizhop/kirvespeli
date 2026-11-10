@@ -50,7 +50,7 @@ const Card = ({
   return (
     <button
       type="button"
-      className={`playing-card${playable ? " playable" : ""}`}
+      className={`playing-card${playable ? " playable" : ""}${won && cardsVisible ? " won-visible" : ""}`}
       disabled={!playable && !canFlip}
       onClick={click}
       aria-label={

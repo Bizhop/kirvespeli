@@ -283,6 +283,12 @@ a {
     animation: none;
   }
 }
+/* revealed trick-winning cards glow light blue along their edges */
+.playing-card.won-visible {
+  box-shadow:
+    0 0 0 2px #a8dcff,
+    0 0 14px 4px #a8dcffcc;
+}
 .won-card {
   position: absolute;
   right: 3px;
