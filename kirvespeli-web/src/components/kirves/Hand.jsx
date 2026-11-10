@@ -1,7 +1,10 @@
 import React from "react"
 import Cards from "./Cards"
 import { SvgImage } from "../shared/images"
+import { useMotionRef } from "./CardMotion"
+import { ownKey } from "./cardMotion"
 const Hand = ({ game, action }) => {
+  const motionRef = useMotionRef()
   const actions = game.myAvailableActions ?? []
   const actionName = actions.includes("DISCARD")
     ? "DISCARD"
@@ -18,11 +21,16 @@ const Hand = ({ game, action }) => {
         action={action}
         actionName={actionName}
         gameId={game.id}
+        slotRef={motionRef && (card => motionRef(ownKey(card)))}
       />
       {game.myExtraCard && (
         <div className="hand-extra">
           <span>Ylimääräinen</span>
-          <SvgImage name={game.myExtraCard} className="card-image" />
+          <SvgImage
+            name={game.myExtraCard}
+            className="card-image"
+            ref={motionRef?.(ownKey(game.myExtraCard))}
+          />
         </div>
       )}
     </div>

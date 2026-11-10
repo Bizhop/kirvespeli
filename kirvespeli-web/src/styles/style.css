@@ -50,9 +50,17 @@ a {
   align-items: start;
 }
 .table-area {
+  position: relative;
   container-type: inline-size;
   min-width: 0;
   --card-w: clamp(44px, 16cqw, 100px);
+}
+/* decorative copies of moving cards; above the table and the hand */
+.card-motion-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
 }
 .card-table {
   position: relative;

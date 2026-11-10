@@ -4,6 +4,7 @@ import { hasPlayStarted, playersInTurn } from "./turnState"
 import TableCenter, { Deck } from "./TableCenter"
 import Hand from "./Hand"
 import ActionBar from "./ActionBar"
+import CardMotion from "./CardMotion"
 
 // Index zero is the viewer; play proceeds clockwise from screen left.
 export const seatPresets = {
@@ -14,7 +15,7 @@ export const seatPresets = {
   5: ["bottom", "left", "top-left", "top-right", "right"],
   6: ["bottom", "bottom-left", "top-left", "top", "top-right", "bottom-right"],
 }
-const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => {
+const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motionResetKey }) => {
   const positions = seatPresets[game.players.length] ?? seatPresets[6]
   const actions = game.myAvailableActions ?? []
   const selectingDealer = !isReplay && actions.includes("SET_DEALER")
@@ -22,7 +23,7 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => 
   const playing = hasPlayStarted(game)
   const inTurn = playersInTurn(game)
   return (
-    <div className="table-area">
+    <CardMotion className="table-area" game={game} enabled={!isReplay} resetKey={motionResetKey}>
       <div className={`card-table seats-${game.players.length}`} aria-label="Pelipöytä">
         {game.players.map((player, i) => (
           <Seat
@@ -56,7 +57,7 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards }) => 
           <ActionBar game={game} action={action} join={join} showAllCards={showAllCards} />
         </div>
       )}
-    </div>
+    </CardMotion>
   )
 }
 export default Table
