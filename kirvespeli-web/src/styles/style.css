@@ -209,6 +209,9 @@ a {
   align-items: center;
   gap: 8px;
 }
+.card-slot {
+  flex: 0 0 auto;
+}
 .playing-card {
   position: relative;
   display: block;
@@ -249,7 +252,7 @@ a {
 .played-cards .cards {
   gap: 0;
 }
-.played-cards .playing-card + .playing-card {
+.played-cards .card-slot + .card-slot {
   margin-left: calc(var(--card-w) * -0.62);
 }
 .table-center {
@@ -388,19 +391,19 @@ a {
   transform: rotate(-3deg);
   box-shadow: 0 4px 8px #17260744;
 }
-.own-hand .playing-card + .playing-card {
+.own-hand .card-slot + .card-slot {
   margin-left: calc(var(--card-w) * -0.22);
 }
-.own-hand .playing-card:nth-child(2) {
+.own-hand .card-slot:nth-child(2) .playing-card {
   transform: translateY(-5px) rotate(-2deg);
 }
-.own-hand .playing-card:nth-child(3) {
+.own-hand .card-slot:nth-child(3) .playing-card {
   transform: translateY(-8px);
 }
-.own-hand .playing-card:nth-child(4) {
+.own-hand .card-slot:nth-child(4) .playing-card {
   transform: translateY(-5px) rotate(2deg);
 }
-.own-hand .playing-card:nth-child(5) {
+.own-hand .card-slot:nth-child(5) .playing-card {
   transform: rotate(3deg);
 }
 .own-hand .playing-card.playable:hover {
