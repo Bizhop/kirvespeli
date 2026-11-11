@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
 
 COPY gradlew settings.gradle build.gradle gradle.properties ./

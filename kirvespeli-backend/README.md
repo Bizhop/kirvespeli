@@ -91,6 +91,7 @@ Yhteys: `KIRVES_DBTEST_URL` (oletus `jdbc:postgresql://localhost:5432/kirves`, k
 ## Osoitteet
 - REST-rajapinta on kokonaisuudessaan polun `/api` alla (`util/WebConfig.java`).
 - WebSocket (STOMP, SockJS-varmistus) on osoitteessa `/api/refresh`. Viestit julkaistaan aiheeseen `/topic/refresh`.
+- `GET /api/health/live` on julkinen elävyysvastaus (`{"status":"UP"}`). Se ei vaadi kirjautumista eikä käytä tietokantaa; julkaisun tarkistus ja valvonta käyttävät sitä.
 
 ## Asetukset
 - `kirves.allowed-origins` (ympäristömuuttuja `KIRVES_ALLOWED_ORIGINS`): pilkulla erotettu lista sallituista origineista.
