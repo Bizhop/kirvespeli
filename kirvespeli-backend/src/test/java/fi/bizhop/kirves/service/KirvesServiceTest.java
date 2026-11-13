@@ -187,7 +187,7 @@ public class KirvesServiceTest {
     private static String pendingDepartureGame(fi.bizhop.kirves.model.User a, fi.bizhop.kirves.model.User b, Long deadline) throws Exception {
         var game = new Game(a);
         game.addPlayer(b);
-        game.cut(b, false);
+        game.cut(b, false, new Card(SPADES, SEVEN), null);
         game.deal(a, safeCards());
         game.speak(b, Game.Speak.KEEP);
         var pojo = JsonUtil.getJavaObject(game.toJson(), GameDataPOJO.class).orElseThrow();
