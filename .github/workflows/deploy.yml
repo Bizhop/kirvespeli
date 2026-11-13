@@ -136,7 +136,7 @@ jobs:
             case "$status" in
               Success) echo "Backend deployed and healthy"; break ;;
               Failed|Cancelled|TimedOut|DeliveryTimedOut|ExecutionTimedOut|Undeliverable|Terminated)
-                echo "Backend deployment ended with status $status (previous image restored by the document)"; exit 1 ;;
+                echo "Backend deployment ended with status $status"; exit 1 ;;
               *) sleep 5 ;;
             esac
           done
