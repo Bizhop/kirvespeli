@@ -107,5 +107,5 @@ Web ja backend ovat samassa originissa, joten CORSia ei tarvita. Käänteisen pr
 Google OAuth -clientin sallittuihin origineihin pitää lisätä `https://kirvespeli.bizhop.fi`.
 
 Tuotantoympäristö (AWS: EC2, Caddy proxynä, jaettu Aurora-tietokanta) on määritelty erillisessä `aws`-repositoriossa, `../../aws`
-(`apps/kirvespeli/README.md`). Siellä ovat myös julkaisuskriptit: `publish-backend-image.sh` rakentaa ja julkaisee backendin Docker-kuvan,
-`publish-web.sh` julkaisee webin. Backendin elävyystarkistus on `GET /api/health/live`.
+(`apps/kirvespeli/README.md`). Julkaisu tapahtuu GitHub Actionsilla, kun muutokset yhdistetään `main`-haaraan (ks. juuren README).
+Backendin elävyystarkistus on `GET /api/health/live`.

@@ -1,0 +1,253 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_backend:
+        description: Deploy the backend even if unchanged
+        type: boolean
+        default: false
+      force_web:
+        description: Deploy the web build even if unchanged
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      full: true
+
+  plan:
+    needs: ci
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      deploy_backend: ${{ steps.decide.outputs.deploy_backend }}
+      deploy_web: ${{ steps.decide.outputs.deploy_web }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+      - id: decide
+        env:
+          FORCE_BACKEND: ${{ inputs.force_backend }}
+          FORCE_WEB: ${{ inputs.force_web }}
+        run: |
+          set -euo pipefail
+          config=$(aws ssm get-parameter --name /kirvespeli/prod/deploy-config --query Parameter.Value --output text)
+          prefix=$(jq -r .deployedRevisionPrefix <<<"$config")
+          for v in $(jq -r '.instanceId, .webBucket, .repositoryUrl' <<<"$config"); do echo "::add-mask::$v"; done
+
+          decide() { # $1 = part, $2 = path, $3 = force
+            local deployed
+            if [ "$3" = true ]; then echo true; return; fi
+            deployed=$(aws ssm get-parameter --name "$prefix/$1" --query Parameter.Value --output text 2>/dev/null || true)
+            if [ -z "$deployed" ] || ! git cat-file -e "$deployed^{commit}" 2>/dev/null; then echo true; return; fi
+            if git diff --quiet "$deployed" HEAD -- "$2"; then echo false; else echo true; fi
+          }
+          backend=$(decide backend kirvespeli-backend "${FORCE_BACKEND:-false}")
+          web=$(decide web kirvespeli-web "${FORCE_WEB:-false}")
+          echo "deploy_backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "deploy_web=$web" >> "$GITHUB_OUTPUT"
+          echo "Deploy backend: $backend, web: $web"
+
+  backend:
+    needs: plan
+    if: needs.plan.outputs.deploy_backend == 'true'
+    runs-on: ubuntu-24.04-arm
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+      - id: config
+        run: |
+          set -euo pipefail
+          config=$(aws ssm get-parameter --name /kirvespeli/prod/deploy-config --query Parameter.Value --output text)
+          for k in instanceId repositoryUrl; do echo "::add-mask::$(jq -r ".$k" <<<"$config")"; done
+          {
+            echo "instance_id=$(jq -r .instanceId <<<"$config")"
+            echo "repository_url=$(jq -r .repositoryUrl <<<"$config")"
+            echo "document=$(jq -r .backendDocument <<<"$config")"
+            echo "revision_param=$(jq -r .deployedRevisionPrefix <<<"$config")/backend"
+          } >> "$GITHUB_OUTPUT"
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
+        with:
+          mask-password: true
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: kirvespeli-backend
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: ${{ steps.config.outputs.repository_url }}:${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          cache-from: type=gha,scope=backend-image
+          cache-to: type=gha,scope=backend-image,mode=max
+      - name: Deploy through SSM
+        env:
+          INSTANCE_ID: ${{ steps.config.outputs.instance_id }}
+          REPOSITORY_URL: ${{ steps.config.outputs.repository_url }}
+          DOCUMENT: ${{ steps.config.outputs.document }}
+          REVISION_PARAM: ${{ steps.config.outputs.revision_param }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "unexpected digest"; exit 1; }
+          image_ref="$REPOSITORY_URL@$DIGEST"
+          command_id=$(aws ssm send-command --instance-ids "$INSTANCE_ID" --document-name "$DOCUMENT" \
+            --comment "Deploy backend $GITHUB_SHA" --timeout-seconds 1800 \
+            --parameters "imageRef=$image_ref" --query Command.CommandId --output text)
+          deadline=$((SECONDS + 1500))
+          while ((SECONDS < deadline)); do
+            status=$(aws ssm get-command-invocation --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in
+              Success) echo "Backend deployed and healthy"; break ;;
+              Failed|Cancelled|TimedOut|DeliveryTimedOut|ExecutionTimedOut|Undeliverable|Terminated)
+                echo "Backend deployment ended with status $status (previous image restored by the document)"; exit 1 ;;
+              *) sleep 5 ;;
+            esac
+          done
+          [ "$status" = Success ] || { echo "Timed out waiting for the deployment"; exit 1; }
+          aws ssm put-parameter --name "$REVISION_PARAM" --type String --value "$GITHUB_SHA" --overwrite >/dev/null
+
+  web:
+    needs: [plan, backend]
+    if: ${{ !cancelled() && needs.plan.outputs.deploy_web == 'true' && needs.backend.result != 'failure' }}
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: kirvespeli-web/.nvmrc
+          cache: npm
+          cache-dependency-path: kirvespeli-web/package-lock.json
+      - name: Build
+        working-directory: kirvespeli-web
+        run: |
+          npm ci
+          npm run build
+          test -s dist/index.html
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+      - name: Publish and sync
+        run: |
+          set -euo pipefail
+          config=$(aws ssm get-parameter --name /kirvespeli/prod/deploy-config --query Parameter.Value --output text)
+          instance_id=$(jq -r .instanceId <<<"$config")
+          bucket=$(jq -r .webBucket <<<"$config")
+          document=$(jq -r .webDocument <<<"$config")
+          revision_param="$(jq -r .deployedRevisionPrefix <<<"$config")/web"
+          echo "::add-mask::$instance_id"
+          echo "::add-mask::$bucket"
+          aws s3 sync kirvespeli-web/dist "s3://$bucket/current" --delete --only-show-errors
+          command_id=$(aws ssm send-command --instance-ids "$instance_id" --document-name "$document" \
+            --comment "Sync web $GITHUB_SHA" --timeout-seconds 300 --query Command.CommandId --output text)
+          deadline=$((SECONDS + 330))
+          status=Pending
+          while ((SECONDS < deadline)); do
+            status=$(aws ssm get-command-invocation --command-id "$command_id" --instance-id "$instance_id" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut|DeliveryTimedOut|ExecutionTimedOut|Undeliverable|Terminated)
+                echo "Web sync ended with status $status"; exit 1 ;;
+              *) sleep 3 ;;
+            esac
+          done
+          [ "$status" = Success ] || { echo "Timed out waiting for the web sync"; exit 1; }
+          aws ssm put-parameter --name "$revision_param" --type String --value "$GITHUB_SHA" --overwrite >/dev/null
+          sha256sum kirvespeli-web/dist/index.html | cut -d' ' -f1 > index.sha256
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-index-hash
+          path: index.sha256
+
+  smoke:
+    needs: [plan, backend, web]
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.backend.result != 'failure' && needs.web.result != 'failure' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Health check
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent --show-error https://kirvespeli.bizhop.fi/api/health/live >/dev/null; then echo "Backend live"; exit 0; fi
+            sleep 5
+          done
+          echo "Health check failed"; exit 1
+      - if: needs.web.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: web-index-hash
+      - if: needs.web.result == 'success'
+        name: Served index matches the build
+        run: |
+          expected=$(cat index.sha256)
+          for i in $(seq 1 12); do
+            actual=$(curl --fail --silent https://kirvespeli.bizhop.fi/ | sha256sum | cut -d' ' -f1)
+            [ "$actual" = "$expected" ] && { echo "Web build is live"; exit 0; }
+            sleep 5
+          done
+          echo "Served index.html differs from the built one"; exit 1
+
+  summary:
+    needs: [plan, backend, web, smoke]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          PLAN_BACKEND: ${{ needs.plan.outputs.deploy_backend }}
+          PLAN_WEB: ${{ needs.plan.outputs.deploy_web }}
+          R_BACKEND: ${{ needs.backend.result }}
+          R_WEB: ${{ needs.web.result }}
+          R_SMOKE: ${{ needs.smoke.result }}
+        run: |
+          {
+            echo "### Deploy ${GITHUB_SHA:0:12}"
+            echo "- backend: planned=$PLAN_BACKEND result=$R_BACKEND"
+            echo "- web: planned=$PLAN_WEB result=$R_WEB"
+            echo "- smoke: $R_SMOKE"
+          } >> "$GITHUB_STEP_SUMMARY"

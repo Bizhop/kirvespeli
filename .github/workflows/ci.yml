@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      full:
+        description: Run every job regardless of changed paths
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ inputs.full == true || steps.filter.outputs.backend == 'true' }}
+      web: ${{ inputs.full == true || steps.filter.outputs.web == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            backend:
+              - 'kirvespeli-backend/**'
+              - '.github/workflows/**'
+            web:
+              - 'kirvespeli-web/**'
+              - '.github/workflows/**'
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kirvespeli-backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Cache writes only from default-branch runs; PRs read only.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - run: ./gradlew build --no-daemon
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-test-reports
+          path: kirvespeli-backend/build/reports/tests
+          if-no-files-found: ignore
+
+  backend-db:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: kirves
+          POSTGRES_PASSWORD: kirves
+          POSTGRES_DB: kirves
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kirves"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      KIRVES_DBTEST_URL: jdbc:postgresql://localhost:5432/kirves
+      KIRVES_DBTEST_USERNAME: kirves
+      KIRVES_DBTEST_PASSWORD: kirves
+    defaults:
+      run:
+        working-directory: kirvespeli-backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - run: ./gradlew dbTest --no-daemon
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-dbtest-reports
+          path: kirvespeli-backend/build/reports/tests
+          if-no-files-found: ignore
+
+  backend-image:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: kirvespeli-backend
+          platforms: linux/arm64
+          push: false
+          cache-from: type=gha,scope=backend-image
+          cache-to: type=gha,scope=backend-image,mode=max
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kirvespeli-web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: kirvespeli-web/.nvmrc
+          cache: npm
+          cache-dependency-path: kirvespeli-web/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  ci-ok:
+    needs: [changes, backend, backend-db, backend-image, web]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every needed job to pass or be skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in
+              success|skipped) ;;
+              *) echo "A required job ended with: $r"; exit 1 ;;
+            esac
+          done

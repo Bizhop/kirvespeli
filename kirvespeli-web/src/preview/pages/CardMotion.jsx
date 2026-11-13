@@ -54,10 +54,9 @@ const cutSequence = sequence(new KirvesGame({ count: 3, dealer: "Vesa" }), [
   g => g.deal({}, "8S"),
 ])
 
-const cutExtraSequence = sequence(
-  new KirvesGame({ count: 3, dealer: "Vesa" }).cut("JC", "9H"),
-  [g => g.deal({}, "8S")],
-)
+const cutExtraSequence = sequence(new KirvesGame({ count: 3, dealer: "Vesa" }).cut("JC", "9H"), [
+  g => g.deal({}, "8S"),
+])
 
 // After five tricks; "Näytä kortit" reveals the concealed won cards.
 const revealState = playSequence[tricks.length]

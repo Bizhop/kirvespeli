@@ -7,6 +7,7 @@
     "build": "parcel build",
     "preview": "parcel src/preview/index.html --port 1235 --dist-dir dist-preview",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx}\"",
     "test": "node --test"
   },
   "devDependencies": {
