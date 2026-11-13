@@ -260,10 +260,10 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
     if (!plan.snap) animate(plan, before, after)
   }, [game, enabled, settle, measure, animate])
 
-  // Width changes (resize, sidebar layout) invalidate positions: settle and remeasure.
+  // Size changes (resize, viewport height, sidebar layout) invalidate positions.
   useEffect(() => {
     const root = rootRef.current
-    let width = root?.getBoundingClientRect().width
+    let size = root?.getBoundingClientRect()
     const refresh = () => {
       settle()
       cache.current = measure()
@@ -271,8 +271,9 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
     const observer =
       typeof ResizeObserver !== "undefined" &&
       new ResizeObserver(([entry]) => {
-        if (entry.contentRect.width === width) return
-        width = entry.contentRect.width
+        if (entry.contentRect.width === size?.width && entry.contentRect.height === size?.height)
+          return
+        size = { width: entry.contentRect.width, height: entry.contentRect.height }
         refresh()
       })
     if (observer && root) observer.observe(root)

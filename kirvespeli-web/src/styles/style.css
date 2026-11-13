@@ -1,6 +1,7 @@
 :root {
   --card-w: 140px;
   --score-loss-color: #ffe6a0;
+  --game-top: 110px;
 }
 h1,
 h2,
@@ -43,6 +44,18 @@ a {
   gap: 12px;
   margin: 12px 0 20px;
 }
+.site-header-row {
+  flex-wrap: nowrap !important;
+  align-items: center;
+  height: 40px;
+}
+.site-header-row > .MuiGrid-root {
+  flex: 0 0 auto !important;
+  width: auto !important;
+}
+.site-header-row > .MuiGrid-root:last-child {
+  flex-grow: 1 !important;
+}
 .game-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;
@@ -73,6 +86,9 @@ a {
   position: relative;
   height: 610px;
   isolation: isolate;
+}
+.card-table {
+  container: card-table / size;
 }
 .card-table::before {
   content: "";
@@ -134,13 +150,20 @@ a {
 }
 .seat-status {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   min-height: 26px;
   gap: 3px;
 }
 .seat-state {
+  flex-basis: 100%;
   font-size: 0.8rem;
+}
+.seat-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .seat-hand {
   display: flex;
@@ -461,9 +484,11 @@ a {
 .own-hand .card-slot:nth-child(5) .playing-card {
   transform: rotate(3deg);
 }
-.own-hand .playing-card.playable:hover {
-  transform: translateY(-20px);
-  z-index: 1;
+@media (hover: hover) {
+  .own-hand .playing-card.playable:hover {
+    transform: translateY(-20px);
+    z-index: 1;
+  }
 }
 .hand-extra {
   width: var(--card-w);
@@ -669,4 +694,158 @@ a {
 }
 .dealer-selection-prompt p {
   margin: 0 0 12px;
+}
+
+.card-table,
+.hand-area,
+button {
+  touch-action: manipulation;
+}
+
+@media (max-width: 1100px), (max-width: 1200px) and (max-height: 780px) {
+  .fit-viewport .table-area {
+    display: flex;
+    flex-direction: column;
+    height: min(730px, calc(100vh - var(--game-top)));
+    height: min(730px, calc(100svh - var(--game-top)));
+    max-height: 730px;
+  }
+  .fit-viewport .card-table {
+    flex: 1 1 auto;
+    min-height: 220px;
+    height: auto;
+  }
+  .fit-viewport .hand-area {
+    flex: none;
+    gap: 4px 8px;
+    padding: 4px 0 8px;
+  }
+  .fit-viewport .own-hand {
+    gap: 6px;
+    padding: 6px 2px 0;
+  }
+  .fit-viewport .table-area {
+    --card-w: clamp(40px, min(16cqw, 12svh), 100px);
+  }
+  .fit-viewport .action-bar {
+    min-height: 60px;
+    gap: 4px;
+  }
+  .fit-viewport .selection-options {
+    gap: 2px;
+  }
+  .fit-viewport .selection-label {
+    margin: 0 0 2px;
+  }
+  .fit-viewport .card-table::before {
+    inset: 10% 4% 9%;
+  }
+}
+
+@media (max-width: 600px), (max-height: 780px) {
+  :root {
+    --game-top: 104px;
+  }
+  .site-header-row {
+    height: 36px;
+  }
+  .fit-viewport .game-heading {
+    gap: 6px;
+    margin: 4px 0 8px;
+    font-size: 1.1rem;
+    line-height: 28px;
+  }
+  .fit-viewport .game-heading .status-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .fit-viewport .selection-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .fit-viewport .selection-label {
+    margin: 0;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .fit-viewport .seat {
+    width: clamp(76px, 23cqw, 140px);
+  }
+}
+
+@media (max-width: 600px), (max-height: 700px) {
+  .fit-viewport .selection-options button {
+    min-width: 52px;
+    height: 52px;
+  }
+}
+
+@container card-table (max-height: 440px) {
+  .seat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 3px 4px;
+  }
+  .seat-details {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    gap: 1px;
+  }
+  .seat-name {
+    font-size: clamp(0.72rem, 4cqh, 1rem);
+    line-height: 1.1;
+  }
+  .seat-status {
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    gap: 0;
+  }
+  .seat-state {
+    flex-basis: auto;
+  }
+  .seat-state {
+    font-size: clamp(0.62rem, 3cqh, 0.8rem);
+    line-height: 1;
+  }
+  .seat-status .status-icon,
+  .seat-status svg {
+    width: clamp(13px, 4cqh, 20px);
+    height: clamp(13px, 4cqh, 20px);
+  }
+  .seat-hand {
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+    padding: 1px 2px;
+  }
+  .seat-card {
+    width: clamp(12px, 4.5cqh, 20px);
+  }
+  .seat-card + .seat-card {
+    margin-left: clamp(-12px, -2.8cqh, -7px);
+  }
+  .played-cards {
+    --card-w: clamp(26px, 10cqh, 40px);
+  }
+  .deck-position {
+    --deck-w: clamp(23px, 8cqh, 34px);
+  }
+  .deck-trump {
+    left: calc(var(--deck-w) * 0.6);
+  }
+  .suit-indicator {
+    width: clamp(21px, 9cqh, 36px);
+    height: clamp(27px, 11cqh, 46px);
+  }
+  .center-card {
+    width: clamp(30px, 12cqh, 48px);
+  }
 }

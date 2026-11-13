@@ -47,6 +47,7 @@ export const KirvesGame = ({
           <RenderGame
             game={game}
             isReplay={false}
+            fitViewport
             action={action}
             join={join}
             showAllCards={showAllCards}

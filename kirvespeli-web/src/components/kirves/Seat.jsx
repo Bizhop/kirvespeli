@@ -67,20 +67,22 @@ const Seat = ({
           aria-disabled={selectable && currentDealer ? true : undefined}
         >
           <span className="seat-name">{nickname}</span>
-          <span className="seat-status">
-            {!playing && currentDealer && <Icon name="dealer" />}
-            {player.declaredPlayer && <Icon name="declared" />}
-            {!playing && player.speak && <Icon name={player.speak} />}
-          </span>
-          {state && <span className="seat-state">{state}</span>}
-          {/* public card counts only: never registered for motion */}
-          <span className="seat-hand" aria-label={`${player.cardsInHand ?? 0} korttia kädessä`}>
-            {Array.from({ length: player.cardsInHand ?? 0 }, (_, i) => (
-              <SvgImage key={i} name="back" className="seat-card" />
-            ))}
-            {player.extraCard && (
-              <SvgImage name={player.extraCard} className="seat-card extra-card" />
-            )}
+          <span className="seat-details">
+            <span className="seat-status">
+              {!playing && currentDealer && <Icon name="dealer" />}
+              {player.declaredPlayer && <Icon name="declared" />}
+              {!playing && player.speak && <Icon name={player.speak} />}
+              {state && <span className="seat-state">{state}</span>}
+            </span>
+            {/* public card counts only: never registered for motion */}
+            <span className="seat-hand" aria-label={`${player.cardsInHand ?? 0} korttia kädessä`}>
+              {Array.from({ length: player.cardsInHand ?? 0 }, (_, i) => (
+                <SvgImage key={i} name="back" className="seat-card" />
+              ))}
+              {player.extraCard && (
+                <SvgImage name={player.extraCard} className="seat-card extra-card" />
+              )}
+            </span>
           </span>
         </SeatInfo>
       </Tooltip>
