@@ -83,6 +83,24 @@ vasemmalla ja pelijärjestys jatkuu myötäpäivään. Sivustakatsoja ja uusinta
 backendin istumajärjestystä. Uusinnassa ei ole omaa kättä, toimintopalkkia tai valintoja.
 Pisteet ja viestit ovat leveällä näytöllä oikealla, kapealla pöydän alapuolella.
 
+Live-peli välittää `fitViewport`-asetuksen `RenderGame`-komponentille. Puhelimessa ja
+tabletilla pöytä käyttää otsikon jälkeen jäljellä olevan näkymäkorkeuden; käsi ja
+toimintopalkki pysyvät samalla ruudulla. `RenderGame` mittaa pelialueen yläreunan
+sivun alusta `--game-top`-muuttujaan ja päivittää sen, kun yläpuolinen sisältö (yläpalkki,
+otsikko) muuttaa kokoaan. Käden ja toimintopalkin rivit varaavat kiinteän korkeuden, joten
+pöytä ei muuta kokoaan jaossa, kortteja pelattaessa tai toimintojen vaihtuessa; vain
+ylimääräisen kortin seliteteksti ja pitkät poistumisviestit voivat kasvattaa riviä. Pöydän
+istuimet, pakka, keskikortit ja tikkikortit skaalautuvat pöydän mittojen mukaan nimetyssä
+`card-table`-kokosäiliössä. Tietokoneella pöytä säilyttää 610 px korkeuden. Uusinnan
+taulukoko pysyy kiinteänä.
+
+Esikatselun `Table`-sivulla `fit ...` -variantit näyttävät samat tilanteet sovitettuna
+näkymäkorkeuteen. `KirvesGame`-sivu näyttää yläpalkin ja otsikon kanssa koko pelisivun
+sellaisena kuin se on live-pelissä. Mukana ovat 1–6 pelaajaa, puhe, valtin valinta, ylimääräinen kortti,
+hylkäys ja poistumistilanteet. Tuettu mobiiliasettelu on puhelimessa pystysuunta ja iPad
+Pro 11" (4. sukupolvi) pysty- ja vaakasuunta; puhelimen vaakasuuntaa ei ole sovitettu.
+Pisteet ja viestit pysyvät kapealla näytöllä pöydän alla ja ovat vieritettävissä.
+
 Yhteinen MUI-teema on `src/theme.js`:ssä; sovellus ja esikatselu käyttävät sitä.
 Vihreä huopatausta tehdään CSS-liukuvärillä. Abel ja Alegreya Sans SC 700 tulevat
 `@fontsource`-paketeista paikallisina fonttitiedostoina ilman Google Fonts -pyyntöjä.

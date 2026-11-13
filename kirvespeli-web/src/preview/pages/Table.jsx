@@ -25,32 +25,44 @@ const props = {
   join: logAction("join"),
   showAllCards: logAction("showAllCards"),
 }
+const variants = {
+  ...Object.fromEntries(
+    Object.entries(tableGames).map(([count, game]) => [
+      `${count} players`,
+      () => <RenderGame game={game} {...props} />,
+    ]),
+  ),
+  waiting: () => <RenderGame game={waitingGame} {...props} />,
+  dealerSelection: () => <RenderGame game={dealerGame} {...props} />,
+  cutTurn: () => <RenderGame game={cutTurnGame} {...props} />,
+  cut: () => <RenderGame game={cutGame} {...props} />,
+  speaking: () => <RenderGame game={speakingGame} {...props} />,
+  suitSelection: () => <RenderGame game={suitGame} {...props} />,
+  extraCard: () => <RenderGame game={extraCardGame} {...props} />,
+  discard: () => <RenderGame game={discardGame} {...props} />,
+  spectator: () => <RenderGame game={spectatorGame} {...props} />,
+  departure: () => <RenderGame game={departureGame} {...props} />,
+  departureWaiting: () => <RenderGame game={departureWaitingGame} {...props} />,
+  departureAdmin: () => <RenderGame game={departureAdminGame} {...props} />,
+  departureMultiple: () => <RenderGame game={departureMultipleGame} {...props} />,
+  departureAcknowledged: () => <RenderGame game={departureAcknowledgedGame} {...props} />,
+  departureEarlyEnd: () => <RenderGame game={departureEarlyEndGame} {...props} />,
+  departureGameEnd: () => <RenderGame game={departureGameEndGame} {...props} />,
+  replay: () => <RenderGame game={tableGames[6]} isReplay cardsVisible />,
+}
+
 export default {
   title: "Table",
   group: "Containers",
   variants: {
+    ...variants,
     ...Object.fromEntries(
-      Object.entries(tableGames).map(([count, game]) => [
-        `${count} players`,
-        () => <RenderGame game={game} {...props} />,
-      ]),
+      Object.entries(variants)
+        .filter(([name]) => name !== "replay")
+        .map(([name, render]) => [
+          `fit ${name}`,
+          () => React.cloneElement(render(), { fitViewport: true }),
+        ]),
     ),
-    waiting: () => <RenderGame game={waitingGame} {...props} />,
-    dealerSelection: () => <RenderGame game={dealerGame} {...props} />,
-    cutTurn: () => <RenderGame game={cutTurnGame} {...props} />,
-    cut: () => <RenderGame game={cutGame} {...props} />,
-    speaking: () => <RenderGame game={speakingGame} {...props} />,
-    suitSelection: () => <RenderGame game={suitGame} {...props} />,
-    extraCard: () => <RenderGame game={extraCardGame} {...props} />,
-    discard: () => <RenderGame game={discardGame} {...props} />,
-    spectator: () => <RenderGame game={spectatorGame} {...props} />,
-    departure: () => <RenderGame game={departureGame} {...props} />,
-    departureWaiting: () => <RenderGame game={departureWaitingGame} {...props} />,
-    departureAdmin: () => <RenderGame game={departureAdminGame} {...props} />,
-    departureMultiple: () => <RenderGame game={departureMultipleGame} {...props} />,
-    departureAcknowledged: () => <RenderGame game={departureAcknowledgedGame} {...props} />,
-    departureEarlyEnd: () => <RenderGame game={departureEarlyEndGame} {...props} />,
-    departureGameEnd: () => <RenderGame game={departureGameEndGame} {...props} />,
-    replay: () => <RenderGame game={tableGames[6]} isReplay cardsVisible />,
   },
 }

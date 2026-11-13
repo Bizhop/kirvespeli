@@ -30,11 +30,12 @@ const MyNavLink = ({ to, label, icon }) => (
 
 export const Header = ({ loggedIn, logout }) => (
   <Box sx={{ flexGrow: 1 }}>
-    <Grid container spacing={1}>
+    <Grid container spacing={1} className="site-header-row">
       <MyNavLink to="/" label="Etusivu" icon={<HomeIcon />} />
       {loggedIn && <MyNavLink to="/kirves" label="Pelit" icon={<GamesIcon />} />}
       {loggedIn && (
         <Grid
+          className="site-header-logout"
           size={{
             md: "grow",
           }}

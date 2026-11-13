@@ -55,7 +55,9 @@ export const DashContainer = ({ user, error, updateUser, login, loginError }) =>
         </Grid>
       </Box>
     ) : (
-      <GoogleLogin onSuccess={login} onError={loginError} useOneTap />
+      // Not during auto-login: unmounting cancels a pending One Tap (FedCM) prompt,
+      // which GSI logs as an AbortError.
+      !user.loading && <GoogleLogin onSuccess={login} onError={loginError} useOneTap />
     )}
     {error && <Alert severity="error">{error}</Alert>}
   </div>
