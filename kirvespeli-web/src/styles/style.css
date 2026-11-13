@@ -1,7 +1,6 @@
 :root {
   --card-w: 140px;
   --score-loss-color: #ffe6a0;
-  --game-top: 110px;
 }
 h1,
 h2,
@@ -47,13 +46,12 @@ a {
 .site-header-row {
   flex-wrap: nowrap !important;
   align-items: center;
-  height: 40px;
 }
 .site-header-row > .MuiGrid-root {
   flex: 0 0 auto !important;
   width: auto !important;
 }
-.site-header-row > .MuiGrid-root:last-child {
+.site-header-row > .site-header-logout {
   flex-grow: 1 !important;
 }
 .game-layout {
@@ -64,7 +62,7 @@ a {
 }
 .table-area {
   position: relative;
-  container-type: inline-size;
+  container: table-area / inline-size;
   min-width: 0;
   --card-w: clamp(44px, 16cqw, 100px);
 }
@@ -86,8 +84,6 @@ a {
   position: relative;
   height: 610px;
   isolation: isolate;
-}
-.card-table {
   container: card-table / size;
 }
 .card-table::before {
@@ -123,22 +119,12 @@ a {
   box-shadow: 0 3px 10px #15230566;
 }
 .seat-turn .seat-info {
-  display: block;
-  width: 100%;
-  color: inherit;
-  font: inherit;
-  text-align: inherit;
   border-color: #fff3bd;
   box-shadow:
     0 0 0 2px #fff3bd55,
     0 0 20px #fff3bd55;
 }
 .seat-inactive .seat-info {
-  display: block;
-  width: 100%;
-  color: inherit;
-  font: inherit;
-  text-align: inherit;
   opacity: 0.5;
 }
 .seat-name {
@@ -537,11 +523,6 @@ a {
     width: 96px;
   }
   .seat-info {
-    display: block;
-    width: 100%;
-    color: inherit;
-    font: inherit;
-    text-align: inherit;
     padding: 4px;
   }
   .seat-name {
@@ -702,62 +683,74 @@ button {
   touch-action: manipulation;
 }
 
+/* Live game on phones and tablets: the table area fills the viewport below --game-top
+   (measured in RenderGame). The hand row and the action bar row reserve their heights, so
+   the card table keeps its size when cards are dealt or played and actions change. */
 @media (max-width: 1100px), (max-width: 1200px) and (max-height: 780px) {
   .fit-viewport .table-area {
+    --card-w: clamp(40px, min(16cqw, 12svh), 100px);
+    --hand-h: calc(var(--card-w) * 10 / 7 + 6px);
+    --action-h: 104px;
     display: flex;
     flex-direction: column;
-    height: min(730px, calc(100vh - var(--game-top)));
-    height: min(730px, calc(100svh - var(--game-top)));
-    max-height: 730px;
+    height: min(730px, calc(100vh - var(--game-top, 0px)));
+    height: min(730px, calc(100svh - var(--game-top, 0px)));
   }
   .fit-viewport .card-table {
     flex: 1 1 auto;
     min-height: 220px;
     height: auto;
   }
+  .fit-viewport .card-table::before {
+    inset: 10% 4% 9%;
+  }
   .fit-viewport .hand-area {
+    display: grid;
     flex: none;
+    grid-template-rows: minmax(var(--hand-h), auto) minmax(var(--action-h), auto);
+    place-items: center;
     gap: 4px 8px;
     padding: 4px 0 8px;
   }
   .fit-viewport .own-hand {
+    grid-area: 1 / 1;
     gap: 6px;
     padding: 6px 2px 0;
   }
-  .fit-viewport .table-area {
-    --card-w: clamp(40px, min(16cqw, 12svh), 100px);
-  }
   .fit-viewport .action-bar {
-    min-height: 60px;
+    grid-area: 2 / 1;
     gap: 4px;
   }
   .fit-viewport .selection-options {
     gap: 2px;
   }
-  .fit-viewport .selection-label {
-    margin: 0 0 2px;
-  }
-  .fit-viewport .card-table::before {
-    inset: 10% 4% 9%;
+  /* wide enough for the hand and the action bar side by side in one reserved row */
+  @container table-area (min-width: 760px) {
+    .fit-viewport .hand-area {
+      grid-template-columns: auto auto;
+      grid-template-rows: minmax(max(var(--hand-h), var(--action-h)), auto);
+      justify-content: center;
+    }
+    .fit-viewport .action-bar {
+      grid-area: 1 / 2;
+    }
   }
 }
 
-@media (max-width: 600px), (max-height: 780px) {
-  :root {
-    --game-top: 104px;
-  }
-  .site-header-row {
-    height: 36px;
-  }
-  .fit-viewport .game-heading {
+/* Fit layout on narrow or short screens: compact heading and inline selection groups. */
+@media (max-width: 600px), (max-width: 1200px) and (max-height: 780px) {
+  .game-heading {
     gap: 6px;
     margin: 4px 0 8px;
     font-size: 1.1rem;
     line-height: 28px;
   }
-  .fit-viewport .game-heading .status-icon {
+  .game-heading .status-icon {
     width: 24px;
     height: 24px;
+  }
+  .fit-viewport .table-area {
+    --action-h: 52px;
   }
   .fit-viewport .selection-group {
     display: flex;
@@ -769,15 +762,17 @@ button {
     font-size: 0.95rem;
     white-space: nowrap;
   }
-  .fit-viewport .seat {
-    width: clamp(76px, 23cqw, 140px);
-  }
-}
-
-@media (max-width: 600px), (max-height: 700px) {
   .fit-viewport .selection-options button {
     min-width: 52px;
     height: 52px;
+    padding: 4px;
+  }
+  .fit-viewport .selection-options .status-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .fit-viewport .seat {
+    width: clamp(76px, 23cqw, 140px);
   }
 }
 
@@ -788,12 +783,11 @@ button {
     gap: 1px;
     padding: 3px 4px;
   }
+  /* status and card backs share a row when they fit; the backs wrap below otherwise */
   .seat-details {
-    display: flex;
     flex-direction: row;
-    align-items: center;
+    flex-wrap: wrap;
     justify-content: center;
-    min-width: 0;
     gap: 1px;
   }
   .seat-name {
@@ -801,15 +795,11 @@ button {
     line-height: 1.1;
   }
   .seat-status {
-    display: flex;
-    align-items: center;
     min-height: 0;
     gap: 0;
   }
   .seat-state {
     flex-basis: auto;
-  }
-  .seat-state {
     font-size: clamp(0.62rem, 3cqh, 0.8rem);
     line-height: 1;
   }
@@ -819,11 +809,8 @@ button {
     height: clamp(13px, 4cqh, 20px);
   }
   .seat-hand {
-    display: flex;
     align-items: center;
     min-height: 0;
-    flex-shrink: 1;
-    overflow: hidden;
     padding: 1px 2px;
   }
   .seat-card {

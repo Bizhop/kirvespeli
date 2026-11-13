@@ -35,12 +35,6 @@ const SelectionButton = ({ label, onClick, children }) => (
           },
         },
         "&.Mui-focusVisible": { outline: "2px solid #fff3bd", outlineOffset: 2 },
-        "@media (max-width: 600px), (max-height: 700px)": {
-          minWidth: 52,
-          height: 52,
-          p: 0.5,
-          "& .status-icon": { width: 36, height: 36 },
-        },
       }}
     >
       {children}

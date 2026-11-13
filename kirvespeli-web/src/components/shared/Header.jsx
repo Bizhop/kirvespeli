@@ -35,6 +35,7 @@ export const Header = ({ loggedIn, logout }) => (
       {loggedIn && <MyNavLink to="/kirves" label="Pelit" icon={<GamesIcon />} />}
       {loggedIn && (
         <Grid
+          className="site-header-logout"
           size={{
             md: "grow",
           }}

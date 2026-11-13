@@ -3,7 +3,7 @@
   "type": "module",
   "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
+    "start": "rm -rf .parcel-cache && parcel",
     "build": "parcel build",
     "preview": "parcel src/preview/index.html --port 1235 --dist-dir dist-preview",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",

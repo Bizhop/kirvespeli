@@ -42,6 +42,8 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
   const previous = useRef(null)
   const running = useRef(new Set())
   const resetPending = useRef(false)
+  // root size at the last measurement
+  const measuredSize = useRef(null)
 
   const ref = useCallback(key => {
     let callback = refs.current.get(key)
@@ -71,6 +73,7 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
     const measured = new Map()
     if (!root) return measured
     const origin = root.getBoundingClientRect()
+    measuredSize.current = { width: origin.width, height: origin.height }
     for (const [key, el] of elements.current) {
       const r = el.getBoundingClientRect()
       if (!r.width && !r.height) continue
@@ -260,21 +263,19 @@ const CardMotion = ({ game, enabled = true, resetKey, className, children }) => 
     if (!plan.snap) animate(plan, before, after)
   }, [game, enabled, settle, measure, animate])
 
-  // Size changes (resize, viewport height, sidebar layout) invalidate positions.
+  // Size changes (resize, viewport height, sidebar layout) invalidate positions: settle and
+  // remeasure. A snapshot that resizes the root (deal, emptied hand) was already measured
+  // after its commit, so the observer sees the measured size and keeps that motion running.
   useEffect(() => {
     const root = rootRef.current
-    let size = root?.getBoundingClientRect()
-    const refresh = () => {
-      settle()
-      cache.current = measure()
-    }
     const observer =
       typeof ResizeObserver !== "undefined" &&
       new ResizeObserver(([entry]) => {
-        if (entry.contentRect.width === size?.width && entry.contentRect.height === size?.height)
-          return
-        size = { width: entry.contentRect.width, height: entry.contentRect.height }
-        refresh()
+        const { width, height } = entry.target.getBoundingClientRect()
+        const size = measuredSize.current
+        if (size && width === size.width && height === size.height) return
+        settle()
+        cache.current = measure()
       })
     if (observer && root) observer.observe(root)
     const media = window.matchMedia?.("(prefers-reduced-motion: reduce)")
