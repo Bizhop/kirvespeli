@@ -152,7 +152,7 @@ export const spectatorGame = tables[6].view("Katsoja")
 // Ville has created game 16 and waits for others; nobody can cut alone.
 const waiting = new KirvesGame({ count: 1, id: 16 })
 waiting.resetActions()
-export const waitingGame = { ...waiting.view("Ville"), canJoin: true }
+export const waitingGame = { ...waiting.view("Ville"), canJoin: true, waitingForPlayers: true }
 
 // Vesa deals; Ville sits before him and cuts.
 export const cutTurnGame = new KirvesGame({ count: 3, dealer: "Vesa" }).view("Ville")

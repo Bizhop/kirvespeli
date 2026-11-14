@@ -36,6 +36,7 @@ const ActionBar = ({ game, action, join, showAllCards }) => {
           Liity peliin
         </Button>
       )}
+      {game.waitingForPlayers && <span>Odotetaan pelaajia</span>}
       {button("DEAL", "Jaa", { icon: "dealer" })}
       {button("CUT", "Nosta")}
       {game.canDeclineCut && button("CUT", "Älä nosta", { declineCut: "true" })}
