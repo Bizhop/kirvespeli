@@ -1,4 +1,5 @@
 import React from "react"
+import { Button } from "@mui/material"
 import { SvgImage } from "../shared/images"
 import DealerSelector from "./DealerSelector"
 import { useMotionRef } from "./CardMotion"
@@ -33,14 +34,23 @@ export const Deck = ({ game }) => {
     </div>
   )
 }
-const TableCenter = ({ game, selectingDealer }) => {
+const TableCenter = ({ game, selectingDealer, join }) => {
   const motionRef = useMotionRef()
   return (
     <div className="table-center">
       {selectingDealer && <DealerSelector />}
-      {(game.playersTotal ?? game.players?.length ?? 0) < 2 && (
+      {game.waitingForPlayers && (
         <div className="waiting-panel">
-          <p>Odotetaan pelaajia (vähintään 2)</p>
+          <p>
+            {(game.playersTotal ?? game.players?.length ?? 0) < 2
+              ? "Odotetaan pelaajia (vähintään 2)"
+              : "Odotetaan pelaajia"}
+          </p>
+          {game.canJoin && join && (
+            <Button variant="contained" onClick={() => join(game.id)}>
+              Liity peliin
+            </Button>
+          )}
         </div>
       )}
       <div className="table-suits">
