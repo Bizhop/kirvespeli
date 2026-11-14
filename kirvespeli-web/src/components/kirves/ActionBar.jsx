@@ -15,7 +15,7 @@ const DepartureCountdown = ({ seconds }) => {
   return <span>Peli jatkuu automaattisesti {left} s kuluttua</span>
 }
 
-const ActionBar = ({ game, action, join, showAllCards }) => {
+const ActionBar = ({ game, action, showAllCards }) => {
   const actions = game.myAvailableActions ?? []
   const departing = departingPlayers(game)
   const button = (name, label, extra = {}) =>
@@ -31,11 +31,6 @@ const ActionBar = ({ game, action, join, showAllCards }) => {
     )
   return (
     <div className="action-bar">
-      {game.canJoin && (
-        <Button variant="contained" onClick={() => join?.(game.id)}>
-          Liity peliin
-        </Button>
-      )}
       {button("DEAL", "Jaa", { icon: "dealer" })}
       {button("CUT", "Nosta")}
       {game.canDeclineCut && button("CUT", "Älä nosta", { declineCut: "true" })}

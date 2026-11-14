@@ -49,12 +49,12 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motio
         <div className={`deck-position deck-${positions[Math.max(0, dealerIndex)]}`}>
           <Deck game={game} />
         </div>
-        <TableCenter game={game} selectingDealer={selectingDealer} />
+        <TableCenter game={game} selectingDealer={selectingDealer} join={join} />
       </div>
       {!isReplay && (
         <div className="hand-area">
           <Hand game={game} action={action} />
-          <ActionBar game={game} action={action} join={join} showAllCards={showAllCards} />
+          <ActionBar game={game} action={action} showAllCards={showAllCards} />
         </div>
       )}
     </CardMotion>

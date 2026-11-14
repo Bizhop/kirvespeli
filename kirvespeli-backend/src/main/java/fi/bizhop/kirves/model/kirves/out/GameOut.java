@@ -17,6 +17,8 @@ public class GameOut {
     String myExtraCard;
     List<String> myAvailableActions;
     boolean canJoin;
+    //game has not started and is still open for more players (regardless of whether the viewer is in it)
+    boolean waitingForPlayers;
     boolean canDeclineCut;
     String trumpCard;
     String trump;

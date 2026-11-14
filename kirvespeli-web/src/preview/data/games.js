@@ -152,7 +152,17 @@ export const spectatorGame = tables[6].view("Katsoja")
 // Ville has created game 16 and waits for others; nobody can cut alone.
 const waiting = new KirvesGame({ count: 1, id: 16 })
 waiting.resetActions()
-export const waitingGame = { ...waiting.view("Ville"), canJoin: true }
+export const waitingGame = { ...waiting.view("Ville"), canJoin: true, waitingForPlayers: true }
+
+// Four players have joined game 17 and still wait for more; Ville is already seated, so he
+// can't join again.
+const waitingFour = new KirvesGame({ count: 4, id: 17 })
+waitingFour.resetActions()
+export const waitingFourGame = {
+  ...waitingFour.view("Ville"),
+  canJoin: false,
+  waitingForPlayers: true,
+}
 
 // Vesa deals; Ville sits before him and cuts.
 export const cutTurnGame = new KirvesGame({ count: 3, dealer: "Vesa" }).view("Ville")
