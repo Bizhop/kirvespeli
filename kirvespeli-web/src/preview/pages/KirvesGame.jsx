@@ -2,7 +2,15 @@ import React from "react"
 
 import { KirvesGame } from "../../components/kirves/KirvesGame"
 import { Header } from "../../components/shared/Header"
-import { game, game2, dealerGame, waitingGame, speakingGame, suitGame } from "../data/games"
+import {
+  game,
+  game2,
+  dealerGame,
+  waitingGame,
+  waitingFourGame,
+  speakingGame,
+  suitGame,
+} from "../data/games"
 import { user } from "../data/users"
 import { logAction } from "../logAction"
 
@@ -29,6 +37,7 @@ export default {
   group: "Containers",
   variants: {
     waitingForPlayers: page(waitingGame),
+    waitingFourPlayers: page(waitingFourGame),
     gameStart: page(game),
     gameEnd: page(game2),
     speak: page(speakingGame),

@@ -3,6 +3,7 @@ import RenderGame from "../../components/kirves/RenderGame"
 import {
   tableGames,
   waitingGame,
+  waitingFourGame,
   dealerGame,
   cutGame,
   cutTurnGame,
@@ -33,6 +34,7 @@ const variants = {
     ]),
   ),
   waiting: () => <RenderGame game={waitingGame} {...props} />,
+  waitingFourPlayers: () => <RenderGame game={waitingFourGame} {...props} />,
   dealerSelection: () => <RenderGame game={dealerGame} {...props} />,
   cutTurn: () => <RenderGame game={cutTurnGame} {...props} />,
   cut: () => <RenderGame game={cutGame} {...props} />,
