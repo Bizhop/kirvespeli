@@ -89,7 +89,10 @@ public class KirvesService {
         return activeGames == null
                 ? Collections.emptyList()
                 : activeGames.stream()
-                        .map(db -> GameBrief.fromDb(db, Boolean.TRUE.equals(db.canJoin) && !isPlayerInGame(db, user)))
+                        .map(db -> {
+                            var joined = isPlayerInGame(db, user);
+                            return GameBrief.fromDb(db, Boolean.TRUE.equals(db.canJoin) && !joined, joined);
+                        })
                         .collect(toList());
     }
 

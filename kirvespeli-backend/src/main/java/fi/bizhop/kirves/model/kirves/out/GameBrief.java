@@ -18,6 +18,7 @@ public class GameBrief {
     Integer players;
     Long lastHandId;
     Boolean canJoin;
+    Boolean joined;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdAt;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -34,6 +35,7 @@ public class GameBrief {
             @JsonProperty("players") Integer players,
             @JsonProperty("lastHandId") Long lastHandId,
             @JsonProperty("canJoin") Boolean canJoin,
+            @JsonProperty("joined") Boolean joined,
             @JsonProperty("createdAt") LocalDateTime createdAt,
             @JsonProperty("updatedAt") LocalDateTime updatedAt) {
         return GameBrief.builder()
@@ -42,18 +44,20 @@ public class GameBrief {
                 .players(players)
                 .lastHandId(lastHandId)
                 .canJoin(canJoin)
+                .joined(joined)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
     }
 
-    public static GameBrief fromDb(KirvesGameDB db, boolean canJoin) {
+    public static GameBrief fromDb(KirvesGameDB db, boolean canJoin, boolean joined) {
         return GameBrief.builder()
                 .id(db.id)
                 .admin(new User(db.admin))
                 .players(db.players)
                 .lastHandId(db.lastHandId)
                 .canJoin(canJoin)
+                .joined(joined)
                 .createdAt(db.createdAt)
                 .updatedAt(db.updatedAt)
                 .build();

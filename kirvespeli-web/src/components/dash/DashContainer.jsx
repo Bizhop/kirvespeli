@@ -11,7 +11,7 @@ export const DashContainer = ({ user, error, updateUser, login, loginError }) =>
   <div>
     {user.email ? (
       <Box sx={{ flexGrow: 1 }}>
-        <h1>Tervetuloa!</h1>
+        <h1>Tervetuloa, {user.nickname || user.email}!</h1>
         <Grid container spacing={1}>
           <Grid
             size={{
