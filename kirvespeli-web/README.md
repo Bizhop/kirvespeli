@@ -34,8 +34,7 @@ liittyminen tehdään pelinäkymän `Liity peliin` -painikkeella.
 `ScoreCard` näyttää pelaajat istumajärjestyksessä, päättyneet pelit ja meneillään olevan pelin
 (korostettu rivi). Pisteet piirretään käsin piirretyn näköisinä merkkeinä (`ScoreMark`):
 1 = ympyrä, 2 = + pystyviiva, 3 = + vaakaviiva. Häviäjän ruutuun piirretään keppi tai kirves,
-erän päättävän kirveen jälkeen on paksu viiva, ja alarivillä on pelaajien kirveet ja avoin
-keppi. Kirves käyttää annettua `shared/icons/kirves-valk.png`-grafiikkaa ja keppi sen
+ja erän päättävän kirveen jälkeen on paksu viiva. Kirves käyttää annettua `shared/icons/kirves-valk.png`-grafiikkaa ja keppi sen
 varresta erotettua `keppi.png`-kuvaa. Pistemerkit käyttävät `currentColor`ia; häviömerkin
 värin voi vaihtaa CSS-muuttujalla
 `--score-loss-color`. Saman ruudun aiemmat vedot pysyvät samanmuotoisina pisteiden kasvaessa.
@@ -119,8 +118,10 @@ näkymäkorkeuteen. `KirvesGame`-sivu näyttää yläpalkin ja otsikon kanssa ko
 sellaisena kuin se on live-pelissä. Mukana ovat 1–6 pelaajaa, puhe, valtin valinta, ylimääräinen kortti,
 hylkäys ja poistumistilanteet. Tuettu mobiiliasettelu on puhelimessa pystysuunta ja iPad
 Pro 11" (4. sukupolvi) pysty- ja vaakasuunta; puhelimen vaakasuuntaa ei ole sovitettu.
-Esikatselun `ScoreSlip`-sivu näyttää lapun ja merkkien piirron (Seuraava tilanne), ja
-`MessagesButton`-sivu viestikuvakkeen.
+Esikatselun `ScoreSlip`-sivun `drawing`-variantit käyvät läpi käden pisteet, kepin, usean
+pelaajan pisteet ja kirveen (Seuraava tilanne, Toista, Alusta), myös näkymäkorkeuteen
+sovitettuna. `ScoreMark`-sivun `drawing` piirtää kaikki merkit, ja `MessagesButton`-sivu
+näyttää viestikuvakkeen.
 
 Yhteinen MUI-teema on `src/theme.js`:ssä; sovellus ja esikatselu käyttävät sitä.
 Vihreä huopatausta tehdään CSS-liukuvärillä. Abel ja Alegreya Sans SC 700 tulevat

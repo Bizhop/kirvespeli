@@ -33,7 +33,6 @@ test("points of a hand are drawn in seat order", () => {
       { row: "current", email: "a", from: 1, to: 2, loss: null },
       { row: "current", email: "c", from: 2, to: 3, loss: null },
     ],
-    totals: null,
   })
   const schedule = scoreSchedule(changes, timing)
   assert.deepEqual(schedule.cells[cellKey("current", "a")], {
@@ -49,7 +48,7 @@ test("points of a hand are drawn in seat order", () => {
   assert.equal(schedule.endMs, 3210)
 })
 
-test("a finished game draws its last points, the stick and the totals stick", () => {
+test("a finished game draws its last points and the stick", () => {
   const prev = snapshot([3, 2, 1])
   const next = snapshot([0, 0, 0], [{ scores: [3, 3, 1], loser: "c" }])
   const changes = scoreChanges(prev, next)
@@ -58,7 +57,6 @@ test("a finished game draws its last points, the stick and the totals stick", ()
       { row: 0, email: "b", from: 2, to: 3, loss: null },
       { row: 0, email: "c", from: 1, to: 1, loss: "stick" },
     ],
-    totals: { email: "c", mark: "stick" },
   })
   const schedule = scoreSchedule(changes, timing)
   assert.deepEqual(schedule.cells[cellKey(0, "c")], {
@@ -66,12 +64,11 @@ test("a finished game draws its last points, the stick and the totals stick", ()
     delayMs: 3110,
     lossDelayMs: 3110,
   })
-  assert.deepEqual(schedule.totals, { email: "c", mark: "stick", delayMs: 3320 })
-  assert.equal(schedule.endMs, 3520)
+  assert.equal(schedule.endMs, 3310)
 })
 
 test("the second loss draws the axe", () => {
-  const history = [{ scores: [3, 3, 1], loser: "c" }]
+  const history = [{ scores: [3, 1, 3], loser: "b" }]
   const prev = snapshot([3, 2, 2], history)
   const next = snapshot([0, 0, 0], [...history, { scores: [3, 2, 3], loser: "b", axe: true }])
   const changes = scoreChanges(prev, next)
@@ -79,7 +76,6 @@ test("the second loss draws the axe", () => {
     { row: 1, email: "b", from: 2, to: 2, loss: "axe" },
     { row: 1, email: "c", from: 2, to: 3, loss: null },
   ])
-  assert.deepEqual(changes.totals, { email: "b", mark: "axe" })
 })
 
 test("missed snapshots or lower scores are shown without drawing", () => {
