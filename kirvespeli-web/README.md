@@ -34,11 +34,28 @@ liittyminen tehdään pelinäkymän `Liity peliin` -painikkeella.
 `ScoreCard` näyttää pelaajat istumajärjestyksessä, päättyneet pelit ja meneillään olevan pelin
 (korostettu rivi). Pisteet piirretään käsin piirretyn näköisinä merkkeinä (`ScoreMark`):
 1 = ympyrä, 2 = + pystyviiva, 3 = + vaakaviiva. Häviäjän ruutuun piirretään keppi tai kirves,
-erän päättävän kirveen jälkeen on paksu viiva, ja alarivillä on pelaajien kirveet ja avoin
-keppi. Kirves käyttää annettua `shared/icons/kirves-valk.png`-grafiikkaa ja keppi sen
+ja erän päättävän kirveen jälkeen on paksu viiva. Kirves käyttää annettua `shared/icons/kirves-valk.png`-grafiikkaa ja keppi sen
 varresta erotettua `keppi.png`-kuvaa. Pistemerkit käyttävät `currentColor`ia; häviömerkin
 värin voi vaihtaa CSS-muuttujalla
-`--score-loss-color`. Häviäjä voi ennen nostoa vaihtaa jakajan napsauttamalla pelaajan laatikkoa.
+`--score-loss-color`. Saman ruudun aiemmat vedot pysyvät samanmuotoisina pisteiden kasvaessa.
+
+Pistetaulukko on paperilappuna pöydän oikeassa alakulmassa (`ScoreSlip`). Lapun napautus avaa
+taulukon pöydän päälle; uusi napautus, napautus lapun ulkopuolelle tai Esc sulkee sen.
+Kun vahvistettu tilannekuva tuo uusia pisteitä, lappu avautuu itsestään viimeisen tikin
+näyttöajan (3 s) jälkeen, uudet pisteet piirretään vetona kerrallaan istumajärjestyksessä ja sen jälkeen keppi tai kirves
+(`ScoreMark`: viivat `stroke-dashoffset`-animaatiolla, keppi ja kirves pyyhkäisten), ja lappu
+sulkeutuu 2,5 s viimeisen merkin jälkeen, ellei katsoja ole avannut tai koskenut sitä.
+`scoreChanges.js` päättelee uudet merkit ja niiden ajoituksen; ajoitukset ovat `motion.js`:ssä.
+Merkit ovat DOM:ssa heti ja piilossa piirtoon asti, joten Redux-tilaa ei viivytetä.
+Ilman piirtoa näytetään ensimmäinen tilannekuva, pelin tai pelaajien vaihtuminen,
+WebSocket-yhteyden palautuminen, uusinta ja useamman pelin hyppäys kerralla. Vähennetyn
+liikkeen asetuksella merkit ilmestyvät samaan aikaan ilman piirtoa ja lappu ilman siirtymää.
+
+Pelin viestit avataan pelin otsikon vieressä olevasta kuvakkeesta (`MessagesButton`); piste
+kuvakkeessa kertoo viesteistä, jotka ovat tulleet viimeisen katsomisen jälkeen. Uusinnassa
+kuvake on Tilanne-otsikon vieressä.
+
+Häviäjä voi ennen nostoa vaihtaa jakajan napsauttamalla pelaajan laatikkoa.
 `DealerSelector` näyttää ohjeen pöydän keskellä; valinta toimii myös näppäimistöllä.
 Nykyinen jakaja on merkitty, eikä hänen valintansa lähetä uutta toimintoa. Jakajaa voi
 valita vain `SET_DEALER`-toiminnon ollessa sallittu; uusinnassa valinta on poistettu käytöstä.
@@ -82,7 +99,8 @@ Käyttäjän tilassa `loading` on `true` automaattisen kirjautumisen ajan (`AUTO
 `Table.jsx`:n `seatPresets`-taulukosta 1–6 pelaajalle. Katsoja on alhaalla, seuraava pelaaja
 vasemmalla ja pelijärjestys jatkuu myötäpäivään. Sivustakatsoja ja uusinta käyttävät
 backendin istumajärjestystä. Uusinnassa ei ole omaa kättä, toimintopalkkia tai valintoja.
-Pisteet ja viestit ovat leveällä näytöllä oikealla, kapealla pöydän alapuolella.
+Pöytä on koko pelialueen levyinen (enintään 1000 px); pisteet ovat pöydän lapussa ja viestit
+otsikon kuvakkeen takana.
 
 Live-peli välittää `fitViewport`-asetuksen `RenderGame`-komponentille. Puhelimessa ja
 tabletilla pöytä käyttää otsikon jälkeen jäljellä olevan näkymäkorkeuden; käsi ja
@@ -100,7 +118,10 @@ näkymäkorkeuteen. `KirvesGame`-sivu näyttää yläpalkin ja otsikon kanssa ko
 sellaisena kuin se on live-pelissä. Mukana ovat 1–6 pelaajaa, puhe, valtin valinta, ylimääräinen kortti,
 hylkäys ja poistumistilanteet. Tuettu mobiiliasettelu on puhelimessa pystysuunta ja iPad
 Pro 11" (4. sukupolvi) pysty- ja vaakasuunta; puhelimen vaakasuuntaa ei ole sovitettu.
-Pisteet ja viestit pysyvät kapealla näytöllä pöydän alla ja ovat vieritettävissä.
+Esikatselun `ScoreSlip`-sivun `drawing`-variantit käyvät läpi jakojen pisteet, kepin ja
+kirveen sääntöjen mukaisesti (Seuraava tilanne, Toista, Alusta), myös näkymäkorkeuteen
+sovitettuna. `ScoreMark`-sivun `drawing` piirtää kaikki merkit, ja `MessagesButton`-sivu
+näyttää viestikuvakkeen.
 
 Yhteinen MUI-teema on `src/theme.js`:ssä; sovellus ja esikatselu käyttävät sitä.
 Vihreä huopatausta tehdään CSS-liukuvärillä. Abel ja Alegreya Sans SC 700 tulevat

@@ -5,6 +5,7 @@ import TableCenter, { Deck } from "./TableCenter"
 import Hand from "./Hand"
 import ActionBar from "./ActionBar"
 import CardMotion from "./CardMotion"
+import ScoreSlip from "./ScoreSlip"
 
 // Index zero is the viewer; play proceeds clockwise from screen left.
 export const seatPresets = {
@@ -50,6 +51,7 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motio
           <Deck game={game} />
         </div>
         <TableCenter game={game} selectingDealer={selectingDealer} join={join} />
+        <ScoreSlip game={game} animate={!isReplay} resetKey={motionResetKey} />
       </div>
       {!isReplay && (
         <div className="hand-area">

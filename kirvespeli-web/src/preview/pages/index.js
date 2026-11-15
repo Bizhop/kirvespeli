@@ -7,6 +7,8 @@ import KirvesGames from "./KirvesGames"
 import Log from "./Log"
 import Messages from "./Messages"
 import ScoreCard from "./ScoreCard"
+import ScoreSlip from "./ScoreSlip"
+import MessagesButton from "./MessagesButton"
 import ScoreMark from "./ScoreMark"
 import DealerSelector from "./DealerSelector"
 import SuitSelector from "./SuitSelector"
@@ -34,7 +36,9 @@ export default [
   KirvesGames,
   Log,
   Messages,
+  MessagesButton,
   ScoreCard,
+  ScoreSlip,
   ScoreMark,
   DealerSelector,
   SuitSelector,

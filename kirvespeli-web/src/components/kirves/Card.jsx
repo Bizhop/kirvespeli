@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { SvgImage } from "../shared/images"
-import { prefersReducedMotion } from "./motion"
+import { MOTION, prefersReducedMotion } from "./motion"
 import { useCardMotionEnabled } from "./CardMotion"
 
 // Face changes after mount fold the previous face away and unfold the new one. Only the
@@ -40,7 +40,10 @@ const Card = ({
   const revealing = (winChanged ? won : win.revealing) && motionEnabled
   useEffect(() => {
     if (!revealing) return
-    const timeout = setTimeout(() => setWin(current => ({ ...current, revealing: false })), 3000)
+    const timeout = setTimeout(
+      () => setWin(current => ({ ...current, revealing: false })),
+      MOTION.trickRevealMs,
+    )
     return () => clearTimeout(timeout)
   }, [card, won, revealing])
   const [flipped, setFlipped] = useState(false)
