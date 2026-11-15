@@ -25,6 +25,7 @@ backendin `maxPlayers`-kentästä. Täyteen peliin ei voi liittyä. Peli alkaa v
 on vähintään kaksi; siihen asti pelinäkymässä näkyy teksti `Odotetaan pelaajia (vähintään 2)`. Liittymisyrityksen
 jälkeen pelitilanne haetaan uudelleen myös virheen yhteydessä; hylätyn yrityksen
 yhteydessä näytetään backendin virheviesti, esimerkiksi `Peli on täynnä`.
+Aulan pelilista voidaan suodattaa painikkeilla `Liityttävät` (`canJoin`), `Omat pelit` (`joined`: käyttäjä on pelaajana) ja `Kaikki` (oletus).
 Aulan pelinumero on laatikoitu painikelinkki, joka avaa pelinäkymän. Varsinainen
 liittyminen tehdään pelinäkymän `Liity peliin` -painikkeella.
 

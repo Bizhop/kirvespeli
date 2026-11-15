@@ -84,3 +84,11 @@ for (const [name, game] of views) {
     }
   })
 }
+
+test("lobby filters: joinable, own games and all", async () => {
+  const { filterGames } = await import("../src/components/kirves/gameFilter.js")
+  const ids = filter => filterGames(fixtures.games, filter).map(g => g.id)
+  assert.deepEqual(ids("joinable"), [15])
+  assert.deepEqual(ids("mine"), [12, 16])
+  assert.deepEqual(ids("all"), [12, 14, 15, 16])
+})

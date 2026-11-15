@@ -68,6 +68,7 @@ public class KirvesControllerTest extends TestBase {
         assertEquals(1, response.length);
         var brief = response[0];
         assertEquals(1, brief.getPlayers());
+        assertEquals(true, brief.getJoined());
         assertEquals(TEST_USER_EMAIL, brief.getAdmin().getEmail());
     }
 
@@ -75,6 +76,7 @@ public class KirvesControllerTest extends TestBase {
         var brief = GameBrief.builder()
                 .id(0L)
                 .players(1)
+                .joined(true)
                 .admin(getTestUser(TEST_USER_EMAIL))
                 .build();
         return Collections.singletonList(brief);
