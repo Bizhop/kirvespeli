@@ -47,19 +47,31 @@ export const scoreChanges = (prev, next) => {
 
 export const cellKey = (row, email) => `${row}:${email}`
 
-// When each new mark is drawn, in ms from the snapshot: one pen, cell after cell.
+// When each new mark is drawn, in ms from the snapshot: one pen, first the new points cell
+// after cell in seating order, then the stick or axe.
 //   { cells: { [cellKey]: { drawnStrokes, delayMs, lossDelayMs } }, startMs, endMs }
 export const scoreSchedule = (changes, timing) => {
   const { startMs, strokeMs, lossMs, staggerMs } = timing
   let at = startMs
-  const cells = {}
-  changes.cells.forEach((cell, i) => {
-    if (i > 0) at += staggerMs
+  let first = true
+  const next = durationMs => {
+    if (!first) at += staggerMs
+    first = false
     const delayMs = at
-    at += (cell.to - cell.from) * strokeMs
-    const lossDelayMs = cell.loss ? at : null
-    if (cell.loss) at += lossMs
-    cells[cellKey(cell.row, cell.email)] = { drawnStrokes: cell.from, delayMs, lossDelayMs }
-  })
+    at += durationMs
+    return delayMs
+  }
+  const cells = {}
+  for (const cell of changes.cells) {
+    const strokes = cell.to - cell.from
+    cells[cellKey(cell.row, cell.email)] = {
+      drawnStrokes: cell.from,
+      delayMs: strokes > 0 ? next(strokes * strokeMs) : startMs,
+      lossDelayMs: null,
+    }
+  }
+  for (const cell of changes.cells) {
+    if (cell.loss) cells[cellKey(cell.row, cell.email)].lossDelayMs = next(lossMs)
+  }
   return { cells, startMs, endMs: at }
 }

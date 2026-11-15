@@ -42,7 +42,7 @@ värin voi vaihtaa CSS-muuttujalla
 Pistetaulukko on paperilappuna pöydän oikeassa alakulmassa (`ScoreSlip`). Lapun napautus avaa
 taulukon pöydän päälle; uusi napautus, napautus lapun ulkopuolelle tai Esc sulkee sen.
 Kun vahvistettu tilannekuva tuo uusia pisteitä, lappu avautuu itsestään viimeisen tikin
-näyttöajan (3 s) jälkeen, uudet merkit piirretään vetona kerrallaan istumajärjestyksessä
+näyttöajan (3 s) jälkeen, uudet pisteet piirretään vetona kerrallaan istumajärjestyksessä ja sen jälkeen keppi tai kirves
 (`ScoreMark`: viivat `stroke-dashoffset`-animaatiolla, keppi ja kirves pyyhkäisten), ja lappu
 sulkeutuu 2,5 s viimeisen merkin jälkeen, ellei katsoja ole avannut tai koskenut sitä.
 `scoreChanges.js` päättelee uudet merkit ja niiden ajoituksen; ajoitukset ovat `motion.js`:ssä.

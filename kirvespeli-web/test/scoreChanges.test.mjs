@@ -61,10 +61,20 @@ test("a finished game draws its last points and the stick", () => {
   const schedule = scoreSchedule(changes, timing)
   assert.deepEqual(schedule.cells[cellKey(0, "c")], {
     drawnStrokes: 1,
-    delayMs: 3110,
+    delayMs: 3000,
     lossDelayMs: 3110,
   })
   assert.equal(schedule.endMs, 3310)
+})
+
+test("the points of a finished game are drawn before the loss mark", () => {
+  const prev = snapshot([2, 2, 2])
+  const next = snapshot([0, 0, 0], [{ scores: [2, 3, 3], loser: "a" }])
+  const schedule = scoreSchedule(scoreChanges(prev, next), timing)
+  assert.equal(schedule.cells[cellKey(0, "b")].delayMs, 3000)
+  assert.equal(schedule.cells[cellKey(0, "c")].delayMs, 3110)
+  assert.equal(schedule.cells[cellKey(0, "a")].lossDelayMs, 3220)
+  assert.equal(schedule.endMs, 3420)
 })
 
 test("the second loss draws the axe", () => {
