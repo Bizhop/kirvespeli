@@ -299,3 +299,17 @@ export const departureGameEndGame = new KirvesGame({
   .speak("Ville", "KEEP")
   .playOn()
   .view("Ville")
+
+// --- Peeks from the game list: the lobby games as seen by someone not seated (no hands).
+const waitingPeek = new KirvesGame({ count: 2, id: 15 })
+waitingPeek.resetActions()
+export const peekGames = {
+  12: {
+    ...threePlayerHand()
+      .plays(...tricks.slice(0, 11))
+      .view("Katsoja"),
+    id: 12,
+  },
+  14: { ...spectatorGame, id: 14 },
+  15: { ...waitingPeek.view("Katsoja"), canJoin: true, waitingForPlayers: true },
+}

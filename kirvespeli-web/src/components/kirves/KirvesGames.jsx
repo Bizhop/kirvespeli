@@ -17,13 +17,16 @@ import {
 import CheckIcon from "@mui/icons-material/Check"
 import ListIcon from "@mui/icons-material/List"
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
+import VisibilityIcon from "@mui/icons-material/Visibility"
 
 import { formatString } from "../shared/dateFormat"
 import { playerName } from "../shared/playerName"
 import { GAME_FILTERS, filterGames } from "./gameFilter"
+import GamePeek from "./GamePeek"
 
-const KirvesGames = ({ games, user, getLog, deleteGame }) => {
+const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
   const [filter, setFilter] = useState("all")
+  const [peeked, setPeeked] = useState(null)
   const visibleGames = filterGames(games, filter)
   return (
     <>
@@ -52,6 +55,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => {
               <TableCell>Voi liittyä</TableCell>
               <TableCell />
               <TableCell />
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -75,6 +79,18 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => {
                   {game.players}/{game.maxPlayers}
                 </TableCell>
                 <TableCell>{game.canJoin && <CheckIcon />}</TableCell>
+                <TableCell>
+                  {fetchGame && (
+                    <Tooltip title="Vilkaise peliä">
+                      <IconButton
+                        onClick={() => setPeeked(game)}
+                        aria-label={`Vilkaise peliä ${game.id}`}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </TableCell>
                 <TableCell>
                   {user.email === game.admin.email && (
                     <Tooltip title="Avaa loki">
@@ -100,6 +116,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      {peeked && <GamePeek brief={peeked} fetchGame={fetchGame} onClose={() => setPeeked(null)} />}
     </>
   )
 }

@@ -5,7 +5,15 @@ import { path, pathOr, pick } from "ramda"
 import { Tooltip, IconButton, Box, Grid, Button, Alert } from "@mui/material"
 import RefreshIcon from "@mui/icons-material/Refresh"
 
-import { init, getGames, deleteGame, getLog, getReplay, restoreGame } from "./kirvesActions"
+import {
+  init,
+  getGames,
+  deleteGame,
+  getLog,
+  getReplay,
+  restoreGame,
+  peekGame,
+} from "./kirvesActions"
 import RenderGame from "./RenderGame"
 import KirvesGames from "./KirvesGames"
 import Log from "./Log"
@@ -42,7 +50,7 @@ export const KirvesContainer = props => {
           </Tooltip>
         </Grid>
       </Grid>
-      <KirvesGames {...pick(["games", "user", "getLog", "deleteGame"], props)} />
+      <KirvesGames {...pick(["games", "user", "getLog", "deleteGame", "fetchGame"], props)} />
       {props.logVisible && (
         <Log
           {...pick(["logId", "logItems", "selectedLogIndex", "getReplay", "restoreGame"], props)}
@@ -88,6 +96,11 @@ const mapDispatchToProps = dispatch => ({
   getReplay: params => dispatch(getReplay(params)),
   restoreGame: params => dispatch(restoreGame(params)),
   getGames: () => dispatch(getGames()),
+  // resolves with the game snapshot, rejects when the request fails
+  fetchGame: gameId =>
+    dispatch(peekGame(gameId)).then(result =>
+      result.error ? Promise.reject(result.error) : result.payload.data,
+    ),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(KirvesContainer)
