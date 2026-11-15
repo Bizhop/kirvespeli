@@ -1,7 +1,5 @@
 import React, { useLayoutEffect, useRef } from "react"
 import Table from "./Table"
-import ScoreCard from "./ScoreCard"
-import Messages from "./Messages"
 
 // Keeps --game-top at the element's distance from the document top, so the fit layout can
 // size the table to the rest of the viewport. Anything above it (site header, game heading,
@@ -32,19 +30,13 @@ const useGameTop = enabled => {
   return ref
 }
 
-// Both live games and log replays use the same seat order and table rendering.
+// Both live games and log replays use the same seat order and table rendering. The score
+// sheet is a note on the table (ScoreSlip); messages are behind the title (MessagesButton).
 export const RenderGame = ({ fitViewport = false, ...props }) => {
   const ref = useGameTop(fitViewport)
   return (
     <div className={`game-layout${fitViewport ? " fit-viewport" : ""}`} ref={ref}>
       <Table {...props} />
-      <aside className="game-sidebar">
-        <h2>Pisteet</h2>
-        <ScoreCard game={props.game} />
-        <div className="messages-panel">
-          <Messages messages={props.game.messages ?? []} />
-        </div>
-      </aside>
     </div>
   )
 }

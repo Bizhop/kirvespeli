@@ -7,6 +7,7 @@ import { Box } from "@mui/material"
 import { getGame, joinGame, action, showAllCards } from "./kirvesActions"
 import RenderGame from "./RenderGame"
 import Icon from "../shared/Icon"
+import MessagesButton from "./MessagesButton"
 import useGameRefresh from "./useGameRefresh"
 
 export const KirvesGame = ({
@@ -43,6 +44,7 @@ export const KirvesGame = ({
           <h1 className="game-heading">
             <Icon name="axe" size={44} />
             Kirves (Peli {game.id})
+            <MessagesButton key={game.id} messages={game.messages ?? []} />
           </h1>
           <RenderGame
             game={game}

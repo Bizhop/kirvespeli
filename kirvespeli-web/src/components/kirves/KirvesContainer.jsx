@@ -9,6 +9,7 @@ import { init, getGames, deleteGame, getLog, getReplay, restoreGame } from "./ki
 import RenderGame from "./RenderGame"
 import KirvesGames from "./KirvesGames"
 import Log from "./Log"
+import MessagesButton from "./MessagesButton"
 
 export const KirvesContainer = props => {
   useEffect(() => {
@@ -49,6 +50,10 @@ export const KirvesContainer = props => {
       )}
       {props.replay && (
         <Box className="kirves-container">
+          <h2 className="game-heading">
+            Tilanne
+            <MessagesButton key={props.replay.id} messages={props.replay.messages ?? []} />
+          </h2>
           <RenderGame
             game={props.replay}
             isReplay={true}

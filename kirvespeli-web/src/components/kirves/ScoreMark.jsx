@@ -1,10 +1,14 @@
 import React, { useId } from "react"
 import { icons } from "../shared/Icon"
 import stick from "url:../shared/icons/keppi.png"
+import { MOTION } from "./motion"
 
-// Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes.
+// Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes, and a
+// higher score only adds strokes: the earlier ones keep their shape.
 //   score 0: empty, 1: circle, 2: + vertical stroke, 3: + horizontal stroke
 //   loss "stick" (first loss of a match) or "axe" (second loss) is drawn over a faded tally.
+// Drawing: strokes from drawnStrokes on are drawn one by one from delayMs (style.css
+// .score-draw), and the loss mark is wiped in at lossDelayMs. Without them, all is shown.
 // Tallies use currentColor. Loss marks mask the supplied axe art / extracted handle
 // with --score-loss-color, preserving the original outlines while allowing recoloring.
 
@@ -86,10 +90,22 @@ const label = (score, loss) =>
     .filter(Boolean)
     .join(", ") || "0 p"
 
-const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
+const drawStyle = (delayMs, durationMs) => ({
+  animationDelay: `${delayMs}ms`,
+  animationDuration: `${durationMs}ms`,
+})
+
+const ScoreMark = ({
+  score = 0,
+  loss = null,
+  seed = "",
+  size = 32,
+  drawnStrokes = Infinity,
+  delayMs = 0,
+  lossDelayMs = null,
+}) => {
   const lossMaskId = useId()
-  const rand = random(`${seed}:${score}:${loss}`)
-  const tally = tallyPaths(rand, score)
+  const tally = tallyPaths(random(seed), score)
   return (
     <svg
       width={size}
@@ -108,9 +124,22 @@ const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
         strokeLinejoin="round"
         opacity={loss ? 0.4 : 1}
       >
-        {tally.map((d, i) => (
-          <path key={i} d={d} />
-        ))}
+        {tally.map((d, i) =>
+          i < drawnStrokes ? (
+            <path key={i} d={d} />
+          ) : (
+            <path
+              key={i}
+              d={d}
+              pathLength="1"
+              className="score-draw"
+              style={drawStyle(
+                delayMs + (i - drawnStrokes) * MOTION.scoreStrokeMs,
+                MOTION.scoreStrokeMs,
+              )}
+            />
+          ),
+        )}
       </g>
       {loss && (
         <>
@@ -138,7 +167,11 @@ const ScoreMark = ({ score = 0, loss = null, seed = "", size = 32 }) => {
             width="40"
             height="40"
             mask={`url(#${lossMaskId})`}
-            style={{ fill: "var(--score-loss-color, currentColor)" }}
+            className={lossDelayMs == null ? undefined : "score-loss-draw"}
+            style={{
+              fill: "var(--score-loss-color, currentColor)",
+              ...(lossDelayMs == null ? {} : drawStyle(lossDelayMs, MOTION.scoreLossMs)),
+            }}
           />
         </>
       )}

@@ -1,18 +1,19 @@
 import React from "react"
-import { List, ListItem, ListItemText, Box, Grid } from "@mui/material"
+import { List, ListItem, ListItemText } from "@mui/material"
 import { reverse } from "ramda"
 
-const Messages = ({ messages }) => (
-  <Box>
-    <h4 style={{ textAlign: "right" }}>Viestit:</h4>
-    <List dense>
+// Newest first.
+const Messages = ({ messages }) =>
+  messages.length ? (
+    <List dense className="messages-list">
       {reverse(messages).map((message, index) => (
         <ListItem key={`li-${index}`}>
           <ListItemText primary={message} />
         </ListItem>
       ))}
     </List>
-  </Box>
-)
+  ) : (
+    <p className="messages-empty">Ei viestejä</p>
+  )
 
 export default Messages
