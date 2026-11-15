@@ -2,7 +2,7 @@ import React from "react"
 import { path } from "ramda"
 import { NavLink } from "react-router"
 import { connect } from "react-redux"
-import { Box, Grid, IconButton, Tooltip } from "@mui/material"
+import { Box, Grid, IconButton, Tooltip, Typography } from "@mui/material"
 import HomeIcon from "@mui/icons-material/Home"
 import GamesIcon from "@mui/icons-material/Games"
 import LogoutIcon from "@mui/icons-material/Logout"
@@ -28,7 +28,7 @@ const MyNavLink = ({ to, label, icon }) => (
   </Grid>
 )
 
-export const Header = ({ loggedIn, logout }) => (
+export const Header = ({ loggedIn, playerName, logout }) => (
   <Box sx={{ flexGrow: 1 }}>
     <Grid container spacing={1} className="site-header-row">
       <MyNavLink to="/" label="Etusivu" icon={<HomeIcon />} />
@@ -44,8 +44,21 @@ export const Header = ({ loggedIn, logout }) => (
             sx={{
               display: "flex",
               justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 1,
             }}
           >
+            {playerName && (
+              <Typography
+                component="span"
+                noWrap
+                title={playerName}
+                data-testid="header-player-name"
+                sx={{ maxWidth: { xs: 120, sm: 280 } }}
+              >
+                {playerName}
+              </Typography>
+            )}
             <Tooltip title="Kirjaudu ulos">
               <IconButton onClick={() => logout()} variant="contained" color="error">
                 <LogoutIcon />
@@ -60,6 +73,7 @@ export const Header = ({ loggedIn, logout }) => (
 
 const mapStateToProps = state => ({
   loggedIn: path(["user", "email"], state),
+  playerName: path(["user", "nickname"], state) || path(["user", "email"], state),
 })
 
 const mapDispatchToProps = dispatch => ({
