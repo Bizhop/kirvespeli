@@ -13,7 +13,6 @@ import fi.bizhop.kirves.util.JsonUtil;
 import fi.bizhop.kirves.util.TransactionHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -133,18 +132,20 @@ public class KirvesServiceTest {
         assertThrows(KirvesGameException.class, () -> this.kirvesService.action(0L, continueGame, a));
     }
 
-    //possibly flaky (fails in CI at the expireDepartures assertion); disabled until issue #86 is resolved
-    @Disabled("Possibly flaky, see issue #86")
     @Test
     public void testExpireDepartures() throws Exception {
         var a = getTestUser("a@example.com");
         var b = getTestUser("b@example.com");
-        mockGame(pendingDepartureGame(a, b, null));
+        var db = mockGame(pendingDepartureGame(a, b, null));
         assertFalse(this.kirvesService.expireDepartures(0L));
         assertTrue(this.kirvesService.getGame(0L).out().getScoresHistory().isEmpty());
 
-        this.setup();
-        var db = mockGame(pendingDepartureGame(a, b, System.currentTimeMillis() - 1));
+        //Drive expiry directly so the scheduler cannot race the test (issue #86).
+        //Loading a game with an expired deadline schedules the timeout immediately,
+        //and the scheduler thread could acknowledge the departures first.
+        this.kirvesService.shutdown();
+        var data = (GameDataPOJO) ReflectionTestUtils.getField(this.kirvesService.getGame(0L), "data");
+        data.departureDeadline = System.currentTimeMillis() - 1;
         assertTrue(this.kirvesService.expireDepartures(0L));
         var out = this.kirvesService.getGame(0L).out();
         assertEquals(1, out.getScoresHistory().size());
@@ -152,6 +153,22 @@ public class KirvesServiceTest {
         assertFalse(db.gameData.contains("\"departurePending\":true"));
         //the transaction was released
         this.kirvesService.action(0L, GameIn.builder().action(CUT).build(), getTestUser(out.getTurn()));
+    }
+
+    @Test
+    public void testDepartureTimeoutIsScheduledOnLoad() throws Exception {
+        var a = getTestUser("a@example.com");
+        var b = getTestUser("b@example.com");
+        var db = mockGame(pendingDepartureGame(a, b, System.currentTimeMillis() - 1));
+
+        //loading a game with an expired deadline lets the scheduler acknowledge the departures
+        this.kirvesService.getGame(0L);
+        verify(this.messageService, timeout(5000)).send("/topic/refresh", "0");
+
+        var out = this.kirvesService.getGame(0L).out();
+        assertEquals(1, out.getScoresHistory().size());
+        assertNull(out.getDepartureSecondsLeft());
+        assertFalse(db.gameData.contains("\"departurePending\":true"));
     }
 
     @Test
