@@ -7,6 +7,7 @@ export const INIT_FAILURE = "kirves/INIT_FAIL"
 export const GET_GAME = "kirves/GET_GAME"
 export const GET_GAME_SUCCESS = "kirves/GET_GAME_SUCCESS"
 export const GET_GAME_FAILURE = "kirves/GET_GAME_FAIL"
+export const PEEK_GAME = "kirves/PEEK_GAME"
 export const GET_GAMES = "kirves/GET_GAMES"
 export const GET_GAMES_SUCCESS = "kirves/GET_GAMES_SUCCESS"
 export const GET_GAMES_FAILURE = "kirves/GET_GAMES_FAIL"
@@ -40,6 +41,14 @@ export const init = () => ({
 
 export const getGame = gameId => ({
   type: GET_GAME,
+  payload: getPayload({
+    url: `api/kirves/${gameId}`,
+  }),
+})
+
+// Not reduced: the game list's peek dialog keeps the snapshot (GamePeek)
+export const peekGame = gameId => ({
+  type: PEEK_GAME,
   payload: getPayload({
     url: `api/kirves/${gameId}`,
   }),
