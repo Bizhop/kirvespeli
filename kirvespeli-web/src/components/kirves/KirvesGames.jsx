@@ -19,6 +19,7 @@ import ListIcon from "@mui/icons-material/List"
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
 
 import { formatString } from "../shared/dateFormat"
+import { playerName } from "../shared/playerName"
 import { GAME_FILTERS, filterGames } from "./gameFilter"
 
 const KirvesGames = ({ games, user, getLog, deleteGame }) => {
@@ -46,6 +47,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => {
             <TableRow>
               <TableCell>Peli</TableCell>
               <TableCell>Pvm</TableCell>
+              <TableCell>Aloittaja</TableCell>
               <TableCell>Pelaajia</TableCell>
               <TableCell>Voi liittyä</TableCell>
               <TableCell />
@@ -68,6 +70,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame }) => {
                   </Button>
                 </TableCell>
                 <TableCell>{formatString(game.createdAt)}</TableCell>
+                <TableCell>{playerName(game.admin)}</TableCell>
                 <TableCell>
                   {game.players}/{game.maxPlayers}
                 </TableCell>
