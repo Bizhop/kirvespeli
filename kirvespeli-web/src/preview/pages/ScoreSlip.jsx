@@ -2,7 +2,8 @@ import React, { useState } from "react"
 import { Box, Button } from "@mui/material"
 
 import RenderGame from "../../components/kirves/RenderGame"
-import { midHandGame, handEndGame, scoreSheetGame, tableGames } from "../data/games"
+import { midHandGame, scoreSheetGame, tableGames } from "../data/games"
+import { scoreSteps as steps } from "../data/scoreSteps"
 import { logAction } from "../logAction"
 
 const props = {
@@ -10,43 +11,6 @@ const props = {
   join: logAction("join"),
   showAllCards: logAction("showAllCards"),
 }
-
-// Score snapshots after handEndGame, following the scoring rules: a hand adds points, a game
-// ends when one player is left under three points, and the second loss of a match is the axe.
-const withScores = (game, points) => ({
-  ...game,
-  scores: game.scores.map((s, i) => ({ ...s, score: points[i] })),
-})
-const finish = (game, points) => {
-  const entry = withScores(game, points).scores
-  const loser = entry.find(s => s.score < 3).email
-  let sticks = new Set()
-  for (const h of game.scoresHistory) {
-    if (h.axe) sticks = new Set()
-    else sticks.add(h.loser)
-  }
-  return {
-    ...withScores(game, [0, 0, 0]),
-    scoresHistory: [
-      ...game.scoresHistory,
-      { scores: entry.map(s => ({ ...s })), loser, axe: sticks.has(loser) },
-    ],
-  }
-}
-// Ville, Vesa, Terhi
-const terhiStick = finish(handEndGame, [3, 3, 0])
-const nextHand = withScores(terhiStick, [0, 1, 1])
-const threeStrokes = withScores(terhiStick, [1, 2, 3])
-const villeAxe = finish(threeStrokes, [1, 3, 3])
-
-const steps = [
-  ["Käsi kesken", midHandGame],
-  ["Ville saa pisteen", handEndGame],
-  ["Peli päättyy: Terhille keppi", terhiStick],
-  ["Uusi peli: Vesa ja Terhi saavat pisteen", nextHand],
-  ["Kolme pelaajaa saa pisteitä", threeStrokes],
-  ["Peli päättyy: Villelle kirves", villeAxe],
-]
 
 // Steps through confirmed snapshots. Toista shows the previous snapshot without drawing and then
 // the current one again; Alusta returns to the first one without drawing.

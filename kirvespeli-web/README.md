@@ -118,8 +118,8 @@ näkymäkorkeuteen. `KirvesGame`-sivu näyttää yläpalkin ja otsikon kanssa ko
 sellaisena kuin se on live-pelissä. Mukana ovat 1–6 pelaajaa, puhe, valtin valinta, ylimääräinen kortti,
 hylkäys ja poistumistilanteet. Tuettu mobiiliasettelu on puhelimessa pystysuunta ja iPad
 Pro 11" (4. sukupolvi) pysty- ja vaakasuunta; puhelimen vaakasuuntaa ei ole sovitettu.
-Esikatselun `ScoreSlip`-sivun `drawing`-variantit käyvät läpi käden pisteet, kepin, usean
-pelaajan pisteet ja kirveen (Seuraava tilanne, Toista, Alusta), myös näkymäkorkeuteen
+Esikatselun `ScoreSlip`-sivun `drawing`-variantit käyvät läpi jakojen pisteet, kepin ja
+kirveen sääntöjen mukaisesti (Seuraava tilanne, Toista, Alusta), myös näkymäkorkeuteen
 sovitettuna. `ScoreMark`-sivun `drawing` piirtää kaikki merkit, ja `MessagesButton`-sivu
 näyttää viestikuvakkeen.
 
