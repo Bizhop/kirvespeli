@@ -92,7 +92,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {user.email === game.admin.email && (
+                  {user?.email === game.admin.email && (
                     <Tooltip title="Avaa loki">
                       <IconButton
                         onClick={() => getLog({ gameId: game.id, handId: game.lastHandId })}
@@ -103,7 +103,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {user.email === game.admin.email && (
+                  {user?.email === game.admin.email && (
                     <Tooltip title="Poista peli">
                       <IconButton onClick={() => deleteGame(game.id)}>
                         <DeleteForeverIcon />

@@ -4,15 +4,40 @@ import { DashContainer } from "../../components/dash/DashContainer"
 import { user } from "../data/users"
 import { logAction } from "../logAction"
 
-const updateUser = logAction("updateUser")
+const loginButton = (
+  <button onClick={() => logAction("login")("credential")}>Google-kirjautuminen</button>
+)
+
+const handlers = {
+  loginButton,
+  login: logAction("login"),
+  loginFailed: logAction("loginFailed"),
+  updateUser: logAction("updateUser"),
+}
 
 export default {
   title: "Dash",
   group: "Containers",
   variants: {
-    loggedIn: () => <DashContainer user={user} updateUser={updateUser} />,
-    error: () => (
-      <DashContainer user={user} updateUser={updateUser} error="Nickname on jo käytössä" />
+    loggedIn: () => <DashContainer {...handlers} status="authenticated" user={user} />,
+    updating: () => <DashContainer {...handlers} status="authenticated" user={user} updating />,
+    updateError: () => (
+      <DashContainer
+        {...handlers}
+        status="authenticated"
+        user={user}
+        updateError="Nickname on jo käytössä"
+      />
     ),
+    loggedOut: () => <DashContainer {...handlers} status="anonymous" user={null} />,
+    loginError: () => (
+      <DashContainer
+        {...handlers}
+        status="anonymous"
+        user={null}
+        loginError="Kirjautuminen epäonnistui"
+      />
+    ),
+    restoring: () => <DashContainer {...handlers} status="restoring" user={null} />,
   },
 }

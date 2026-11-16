@@ -17,7 +17,7 @@ deno task preview         # komponenttien esikatselu osoitteeseen http://localho
 deno task format          # prettier
 deno task typecheck       # deno check: TypeScript-tiedostot, tiukka tila
 deno task lint:hooks      # deno lint, vain react-rules-of-hooks
-deno task test          # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
+deno task test            # käden järjestys, kortti-indeksit, liikkeen tilavertailu, esikatseludata, API-kutsut ja istunto
 ```
 
 ## Pelaajamäärä ja liittyminen
@@ -89,17 +89,18 @@ Tyyppitarkistus tehdään `deno check`illä (Denon oma TypeScript); `tsc`, `type
 tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-jsx`, `vite/client`) ovat
 `deno.json`:n `compilerOptions`-kentässä. Editorissa tarvitaan Denon kielipalvelin.
 
-- Muunnettu: `src/types/kirves.ts` (backendin sopimukset), `kirves/`-hakemiston puhtaat apurit
+- Muunnettu: `src/types/kirves.ts` (backendin sopimukset), `src/api/`, `src/auth/` (`token`, `session`,
+  `AuthProvider`, `useAuth`), `kirves/`-hakemiston puhtaat apurit
   (`handOrder`, `playableCards`, `turnState`, `scoreChanges`, `cardMotion`, `motion`) sekä
   `vite.config.ts` ja `vite.preview.config.ts`. Komponentit, Redux, `Api.js` ja esikatselun moottori
   ovat edelleen JavaScriptiä, eikä JS:ää tarkisteta (`checkJs` pois).
 - `typecheck`-tehtävä listaa TS-tiedostot (`src/types/*.ts`, `src/components/kirves/*.ts`,
-  konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
+  `src/api/*.ts`, `src/auth/*.ts(x)`, `test/*.ts`, konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
   `deno check` seuraa tuonteja, eikä Deno löydä JS:n tuonteja ilman päätettä (`./components/App`),
   joten tarkistus rajataan TS-tiedostoihin.
 - Jokaisen TS-tiedoston tuonnissa on `.ts`-pääte, myös JS-tiedostoista (`"./handOrder.ts"`).
-- Testit (`test/*.mjs`) ajetaan `deno test`illä suoraan TS-tiedostoja vasten, mutta niitä ei
-  tyyppitarkisteta ennen kuin ne muunnetaan `.ts`:ksi.
+- Testit ajetaan `deno test`illä. `test/*.mjs`-testejä ei tyyppitarkisteta; uudet testit (`http`,
+  `kirvesApi`, `session`) ovat `.ts`-tiedostoja (`node:test`) ja mukana `typecheck`issa.
 - `lint:hooks` ajaa vain säännön `react-rules-of-hooks`. Deno ei tarkista `exhaustive-deps`-sääntöä;
   ESLintiä ei oteta käyttöön.
 - `src/types/kirves.ts` kuvaa backendin JSON:n staattisesti. Se ei validoi vastauksia ajon
@@ -124,8 +125,38 @@ tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-js
 - Kehitys: `.env.development` (`VITE_API_URL` http://localhost:8080, `VITE_WEB_SOCKET_URL` `ws://localhost:8080/api/refresh`).
 - Tuotanto: https://kirvespeli.bizhop.fi (`.env.production`, samat `VITE_`-muuttujat). Backend on saman osoitteen `/api`-polun takana, WebSocket `wss://kirvespeli.bizhop.fi/api/refresh`. Proxy-vaatimukset ovat backendin README:ssä.
 
-## Kirjautumistila
-Käyttäjän tilassa `loading` on `true` automaattisen kirjautumisen ajan (`AUTO_LOGIN` -> `AUTO_LOGIN_SUCCESS` / `AUTO_LOGIN_FAIL`). Etusivulle ohjataan vasta kun `loading` on `false` eikä käyttäjää ole kirjautuneena. Jos tokenia ei ole, automaattista kirjautumista ei yritetä.
+## API-kutsut ja kirjautuminen
+
+`src/api/` sisältää tyypitetyt `fetch`-kutsut. `http.ts` (`request`, `apiUrl`, `ApiError`, `isAbortError`)
+lisää osoitteeseen `VITE_API_URL` + `/api/` ja lähettää `Authorization`-otsakkeen sellaisenaan
+(ei `Bearer`-etuliitettä; backendin arvo alkaa `JWT `). Tyhjä vastaus on `undefined`. Virhe on `ApiError`
+(`kind` `http` tai `network`, `status`, `message` backendin `message`-kentästä tai suomenkielinen
+oletus); keskeytys heittää alkuperäisen `AbortError`in. Uudelleenyrityksiä ei ole. `auth.ts` sisältää
+`login`, `restore` ja `updateUser`, `kirves.ts` jokaisen pelin päätepisteen. Pelikomponentit käyttävät
+edelleen Reduxia ja Axiosta (`Store.js`, `Api.js`); `kirves.ts`:n funktiot odottavat siirtoa.
+
+Käyttäjän istunto kuuluu `src/auth/`-hakemistolle. `token.ts` on ainoa paikka, joka tuntee
+`localStorage`-avaimen `kirves-token` (`Api.js` lukee tokenin `getToken()`illa). `session.ts` on
+Reactista riippumaton ohjain: se pitää tilan, sukupolvilaskurin ja keskeytettävät pyynnöt. Uloskirjautuminen,
+uusi kirjautuminen, palautuksen valmistuminen ja `dispose()` korottavat sukupolvea ja keskeyttävät
+kesken olevat pyynnöt, jolloin myöhästyneet vastaukset hylätään. `AuthProvider` ja `useAuth` tuovat tilan
+Reactiin (`useSyncExternalStore`).
+
+Tila (`useAuth()`): `status` (`restoring`, `anonymous`, `authenticated`), `user` (ilman `jwt`:tä),
+`loginError`, `loggingIn`, `updateError`, `updating` sekä `login`, `loginFailed`, `logout`, `updateUser`.
+- `restoring` on alkutila vain, jos tallennettu token on olemassa; muuten tila on heti `anonymous`.
+  Palautus epäonnistuu hiljaa: token poistetaan ja näytetään kirjautuminen ilman virheilmoitusta.
+- Etusivulle ohjataan vasta tilassa `anonymous`, ja Google One Tap näytetään vain siinä (ei
+  palautuksen aikana).
+- Kirjautumisen vastauksen `jwt` tallennetaan tokeniksi; jos se puuttuu, kirjautuminen epäonnistuu.
+  Nimimerkin tallennus säilyttää tokenin, ellei vastaus sisällä uutta `jwt`:tä. Päivityksen 401
+  päättää istunnon; muut virheet näkyvät `updateError`ina.
+
+Rajoitus: pelipyynnöt (Redux/Axios) eivät päätä istuntoa 401-vastauksesta, koska backend palauttaa 401
+myös tilanteessa "ei omistaja / ei ylläpitäjä". Vanhentunut token näkyy pelipyyntöjen virheinä
+(`alert`) kunnes käyttäjä kirjautuu ulos tai lataa sivun uudelleen; lataus ajaa palautuksen, joka
+epäonnistuu ja näyttää kirjautumisen. Yleinen 401-käsittely vaatisi erillisen tilakoodin
+omistajuusvirheille backendissä.
 
 ## Pelipöytä ja teema
 

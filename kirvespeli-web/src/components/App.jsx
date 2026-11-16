@@ -12,6 +12,7 @@ import DashContainer from "./dash/DashContainer"
 import KirvesContainer from "./kirves/KirvesContainer"
 import KirvesGame from "./kirves/KirvesGame"
 import Store from "../Store"
+import { AuthProvider } from "../auth/AuthProvider.tsx"
 
 const store = Store()
 const emotionCache = createCache({ key: "css" })
@@ -36,13 +37,15 @@ const App = () => (
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme}>
         <GoogleOAuthProvider clientId="266150004835-mke4j8q77p37nqlgaaer1aplhaijro84.apps.googleusercontent.com">
-          <Router>
-            <CssBaseline />
-            <Container maxWidth="xl">
-              <Header />
-              <MyRoutes />
-            </Container>
-          </Router>
+          <AuthProvider>
+            <Router>
+              <CssBaseline />
+              <Container maxWidth="xl">
+                <Header />
+                <MyRoutes />
+              </Container>
+            </Router>
+          </AuthProvider>
         </GoogleOAuthProvider>
       </ThemeProvider>
     </CacheProvider>
