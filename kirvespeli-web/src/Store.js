@@ -4,7 +4,7 @@ import axios from "axios"
 import rootReducer from "./rootReducer"
 import { autoLogin } from "./components/user/userActions"
 
-const baseURL = process.env.API_URL
+const baseURL = import.meta.env.VITE_API_URL
 
 const client = axios.create({
   baseURL: baseURL,

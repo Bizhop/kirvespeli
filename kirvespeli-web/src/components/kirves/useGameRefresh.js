@@ -13,7 +13,7 @@ const useGameRefresh = (gameId, onRefresh, enabled = true, onResync) => {
     }
     let connected = false
     const client = new Client({
-      brokerURL: process.env.WEB_SOCKET_URL,
+      brokerURL: import.meta.env.VITE_WEB_SOCKET_URL,
       reconnectDelay: 5000,
       onConnect: () => {
         if (connected) resync.current?.(gameId)
