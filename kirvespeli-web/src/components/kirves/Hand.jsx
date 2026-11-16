@@ -2,8 +2,8 @@ import React from "react"
 import Cards from "./Cards"
 import { SvgImage } from "../shared/images"
 import { useMotionRef } from "./CardMotion"
-import { ownKey } from "./cardMotion"
-import { playableCardIndexes } from "./playableCards"
+import { ownKey } from "./cardMotion.ts"
+import { playableCardIndexes } from "./playableCards.ts"
 const Hand = ({ game, action }) => {
   const motionRef = useMotionRef()
   const actions = game.myAvailableActions ?? []

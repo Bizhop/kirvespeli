@@ -12,6 +12,8 @@
     "npm:@react-spring/web@^10.1.2": "10.1.2_react@19.3.1_react-dom@19.3.1",
     "npm:@reduxjs/toolkit@^2.14.0": "2.14.0_@types+react@19.3.0_react@19.3.1_react-redux@9.3.1",
     "npm:@stomp/stompjs@^7.5.0": "7.5.0",
+    "npm:@types/react-dom@^19.3.0": "19.3.0_@types+react@19.3.0",
+    "npm:@types/react@^19.3.0": "19.3.0",
     "npm:@vitejs/plugin-react@^6.3.0": "6.3.0_vite@8.3.8",
     "npm:axios@^1.21.0": "1.21.1",
     "npm:final-form@^5.0.1": "5.0.1",
@@ -21,7 +23,7 @@
     "npm:react-dom@^19.3.1": "19.3.1_react@19.3.1",
     "npm:react-final-form@^7.0.1": "7.0.1_final-form@5.0.1_react@19.3.1",
     "npm:react-redux@^9.3.1": "9.3.1_@types+react@19.3.0_react@19.3.1_redux@5.0.1",
-    "npm:react-router@^8.5.1": "8.5.1_@types+react@19.3.0_react@19.3.1_react-dom@19.3.1",
+    "npm:react-router@^8.5.1": "8.5.1_@types+react@19.3.0_@types+react-dom@19.3.0_react@19.3.1_react-dom@19.3.1",
     "npm:react@^19.3.1": "19.3.1",
     "npm:vite@*": "8.3.8",
     "npm:vite@^8.3.8": "8.3.8"
@@ -551,6 +553,12 @@
     "@types/prop-types@15.7.15": {
       "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="
     },
+    "@types/react-dom@19.3.0_@types+react@19.3.0": {
+      "integrity": "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==",
+      "dependencies": [
+        "@types/react"
+      ]
+    },
     "@types/react-transition-group@4.4.12_@types+react@19.3.0": {
       "integrity": "sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==",
       "dependencies": [
@@ -1009,17 +1017,19 @@
         "redux"
       ]
     },
-    "react-router@8.5.1_@types+react@19.3.0_react@19.3.1_react-dom@19.3.1": {
+    "react-router@8.5.1_@types+react@19.3.0_@types+react-dom@19.3.0_react@19.3.1_react-dom@19.3.1": {
       "integrity": "sha512-5u1eQ46QjuXjNfEnLwzrnou1Bm5dquO3xjVYkkMYCudtkicD2AQHtx+fvXzPATtPJx8TW6DR1x1TDRqsfHyZBw==",
       "dependencies": [
         "@remix-run/route-pattern",
         "@types/react",
+        "@types/react-dom",
         "cookie-es",
         "react",
         "react-dom"
       ],
       "optionalPeers": [
         "@types/react",
+        "@types/react-dom",
         "react-dom"
       ]
     },
@@ -1150,6 +1160,8 @@
       "npm:@react-spring/web@^10.1.2",
       "npm:@reduxjs/toolkit@^2.14.0",
       "npm:@stomp/stompjs@^7.5.0",
+      "npm:@types/react-dom@^19.3.0",
+      "npm:@types/react@^19.3.0",
       "npm:@vitejs/plugin-react@^6.3.0",
       "npm:axios@^1.21.0",
       "npm:final-form@^5.0.1",

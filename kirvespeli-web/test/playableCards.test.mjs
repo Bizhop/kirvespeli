@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { playableCardIndexes } from "../src/components/kirves/playableCards.js"
+import { playableCardIndexes } from "../src/components/kirves/playableCards.ts"
 
 test("follow suit using original hand indexes, excluding jacks of the printed suit", () => {
   assert.deepEqual(playableCardIndexes(["JS", "AH", "AS", "BJ", "2S"], "SPADES", "HEARTS"), [2, 4])

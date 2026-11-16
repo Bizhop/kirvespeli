@@ -3,7 +3,7 @@ import { Button } from "@mui/material"
 import { SvgImage } from "../shared/images"
 import DealerSelector from "./DealerSelector"
 import { useMotionRef } from "./CardMotion"
-import { cutKey, trumpKey, DECK_KEY } from "./cardMotion"
+import { cutKey, trumpKey, DECK_KEY } from "./cardMotion.ts"
 
 export const Deck = ({ game }) => {
   const motionRef = useMotionRef()

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { sortHandCards } from "../src/components/kirves/handOrder.js"
+import { sortHandCards } from "../src/components/kirves/handOrder.ts"
 
 const cardsOf = entries => entries.map(entry => entry.card)
 const suits = { CLUBS: "C", SPADES: "S", HEARTS: "H", DIAMONDS: "D" }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { scoreChanges, scoreSchedule, cellKey } from "../src/components/kirves/scoreChanges.js"
+import { scoreChanges, scoreSchedule, cellKey } from "../src/components/kirves/scoreChanges.ts"
 
 const players = ["a", "b", "c"]
 const snapshot = (scores, history = [], id = 1) => ({

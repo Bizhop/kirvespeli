@@ -3,9 +3,9 @@ import { Tooltip } from "@mui/material"
 import Icon from "../shared/Icon"
 import { SvgImage } from "../shared/images"
 import Cards from "./Cards"
-import { hasPlayStarted, playersInTurn } from "./turnState"
+import { hasPlayStarted, playersInTurn } from "./turnState.ts"
 import { useMotionRef } from "./CardMotion"
-import { playedKey } from "./cardMotion"
+import { playedKey } from "./cardMotion.ts"
 
 export const PlayedCards = ({ player, game, cardsVisible }) => {
   const motionRef = useMotionRef()

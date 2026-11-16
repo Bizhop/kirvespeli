@@ -4,8 +4,8 @@ import CloseIcon from "@mui/icons-material/Close"
 
 import ScoreCard from "./ScoreCard"
 import ScoreMark from "./ScoreMark"
-import { scoreChanges, scoreSchedule } from "./scoreChanges"
-import { MOTION } from "./motion"
+import { scoreChanges, scoreSchedule } from "./scoreChanges.ts"
+import { MOTION } from "./motion.ts"
 
 // The score sheet as a paper note on the table. Tapping the note opens it over the table;
 // tapping it again, tapping outside it or Esc closes it.

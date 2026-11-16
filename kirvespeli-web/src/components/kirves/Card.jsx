@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { SvgImage } from "../shared/images"
-import { MOTION, prefersReducedMotion } from "./motion"
+import { MOTION, prefersReducedMotion } from "./motion.ts"
 import { useCardMotionEnabled } from "./CardMotion"
 
 // Face changes after mount fold the previous face away and unfold the new one. Only the

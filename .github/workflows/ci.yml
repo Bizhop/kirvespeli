@@ -146,6 +146,8 @@ jobs:
           cache-hash: ${{ hashFiles('kirvespeli-web/deno.lock') }}
       - run: deno install --frozen
       - run: deno task format:check
+      - run: deno task typecheck
+      - run: deno task lint:hooks
       - run: deno task test
       - run: deno task build
 

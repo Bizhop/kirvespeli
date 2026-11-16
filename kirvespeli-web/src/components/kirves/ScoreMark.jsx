@@ -1,7 +1,7 @@
 import React, { useId } from "react"
 import { icons } from "../shared/Icon"
 import stick from "../shared/icons/keppi.png"
-import { MOTION } from "./motion"
+import { MOTION } from "./motion.ts"
 
 // Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes, and a
 // higher score only adds strokes: the earlier ones keep their shape.

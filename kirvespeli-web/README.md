@@ -15,6 +15,8 @@ Sovellus käynnistyy osoitteeseen http://localhost:1234 ja käyttää backendiä
 deno task build           # tuotantoversio hakemistoon dist/
 deno task preview         # komponenttien esikatselu osoitteeseen http://localhost:1235
 deno task format          # prettier
+deno task typecheck       # deno check: TypeScript-tiedostot, tiukka tila
+deno task lint:hooks      # deno lint, vain react-rules-of-hooks
 deno task test          # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
 ```
 
@@ -80,6 +82,32 @@ pisteet, viestit ja toimintoloki seuraavat pelatuista toiminnoista. Sääntöjä
 kaatuu jo datan latauksessa, ja `deno task test` tarkistaa kaikki tilanteet.
 Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vierivää
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
+
+## TypeScript
+
+Tyyppitarkistus tehdään `deno check`illä (Denon oma TypeScript); `tsc`, `typescript`-riippuvuutta
+tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-jsx`, `vite/client`) ovat
+`deno.json`:n `compilerOptions`-kentässä. Editorissa tarvitaan Denon kielipalvelin.
+
+- Muunnettu: `src/types/kirves.ts` (backendin sopimukset), `kirves/`-hakemiston puhtaat apurit
+  (`handOrder`, `playableCards`, `turnState`, `scoreChanges`, `cardMotion`, `motion`) sekä
+  `vite.config.ts` ja `vite.preview.config.ts`. Komponentit, Redux, `Api.js` ja esikatselun moottori
+  ovat edelleen JavaScriptiä, eikä JS:ää tarkisteta (`checkJs` pois).
+- `typecheck`-tehtävä listaa TS-tiedostot (`src/types/*.ts`, `src/components/kirves/*.ts`,
+  konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
+  `deno check` seuraa tuonteja, eikä Deno löydä JS:n tuonteja ilman päätettä (`./components/App`),
+  joten tarkistus rajataan TS-tiedostoihin.
+- Jokaisen TS-tiedoston tuonnissa on `.ts`-pääte, myös JS-tiedostoista (`"./handOrder.ts"`).
+- Testit (`test/*.mjs`) ajetaan `deno test`illä suoraan TS-tiedostoja vasten, mutta niitä ei
+  tyyppitarkisteta ennen kuin ne muunnetaan `.ts`:ksi.
+- `lint:hooks` ajaa vain säännön `react-rules-of-hooks`. Deno ei tarkista `exhaustive-deps`-sääntöä;
+  ESLintiä ei oteta käyttöön.
+- `src/types/kirves.ts` kuvaa backendin JSON:n staattisesti. Se ei validoi vastauksia ajon
+  aikana. Kortti-indeksit (`PLAY_CARD`, `DISCARD`) ovat backendin `myCardsInHand`-indeksejä,
+  eivät näyttöjärjestyksen paikkoja (`sortHandCards` palauttaa `{ card, index }`). Tyypit eivät
+  korvaa backendin sääntötarkistuksia; sallitut toiminnot tulevat `availableActions`-kentässä.
+  Nykyinen JS lähettää `declineCut`- ja `keepExtraCard`-arvot merkkijonoina (`"true"`), jotka
+  backend muuntaa; tyypit kuvaavat backendin totuusarvoja.
 
 ## Huomioita
 - Vite ajetaan Denolla (`deno run -A npm:vite`); riippuvuudet asennetaan `node_modules`-hakemistoon (`nodeModulesDir: auto`). Testit ovat `node:test`-testejä, jotka `deno test` ajaa.
