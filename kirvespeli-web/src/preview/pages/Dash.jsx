@@ -4,7 +4,12 @@ import { DashContainer } from "../../components/dash/DashContainer"
 import { user } from "../data/users"
 import { logAction } from "../logAction"
 
+const loginButton = (
+  <button onClick={() => logAction("login")("credential")}>Google-kirjautuminen</button>
+)
+
 const handlers = {
+  loginButton,
   login: logAction("login"),
   loginFailed: logAction("loginFailed"),
   updateUser: logAction("updateUser"),

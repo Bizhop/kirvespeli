@@ -15,6 +15,8 @@ export const DashContainer = ({
   login,
   loginFailed,
   updateUser,
+  // replaceable so the preview can render without GoogleOAuthProvider
+  loginButton,
 }) => (
   <div>
     {(status === "restoring" || loggingIn || updating) && <LinearProgress />}
@@ -69,13 +71,14 @@ export const DashContainer = ({
     ) : (
       // Only when anonymous, never while restoring: unmounting cancels a pending One Tap
       // (FedCM) prompt, which GSI logs as an AbortError.
-      status === "anonymous" && (
+      status === "anonymous" &&
+      (loginButton ?? (
         <GoogleLogin
           onSuccess={response => login(response.credential)}
           onError={loginFailed}
           useOneTap
         />
-      )
+      ))
     )}
     {loginError && <Alert severity="error">{loginError}</Alert>}
     {updateError && <Alert severity="error">{updateError}</Alert>}
