@@ -1,12 +1,27 @@
 {
   "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "types": [
+      "vite/client"
+    ]
+  },
   "tasks": {
     "start": "deno run -A npm:vite",
     "build": "deno run -A npm:vite build",
-    "preview": "deno run -A npm:vite --config vite.preview.config.js",
-    "format": "deno run -A npm:prettier --write \"src/**/*.{js,jsx}\"",
-    "format:check": "deno run -A npm:prettier --check \"src/**/*.{js,jsx}\"",
-    "test": "deno test -A test/"
+    "preview": "deno run -A npm:vite --config vite.preview.config.ts",
+    "format": "deno run -A npm:prettier --write \"src/**/*.{js,jsx,ts,tsx}\" \"*.ts\"",
+    "format:check": "deno run -A npm:prettier --check \"src/**/*.{js,jsx,ts,tsx}\" \"*.ts\"",
+    "test": "deno test -A test/",
+    "typecheck": "deno check src/types/*.ts src/components/kirves/*.ts vite.config.ts vite.preview.config.ts",
+    "lint:hooks": "deno lint --rules-tags= --rules-include=react-rules-of-hooks src"
   },
   "imports": {
     "@emotion/cache": "npm:@emotion/cache@^11.14.0",
@@ -20,6 +35,8 @@
     "@react-spring/web": "npm:@react-spring/web@^10.1.2",
     "@reduxjs/toolkit": "npm:@reduxjs/toolkit@^2.14.0",
     "@stomp/stompjs": "npm:@stomp/stompjs@^7.5.0",
+    "@types/react": "npm:@types/react@^19.3.0",
+    "@types/react-dom": "npm:@types/react-dom@^19.3.0",
     "axios": "npm:axios@^1.21.0",
     "final-form": "npm:final-form@^5.0.1",
     "ramda": "npm:ramda@^0.32.0",
