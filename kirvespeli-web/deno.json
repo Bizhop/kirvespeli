@@ -20,7 +20,7 @@
     "format": "deno run -A npm:prettier --write \"src/**/*.{js,jsx,ts,tsx}\" \"*.ts\"",
     "format:check": "deno run -A npm:prettier --check \"src/**/*.{js,jsx,ts,tsx}\" \"*.ts\"",
     "test": "deno test -A test/",
-    "typecheck": "deno check src/types/*.ts src/components/kirves/*.ts vite.config.ts vite.preview.config.ts",
+    "typecheck": "deno check src/types/*.ts src/components/kirves/*.ts src/api/*.ts src/auth/*.ts test/*.ts vite.config.ts vite.preview.config.ts",
     "lint:hooks": "deno lint --rules-tags= --rules-include=react-rules-of-hooks src"
   },
   "imports": {
