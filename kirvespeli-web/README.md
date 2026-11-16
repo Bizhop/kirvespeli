@@ -87,6 +87,9 @@ taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöid
 - `deno task build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
 - Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
 - Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
+- Asetustiedostoissa `root` on `src/` tai `src/preview/`, joten polut (`envDir`, `cacheDir`, `server.fs.allow`) annetaan absoluuttisina. Suhteellinen `envDir` ei löydä `.env`-tiedostoja.
+- Esikatselun juuri on `src/preview/`, joten jaettu `styles/style.css` tuodaan `index.jsx`:ssä eikä linkillä. Kehityspalvelin ei palvele juuren ulkopuolista linkkiä.
+- Deno ei nosta välillisiä riippuvuuksia käytettäväksi (kuten npm): jokaisen tuodun paketin pitää olla `deno.json`:n `imports`-kentässä (esim. `Box` tuodaan `@mui/material`ista, ei `@mui/system`ista). Puuttuva paketti näkyy vasta esikatselun kehityspalvelimessa, koska CI ei käynnistä sitä.
 - Ympäristömuuttujat luetaan `import.meta.env`-olion kautta, ja vain `VITE_`-alkuiset muuttujat päätyvät selaimeen.
 
 ## Osoitteet
