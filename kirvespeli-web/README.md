@@ -62,7 +62,7 @@ valita vain `SET_DEALER`-toiminnon ollessa sallittu; uusinnassa valinta on poist
 Säännöt ovat backendin README:ssä.
 
 ## Komponenttien esikatselu
-`src/preview/` on erillinen Parcel-sivu, joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
+`src/preview/` on erillinen Vite-sivu (`vite.preview.config.js`, portti 1235), joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
 ```js
 export default { title: "Card", group: "Components", variants: { card: () => <Card ... /> } }
 ```
@@ -82,13 +82,15 @@ Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vie
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
 
 ## Huomioita
-- SVG-kuvat tuodaan `url:`-etuliitteellä (Parcelin tapa saada tiedoston URL).
-- `package.json`:ssa `@parcel/resolver-default.packageExports` on päällä. Ilman sitä Parcel käyttää MUI:n CommonJS-versiota eikä tree-shaking toimi (bundle ~2x).
-- `package.json`:n `allowScripts` estää Parcelin riippuvuuksien (`@parcel/watcher`, `@swc/core`, `lmdb`, `msgpackr-extract`) asennusskriptit. Ne ovat vain varakeinoja (käännös lähdekoodista / wasm), koska valmiit natiivibinäärit tulevat alustakohtaisista optional-paketeista. Uuden skriptillisen riippuvuuden voi tarkistaa komennolla `npm install-scripts ls` (npm 12+).
+- Rakennustyökalu on Vite (`vite.config.js` sovellukselle, `vite.preview.config.js` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
+- `npm run build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
+- Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
+- Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
+- Ympäristömuuttujat luetaan `import.meta.env`-olion kautta, ja vain `VITE_`-alkuiset muuttujat päätyvät selaimeen.
 
 ## Osoitteet
-- Kehitys: `.env.development` (backend http://localhost:8080, WebSocket `ws://localhost:8080/api/refresh`).
-- Tuotanto: https://kirvespeli.bizhop.fi (`.env.production`). Backend on saman osoitteen `/api`-polun takana, WebSocket `wss://kirvespeli.bizhop.fi/api/refresh`. Proxy-vaatimukset ovat backendin README:ssä.
+- Kehitys: `.env.development` (`VITE_API_URL` http://localhost:8080, `VITE_WEB_SOCKET_URL` `ws://localhost:8080/api/refresh`).
+- Tuotanto: https://kirvespeli.bizhop.fi (`.env.production`, samat `VITE_`-muuttujat). Backend on saman osoitteen `/api`-polun takana, WebSocket `wss://kirvespeli.bizhop.fi/api/refresh`. Proxy-vaatimukset ovat backendin README:ssä.
 
 ## Kirjautumistila
 Käyttäjän tilassa `loading` on `true` automaattisen kirjautumisen ajan (`AUTO_LOGIN` -> `AUTO_LOGIN_SUCCESS` / `AUTO_LOGIN_FAIL`). Etusivulle ohjataan vasta kun `loading` on `false` eikä käyttäjää ole kirjautuneena. Jos tokenia ei ole, automaattista kirjautumista ei yritetä.
