@@ -1,21 +1,21 @@
 # Kirvespeli web
 
-Vaatii Node 24 (`.nvmrc`, vähintään 22.22).
+Vaatii Deno 2 (`.dvmrc`). Riippuvuudet ja komennot ovat tiedostossa `deno.json`, lukitus `deno.lock`-tiedostossa; `package.json` ei ole käytössä.
 
 ## Sovelluksen käynnistys
 ```
-npm install
-npm start
+deno install
+deno task start
 ```
 
 Sovellus käynnistyy osoitteeseen http://localhost:1234 ja käyttää backendiä osoitteessa http://localhost:8080 (`.env.development`).
 
 ## Muut komennot
 ```
-npm run build            # tuotantoversio hakemistoon dist/
-npm run preview          # komponenttien esikatselu osoitteeseen http://localhost:1235
-npm run format           # prettier
-npm test                 # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
+deno task build           # tuotantoversio hakemistoon dist/
+deno task preview         # komponenttien esikatselu osoitteeseen http://localhost:1235
+deno task format          # prettier
+deno task test          # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
 ```
 
 ## Pelaajamäärä ja liittyminen
@@ -77,13 +77,14 @@ Kirves-moottorilla (`kirves.js`), joka noudattaa backendin sääntöjä: nosto, 
 kakkonen valttikorttina, hylkäys, puhe, valtin vaihto, tikit, pakkaan meno, pisteytys,
 poistumiset ja pelin loppu. Korttimäärät, pakan koko, tikkien voittajat, vuorot, toiminnot,
 pisteet, viestit ja toimintoloki seuraavat pelatuista toiminnoista. Sääntöjä rikkova toiminto
-kaatuu jo datan latauksessa, ja `npm test` tarkistaa kaikki tilanteet.
+kaatuu jo datan latauksessa, ja `deno task test` tarkistaa kaikki tilanteet.
 Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vierivää
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
 
 ## Huomioita
+- Vite ajetaan Denolla (`deno run -A npm:vite`); riippuvuudet asennetaan `node_modules`-hakemistoon (`nodeModulesDir: auto`). Testit ovat `node:test`-testejä, jotka `deno test` ajaa.
 - Rakennustyökalu on Vite (`vite.config.js` sovellukselle, `vite.preview.config.js` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
-- `npm run build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
+- `deno task build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
 - Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
 - Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
 - Ympäristömuuttujat luetaan `import.meta.env`-olion kautta, ja vain `VITE_`-alkuiset muuttujat päätyvät selaimeen.
