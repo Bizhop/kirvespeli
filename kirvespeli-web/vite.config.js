@@ -8,6 +8,7 @@ const projectDir = fileURLToPath(new URL(".", import.meta.url))
 export default defineConfig({
   root: "src",
   envDir: projectDir,
+  cacheDir: `${projectDir}node_modules/.vite`,
   plugins: [react()],
   server: { port: 1234, strictPort: true },
   build: {

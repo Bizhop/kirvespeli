@@ -8,6 +8,7 @@ const projectDir = fileURLToPath(new URL(".", import.meta.url))
 export default defineConfig({
   root: "src/preview",
   envDir: projectDir,
+  cacheDir: `${projectDir}node_modules/.vite-preview`,
   plugins: [react()],
   server: {
     port: 1235,
