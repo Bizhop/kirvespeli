@@ -11,7 +11,6 @@ import {
   speakingGame,
   suitGame,
 } from "../data/games"
-import { user } from "../data/users"
 import { logAction } from "../logAction"
 
 const baseData = {
@@ -20,7 +19,7 @@ const baseData = {
   action: logAction("action"),
   showAllCards: logAction("showAllCards"),
   getGame: () => {},
-  user,
+  authStatus: "authenticated",
   socketDisabled: true,
 }
 

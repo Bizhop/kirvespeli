@@ -1,15 +1,24 @@
 import React from "react"
-import { path } from "ramda"
-import { connect } from "react-redux"
 import { GoogleLogin } from "@react-oauth/google"
-import { Alert, Box, Grid } from "@mui/material"
+import { Alert, Box, Grid, LinearProgress } from "@mui/material"
 
-import { login, update, googleLoginError } from "../user/userActions"
+import { useAuth } from "../../auth/useAuth.ts"
 import UpdateUserForm from "../user/UpdateUserForm"
 
-export const DashContainer = ({ user, error, updateUser, login, loginError }) => (
+export const DashContainer = ({
+  user,
+  status,
+  loginError,
+  updateError,
+  loggingIn,
+  updating,
+  login,
+  loginFailed,
+  updateUser,
+}) => (
   <div>
-    {user.email ? (
+    {(status === "restoring" || loggingIn || updating) && <LinearProgress />}
+    {status === "authenticated" && user ? (
       <Box sx={{ flexGrow: 1 }}>
         <h1>Tervetuloa, {user.nickname || user.email}!</h1>
         <Grid container spacing={1}>
@@ -50,28 +59,29 @@ export const DashContainer = ({ user, error, updateUser, login, loginError }) =>
               md: 4,
             }}
           >
-            <UpdateUserForm onSubmit={updateUser} user={user} />
+            <UpdateUserForm
+              onSubmit={values => updateUser({ nickname: values.nickname })}
+              user={user}
+            />
           </Grid>
         </Grid>
       </Box>
     ) : (
-      // Not during auto-login: unmounting cancels a pending One Tap (FedCM) prompt,
-      // which GSI logs as an AbortError.
-      !user.loading && <GoogleLogin onSuccess={login} onError={loginError} useOneTap />
+      // Only when anonymous, never while restoring: unmounting cancels a pending One Tap
+      // (FedCM) prompt, which GSI logs as an AbortError.
+      status === "anonymous" && (
+        <GoogleLogin
+          onSuccess={response => login(response.credential)}
+          onError={loginFailed}
+          useOneTap
+        />
+      )
     )}
-    {error && <Alert severity="error">{error}</Alert>}
+    {loginError && <Alert severity="error">{loginError}</Alert>}
+    {updateError && <Alert severity="error">{updateError}</Alert>}
   </div>
 )
 
-const mapStateToProps = state => ({
-  user: path(["user"], state),
-  error: path(["user", "error"], state),
-})
+const DashContainerWithAuth = () => <DashContainer {...useAuth()} />
 
-const mapDispatchToProps = dispatch => ({
-  login: response => dispatch(login(response)),
-  loginError: response => dispatch(googleLoginError(response)),
-  updateUser: form => dispatch(update(form)),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(DashContainer)
+export default DashContainerWithAuth

@@ -8,6 +8,7 @@ import { logAction } from "../logAction"
 
 const baseData = {
   user,
+  authStatus: "authenticated",
   games,
   logItems,
   logId,
@@ -25,7 +26,6 @@ export default {
   group: "Containers",
   variants: {
     initial: () => <KirvesContainer {...baseData} />,
-    error: () => <KirvesContainer {...baseData} error="Nickname on jo käytössä" />,
     withLog: () => <KirvesContainer {...baseData} logVisible selectedLogIndex={0} />,
     withLogAndReplay: () => (
       <KirvesContainer {...baseData} logVisible selectedLogIndex={2} replay={hand.replays[2]} />

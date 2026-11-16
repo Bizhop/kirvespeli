@@ -1,13 +1,11 @@
 import React from "react"
-import { path } from "ramda"
 import { NavLink } from "react-router"
-import { connect } from "react-redux"
 import { Box, Grid, IconButton, Tooltip, Typography } from "@mui/material"
 import HomeIcon from "@mui/icons-material/Home"
 import GamesIcon from "@mui/icons-material/Games"
 import LogoutIcon from "@mui/icons-material/Logout"
 
-import { logout } from "../user/userActions"
+import { useAuth } from "../../auth/useAuth.ts"
 
 const MyNavLink = ({ to, label, icon }) => (
   <Grid
@@ -71,13 +69,15 @@ export const Header = ({ loggedIn, playerName, logout }) => (
   </Box>
 )
 
-const mapStateToProps = state => ({
-  loggedIn: path(["user", "email"], state),
-  playerName: path(["user", "nickname"], state) || path(["user", "email"], state),
-})
+const HeaderContainer = () => {
+  const { status, user, logout } = useAuth()
+  return (
+    <Header
+      loggedIn={status === "authenticated"}
+      playerName={user?.nickname || user?.email}
+      logout={logout}
+    />
+  )
+}
 
-const mapDispatchToProps = dispatch => ({
-  logout: () => dispatch(logout()),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Header)
+export default HeaderContainer

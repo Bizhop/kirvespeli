@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit"
 import axios from "axios"
 
 import rootReducer from "./rootReducer"
-import { autoLogin } from "./components/user/userActions"
 
 const baseURL = import.meta.env.VITE_API_URL
 
@@ -32,17 +31,11 @@ const axiosMiddleware = () => next => action => {
 }
 
 const Store = () => {
-  const store = configureStore({
+  return configureStore({
     reducer: rootReducer,
     middleware: getDefaultMiddleware =>
       getDefaultMiddleware({ serializableCheck: false }).concat(axiosMiddleware),
   })
-
-  if (localStorage.getItem("kirves-token")) {
-    store.dispatch(autoLogin())
-  }
-
-  return store
 }
 
 export default Store

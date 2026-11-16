@@ -4,6 +4,7 @@ import { Navigate, useParams } from "react-router"
 import { path } from "ramda"
 import { Box } from "@mui/material"
 
+import { useAuth } from "../../auth/useAuth.ts"
 import { getGame, joinGame, action, showAllCards } from "./kirvesActions"
 import RenderGame from "./RenderGame"
 import Icon from "../shared/Icon"
@@ -11,7 +12,7 @@ import MessagesButton from "./MessagesButton"
 import useGameRefresh from "./useGameRefresh"
 
 export const KirvesGame = ({
-  user,
+  authStatus,
   game,
   cardsVisible,
   join,
@@ -58,13 +59,12 @@ export const KirvesGame = ({
           />
         </Box>
       )}
-      {!user.loading && !user.email && <Navigate to="/" />}
+      {authStatus === "anonymous" && <Navigate to="/" />}
     </div>
   )
 }
 
 const mapStateToProps = state => ({
-  user: path(["user"], state),
   game: path(["kirves", "game"], state),
   cardsVisible: path(["kirves", "cardsVisible"], state),
 })
@@ -77,4 +77,11 @@ const mapDispatchToProps = dispatch => ({
   getGame: gameId => dispatch(getGame(gameId)),
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(KirvesGame)
+const ConnectedKirvesGame = connect(mapStateToProps, mapDispatchToProps)(KirvesGame)
+
+const KirvesGameWithAuth = () => {
+  const { status } = useAuth()
+  return <ConnectedKirvesGame authStatus={status} />
+}
+
+export default KirvesGameWithAuth

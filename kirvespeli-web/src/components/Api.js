@@ -1,18 +1,11 @@
-export const loginPayload = props => ({
-  request: {
-    url: "api/auth",
-    headers: {
-      Authorization: props.tokenId,
-    },
-  },
-})
+import { getToken } from "../auth/token.ts"
 
 export const getPayload = props => ({
   request: {
     url: props.url,
     method: "get",
     headers: {
-      Authorization: localStorage.getItem("kirves-token"),
+      Authorization: getToken(),
     },
   },
 })
@@ -23,7 +16,7 @@ export const postPayload = props => ({
     method: "post",
     data: props.data,
     headers: {
-      Authorization: localStorage.getItem("kirves-token"),
+      Authorization: getToken(),
     },
   },
 })
@@ -34,7 +27,7 @@ export const putPayload = props => ({
     method: "put",
     data: props.data,
     headers: {
-      Authorization: localStorage.getItem("kirves-token"),
+      Authorization: getToken(),
     },
   },
 })
@@ -44,7 +37,7 @@ export const deletePayload = props => ({
     url: props.url,
     method: "delete",
     headers: {
-      Authorization: localStorage.getItem("kirves-token"),
+      Authorization: getToken(),
     },
   },
 })

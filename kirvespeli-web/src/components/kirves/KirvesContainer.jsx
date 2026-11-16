@@ -2,9 +2,10 @@ import React, { useEffect } from "react"
 import { connect } from "react-redux"
 import { Navigate } from "react-router"
 import { path, pathOr, pick } from "ramda"
-import { Tooltip, IconButton, Box, Grid, Button, Alert } from "@mui/material"
+import { Tooltip, IconButton, Box, Grid, Button } from "@mui/material"
 import RefreshIcon from "@mui/icons-material/Refresh"
 
+import { useAuth } from "../../auth/useAuth.ts"
 import {
   init,
   getGames,
@@ -71,15 +72,12 @@ export const KirvesContainer = props => {
           />
         </Box>
       )}
-      {!props.user.loading && !props.user.email && <Navigate to="/" />}
-      {props.error && <Alert severity="error">{props.error}</Alert>}
+      {props.authStatus === "anonymous" && <Navigate to="/" />}
     </Box>
   )
 }
 
 const mapStateToProps = state => ({
-  user: path(["user"], state),
-  error: path(["user", "error"], state),
   games: path(["kirves", "games"], state),
   logItems: pathOr([], ["kirves", "logItems"], state),
   logVisible: path(["kirves", "logVisible"], state),
@@ -103,4 +101,11 @@ const mapDispatchToProps = dispatch => ({
     ),
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(KirvesContainer)
+const ConnectedKirvesContainer = connect(mapStateToProps, mapDispatchToProps)(KirvesContainer)
+
+const KirvesContainerWithAuth = () => {
+  const { user, status } = useAuth()
+  return <ConnectedKirvesContainer user={user} authStatus={status} />
+}
+
+export default KirvesContainerWithAuth
