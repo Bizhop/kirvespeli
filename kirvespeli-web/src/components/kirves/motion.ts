@@ -18,8 +18,8 @@ export const MOTION = {
   // opened note stays open after the last mark
   slipMs: 280,
   slipHoldMs: 2500,
-}
+} as const
 
-export const prefersReducedMotion = () =>
+export const prefersReducedMotion = (): boolean =>
   typeof window !== "undefined" &&
   Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)

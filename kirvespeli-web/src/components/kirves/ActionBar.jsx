@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Button } from "@mui/material"
 import ActionButton from "./ActionButton"
 import SuitSelector from "./SuitSelector"
-import { departingPlayers } from "./turnState"
+import { departingPlayers } from "./turnState.ts"
 
 // Counts down locally between refreshes; a new value from the server resynchronises it.
 const DepartureCountdown = ({ seconds }) => {

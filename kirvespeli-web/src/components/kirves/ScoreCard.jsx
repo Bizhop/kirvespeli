@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react"
 import { Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material"
 
 import ScoreMark from "./ScoreMark"
-import { cellKey, scoreOf } from "./scoreChanges"
+import { cellKey, scoreOf } from "./scoreChanges.ts"
 
 // Score sheet: one column per player in seating order, one row per finished game, the current
 // game last. The loser of a game gets a stick (first loss of a match) or the axe (second loss),

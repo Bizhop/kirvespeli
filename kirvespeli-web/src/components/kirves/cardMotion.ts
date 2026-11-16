@@ -5,42 +5,68 @@
 // (played cards, cut and trump cards), so every viewer gets the same public instructions for
 // the same public change. Other players' hands are never part of the plan.
 
-export const ownKey = card => `own:${card}`
-export const playedKey = (email, card) => `played:${email}:${card}`
-export const cutKey = card => `cut:${card}`
-export const trumpKey = card => `trump:${card}`
+import type { CardCode, GameOut, PlayerOut } from "../../types/kirves.ts"
+
+export const ownKey = (card: CardCode): string => `own:${card}`
+export const playedKey = (email: string, card: CardCode): string => `played:${email}:${card}`
+export const cutKey = (card: CardCode): string => `cut:${card}`
+export const trumpKey = (card: CardCode): string => `trump:${card}`
 export const DECK_KEY = "deck"
 
-export const SNAP = Object.freeze({ snap: true })
+// Only the fields the plan reads; live games, replays and fixtures all fit.
+type MotionPlayer = Partial<Pick<PlayerOut, "playedCards">> & Pick<PlayerOut, "email">
+export type MotionGame = Partial<
+  Pick<GameOut, "id" | "myCardsInHand" | "myExtraCard" | "cutCard" | "secondCutCard" | "trumpCard">
+> & { players?: readonly MotionPlayer[] | null }
 
-const ownCards = game => [
+export interface Snap {
+  readonly snap: true
+}
+export interface Flight {
+  from: string
+  to: string
+}
+export interface MotionPlan {
+  snap: false
+  own: { deal: boolean; entering: string[]; leaving: string[]; flights: Flight[] }
+  public: { plays: string[]; cleared: string[]; entering: string[]; leaving: string[] }
+}
+
+export const SNAP: Snap = Object.freeze({ snap: true })
+
+const ownCards = (game: MotionGame): CardCode[] => [
   ...(game.myCardsInHand ?? []),
   ...(game.myExtraCard ? [game.myExtraCard] : []),
 ]
 
-const tableKeys = game =>
+const tableKeys = (game: MotionGame): string[] =>
   [
-    ...[game.cutCard, game.secondCutCard].filter(Boolean).map(cutKey),
+    ...[game.cutCard, game.secondCutCard].filter((c): c is CardCode => Boolean(c)).map(cutKey),
     ...(game.trumpCard ? [trumpKey(game.trumpCard)] : []),
   ].sort()
 
-const isPrefix = (prefix, list) => prefix.every((card, i) => list[i] === card)
+const isPrefix = <T>(prefix: readonly T[], list: readonly T[]): boolean =>
+  prefix.every((card, i) => list[i] === card)
 
-const difference = (list, other) => list.filter(item => !other.includes(item))
+const difference = <T>(list: readonly T[], other: readonly T[]): T[] =>
+  list.filter(item => !other.includes(item))
 
-export const planCardMotion = (prev, next) => {
+export const planCardMotion = (
+  prev: MotionGame | null | undefined,
+  next: MotionGame | null | undefined,
+): MotionPlan | Snap => {
   if (!prev || !next || prev.id == null || prev.id !== next.id) return SNAP
-  const emails = game => (game.players ?? []).map(p => p.email)
+  const emails = (game: MotionGame): string[] => (game.players ?? []).map(p => p.email)
   const prevEmails = emails(prev)
   const nextEmails = emails(next)
   if (prevEmails.length !== nextEmails.length || prevEmails.some((e, i) => e !== nextEmails[i]))
     return SNAP
 
   // Public played cards: at most one appended card across the whole table, or cleared rows.
-  const plays = []
-  const cleared = []
-  for (const [i, player] of next.players.entries()) {
-    const before = prev.players[i].playedCards ?? []
+  const plays: { email: string; card: CardCode }[] = []
+  const cleared: string[] = []
+  for (const [i, player] of (next.players ?? []).entries()) {
+    const before = prev.players?.[i]?.playedCards ?? []
     const after = player.playedCards ?? []
     if (isPrefix(before, after)) {
       const appended = after.slice(before.length)

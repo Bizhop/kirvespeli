@@ -1,6 +1,6 @@
 import React from "react"
 import Seat from "./Seat"
-import { hasPlayStarted, playersInTurn } from "./turnState"
+import { hasPlayStarted, playersInTurn } from "./turnState.ts"
 import TableCenter, { Deck } from "./TableCenter"
 import Hand from "./Hand"
 import ActionBar from "./ActionBar"

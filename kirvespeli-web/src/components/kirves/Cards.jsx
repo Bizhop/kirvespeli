@@ -1,6 +1,6 @@
 import React from "react"
 import Card from "./Card"
-import { sortHandCards } from "./handOrder"
+import { sortHandCards } from "./handOrder.ts"
 
 // Each card code is unique within a row, so it is the render identity. The backend index
 // changes when earlier cards leave the row and is only passed on for actions.

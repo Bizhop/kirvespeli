@@ -4,7 +4,7 @@ import {
   departingPlayers,
   hasPlayStarted,
   playersInTurn,
-} from "../src/components/kirves/turnState.js"
+} from "../src/components/kirves/turnState.ts"
 
 const player = (email, availableActions = [], playedCards = []) => ({
   email,

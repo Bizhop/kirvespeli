@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Box, Button } from "@mui/material"
 
 import ScoreMark from "../../components/kirves/ScoreMark"
-import { MOTION } from "../../components/kirves/motion"
+import { MOTION } from "../../components/kirves/motion.ts"
 
 const marks = [
   { score: 0 },

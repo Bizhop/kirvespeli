@@ -7,8 +7,8 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import { planCardMotion, DECK_KEY } from "./cardMotion"
-import { MOTION, prefersReducedMotion } from "./motion"
+import { planCardMotion, DECK_KEY } from "./cardMotion.ts"
+import { MOTION, prefersReducedMotion } from "./motion.ts"
 
 // Table-owned card motion. Components register elements under the keys from cardMotion.js;
 // only the own hand, played-card rows, deck, cut and trump cards are registered. Seat-hand

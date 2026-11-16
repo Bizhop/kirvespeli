@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { planCardMotion, SNAP } from "../src/components/kirves/cardMotion.js"
-import { sortHandCards } from "../src/components/kirves/handOrder.js"
+import { planCardMotion, SNAP } from "../src/components/kirves/cardMotion.ts"
+import { sortHandCards } from "../src/components/kirves/handOrder.ts"
 import { KirvesGame } from "../src/preview/data/kirves.js"
 import { threePlayerHand, tricks } from "../src/preview/data/games.js"
 
