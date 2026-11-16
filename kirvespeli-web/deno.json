@@ -1,0 +1,35 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "start": "deno run -A npm:vite",
+    "build": "deno run -A npm:vite build",
+    "preview": "deno run -A npm:vite --config vite.preview.config.js",
+    "format": "deno run -A npm:prettier --write \"src/**/*.{js,jsx}\"",
+    "format:check": "deno run -A npm:prettier --check \"src/**/*.{js,jsx}\"",
+    "test": "deno test -A test/"
+  },
+  "imports": {
+    "@emotion/cache": "npm:@emotion/cache@^11.14.0",
+    "@emotion/react": "npm:@emotion/react@^11.14.0",
+    "@emotion/styled": "npm:@emotion/styled@^11.14.1",
+    "@fontsource/abel": "npm:@fontsource/abel@^5.3.0",
+    "@fontsource/alegreya-sans-sc": "npm:@fontsource/alegreya-sans-sc@^5.3.0",
+    "@mui/icons-material": "npm:@mui/icons-material@^9.5.0",
+    "@mui/material": "npm:@mui/material@^9.5.0",
+    "@react-oauth/google": "npm:@react-oauth/google@^0.13.5",
+    "@react-spring/web": "npm:@react-spring/web@^10.1.2",
+    "@reduxjs/toolkit": "npm:@reduxjs/toolkit@^2.14.0",
+    "@stomp/stompjs": "npm:@stomp/stompjs@^7.5.0",
+    "axios": "npm:axios@^1.21.0",
+    "final-form": "npm:final-form@^5.0.1",
+    "ramda": "npm:ramda@^0.32.0",
+    "react": "npm:react@^19.3.1",
+    "react-dom": "npm:react-dom@^19.3.1",
+    "react-final-form": "npm:react-final-form@^7.0.1",
+    "react-redux": "npm:react-redux@^9.3.1",
+    "react-router": "npm:react-router@^8.5.1",
+    "@vitejs/plugin-react": "npm:@vitejs/plugin-react@^6.3.0",
+    "prettier": "npm:prettier@^3.9.10",
+    "vite": "npm:vite@^8.3.8"
+  }
+}

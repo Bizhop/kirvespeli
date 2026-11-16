@@ -6,6 +6,10 @@ import pages from "./pages"
 import { CssBaseline, Tab, Tabs, ThemeProvider } from "@mui/material"
 import theme from "../theme"
 
+// Imported here because the stylesheet lives outside the preview root and cannot be linked from the page.
+import "../styles/style.css"
+import "./preview.css"
+
 const groups = [...new Set(pages.map(page => page.group))]
 
 const pageIdFromHash = () => decodeURIComponent(window.location.hash.slice(1))

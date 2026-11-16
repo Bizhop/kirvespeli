@@ -1,21 +1,21 @@
 # Kirvespeli web
 
-Vaatii Node 24 (`.nvmrc`, vähintään 22.22).
+Vaatii Deno 2 (`.dvmrc`). Riippuvuudet ja komennot ovat tiedostossa `deno.json`, lukitus `deno.lock`-tiedostossa; `package.json` ei ole käytössä.
 
 ## Sovelluksen käynnistys
 ```
-npm install
-npm start
+deno install
+deno task start
 ```
 
 Sovellus käynnistyy osoitteeseen http://localhost:1234 ja käyttää backendiä osoitteessa http://localhost:8080 (`.env.development`).
 
 ## Muut komennot
 ```
-npm run build            # tuotantoversio hakemistoon dist/
-npm run preview          # komponenttien esikatselu osoitteeseen http://localhost:1235
-npm run format           # prettier
-npm test                 # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
+deno task build           # tuotantoversio hakemistoon dist/
+deno task preview         # komponenttien esikatselu osoitteeseen http://localhost:1235
+deno task format          # prettier
+deno task test          # käden järjestys, kortti-indeksit, liikkeen tilavertailu ja esikatseludata
 ```
 
 ## Pelaajamäärä ja liittyminen
@@ -62,7 +62,7 @@ valita vain `SET_DEALER`-toiminnon ollessa sallittu; uusinnassa valinta on poist
 Säännöt ovat backendin README:ssä.
 
 ## Komponenttien esikatselu
-`src/preview/` on erillinen Parcel-sivu, joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
+`src/preview/` on erillinen Vite-sivu (`vite.preview.config.js`, portti 1235), joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
 ```js
 export default { title: "Card", group: "Components", variants: { card: () => <Card ... /> } }
 ```
@@ -77,18 +77,21 @@ Kirves-moottorilla (`kirves.js`), joka noudattaa backendin sääntöjä: nosto, 
 kakkonen valttikorttina, hylkäys, puhe, valtin vaihto, tikit, pakkaan meno, pisteytys,
 poistumiset ja pelin loppu. Korttimäärät, pakan koko, tikkien voittajat, vuorot, toiminnot,
 pisteet, viestit ja toimintoloki seuraavat pelatuista toiminnoista. Sääntöjä rikkova toiminto
-kaatuu jo datan latauksessa, ja `npm test` tarkistaa kaikki tilanteet.
+kaatuu jo datan latauksessa, ja `deno task test` tarkistaa kaikki tilanteet.
 Esikatselu ei ole mukana tuotantoversiossa. Esikatselu käyttää tavallista vierivää
 taustaa ilman pakotettua kompositiotasoa korttien animaatioiden piirtohäiriöiden välttämiseksi.
 
 ## Huomioita
-- SVG-kuvat tuodaan `url:`-etuliitteellä (Parcelin tapa saada tiedoston URL).
-- `package.json`:ssa `@parcel/resolver-default.packageExports` on päällä. Ilman sitä Parcel käyttää MUI:n CommonJS-versiota eikä tree-shaking toimi (bundle ~2x).
-- `package.json`:n `allowScripts` estää Parcelin riippuvuuksien (`@parcel/watcher`, `@swc/core`, `lmdb`, `msgpackr-extract`) asennusskriptit. Ne ovat vain varakeinoja (käännös lähdekoodista / wasm), koska valmiit natiivibinäärit tulevat alustakohtaisista optional-paketeista. Uuden skriptillisen riippuvuuden voi tarkistaa komennolla `npm install-scripts ls` (npm 12+).
+- Vite ajetaan Denolla (`deno run -A npm:vite`); riippuvuudet asennetaan `node_modules`-hakemistoon (`nodeModulesDir: auto`). Testit ovat `node:test`-testejä, jotka `deno test` ajaa.
+- Rakennustyökalu on Vite (`vite.config.js` sovellukselle, `vite.preview.config.js` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
+- `deno task build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
+- Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
+- Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
+- Ympäristömuuttujat luetaan `import.meta.env`-olion kautta, ja vain `VITE_`-alkuiset muuttujat päätyvät selaimeen.
 
 ## Osoitteet
-- Kehitys: `.env.development` (backend http://localhost:8080, WebSocket `ws://localhost:8080/api/refresh`).
-- Tuotanto: https://kirvespeli.bizhop.fi (`.env.production`). Backend on saman osoitteen `/api`-polun takana, WebSocket `wss://kirvespeli.bizhop.fi/api/refresh`. Proxy-vaatimukset ovat backendin README:ssä.
+- Kehitys: `.env.development` (`VITE_API_URL` http://localhost:8080, `VITE_WEB_SOCKET_URL` `ws://localhost:8080/api/refresh`).
+- Tuotanto: https://kirvespeli.bizhop.fi (`.env.production`, samat `VITE_`-muuttujat). Backend on saman osoitteen `/api`-polun takana, WebSocket `wss://kirvespeli.bizhop.fi/api/refresh`. Proxy-vaatimukset ovat backendin README:ssä.
 
 ## Kirjautumistila
 Käyttäjän tilassa `loading` on `true` automaattisen kirjautumisen ajan (`AUTO_LOGIN` -> `AUTO_LOGIN_SUCCESS` / `AUTO_LOGIN_FAIL`). Etusivulle ohjataan vasta kun `loading` on `false` eikä käyttäjää ole kirjautuneena. Jos tokenia ei ole, automaattista kirjautumista ei yritetä.

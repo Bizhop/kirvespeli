@@ -1,6 +1,6 @@
 import React, { useId } from "react"
 import { icons } from "../shared/Icon"
-import stick from "url:../shared/icons/keppi.png"
+import stick from "../shared/icons/keppi.png"
 import { MOTION } from "./motion"
 
 // Hand-drawn tally mark for the score sheet. The same seed always draws the same strokes, and a
