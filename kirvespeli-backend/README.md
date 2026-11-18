@@ -10,6 +10,18 @@ export KIRVES_GOOGLE_CLIENT_ID=...
 ```
 `./gradlew test` runs the tests. The Docker image builds the application with Gradle.
 
+## HTTP-oikeusvirheet ja web-yhteensopivuus
+
+Pelin rajapinnoissa puuttuva tai virheellinen token palauttaa HTTP 401:n. Kelvollisen
+tokenin tuntematon käyttäjä sekä pelin poisto ilman omistajuutta tai palautus ilman
+ylläpito-oikeutta palauttavat HTTP 403:n. Web päättää istunnon vain 401-vastauksesta;
+403 näytetään sivun virheenä.
+
+Ota backendin 403-muutos käyttöön ennen sitä web-versiota, joka päättää istunnon
+pelipyynnön 401:stä. Vanha web toimii tämän backendin kanssa. Vanhan backendin
+omistajuus-401 kirjaisi uuden webin käyttäjän ulos virheellisesti. Deploy-työnkulussa
+web odottaa backend-vaihetta.
+
 ## Pelaajamäärä
 
 Pelissä voi olla 2–6 pelaajaa, pelin luoja mukaan lukien. Peli alkaa ensimmäisellä nostolla,

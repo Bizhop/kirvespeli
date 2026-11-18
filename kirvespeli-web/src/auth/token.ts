@@ -1,5 +1,5 @@
-// The only module that touches the stored session token (besides nothing else: Api.js reads
-// it through getToken). The value is the backend's `JWT ...` string, sent verbatim.
+// The only module that touches the stored session token.
+// The value is the backend's `JWT ...` string, sent verbatim.
 const KEY = "kirves-token"
 
 export const getToken = (): string | null => {

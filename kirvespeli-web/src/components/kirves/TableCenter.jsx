@@ -34,7 +34,7 @@ export const Deck = ({ game }) => {
     </div>
   )
 }
-const TableCenter = ({ game, selectingDealer, join }) => {
+const TableCenter = ({ game, selectingDealer, join, pending }) => {
   const motionRef = useMotionRef()
   return (
     <div className="table-center">
@@ -47,7 +47,7 @@ const TableCenter = ({ game, selectingDealer, join }) => {
               : "Odotetaan pelaajia"}
           </p>
           {game.canJoin && join && (
-            <Button variant="contained" onClick={() => join(game.id)}>
+            <Button variant="contained" disabled={pending} onClick={() => join(game.id)}>
               Liity peliin
             </Button>
           )}

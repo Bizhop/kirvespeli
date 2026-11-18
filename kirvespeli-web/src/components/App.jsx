@@ -1,6 +1,5 @@
 import React from "react"
 import { HashRouter as Router, Route, Routes } from "react-router"
-import { Provider } from "react-redux"
 import { CssBaseline, ThemeProvider, Container, Box } from "@mui/material"
 import createCache from "@emotion/cache"
 import { CacheProvider } from "@emotion/react"
@@ -11,10 +10,8 @@ import Header from "./shared/Header"
 import DashContainer from "./dash/DashContainer"
 import KirvesContainer from "./kirves/KirvesContainer"
 import KirvesGame from "./kirves/KirvesGame"
-import Store from "../Store"
 import { AuthProvider } from "../auth/AuthProvider.tsx"
 
-const store = Store()
 const emotionCache = createCache({ key: "css" })
 
 const NotFound = () => (
@@ -33,23 +30,21 @@ const MyRoutes = () => (
 )
 
 const App = () => (
-  <Provider store={store}>
-    <CacheProvider value={emotionCache}>
-      <ThemeProvider theme={theme}>
-        <GoogleOAuthProvider clientId="266150004835-mke4j8q77p37nqlgaaer1aplhaijro84.apps.googleusercontent.com">
-          <AuthProvider>
-            <Router>
-              <CssBaseline />
-              <Container maxWidth="xl">
-                <Header />
-                <MyRoutes />
-              </Container>
-            </Router>
-          </AuthProvider>
-        </GoogleOAuthProvider>
-      </ThemeProvider>
-    </CacheProvider>
-  </Provider>
+  <CacheProvider value={emotionCache}>
+    <ThemeProvider theme={theme}>
+      <GoogleOAuthProvider clientId="266150004835-mke4j8q77p37nqlgaaer1aplhaijro84.apps.googleusercontent.com">
+        <AuthProvider>
+          <Router>
+            <CssBaseline />
+            <Container maxWidth="xl">
+              <Header />
+              <MyRoutes />
+            </Container>
+          </Router>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
+  </CacheProvider>
 )
 
 export default App

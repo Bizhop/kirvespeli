@@ -47,8 +47,8 @@ Kun vahvistettu tilannekuva tuo uusia pisteitä, lappu avautuu itsestään viime
 näyttöajan (3 s) jälkeen, uudet pisteet piirretään vetona kerrallaan istumajärjestyksessä ja sen jälkeen keppi tai kirves
 (`ScoreMark`: viivat `stroke-dashoffset`-animaatiolla, keppi ja kirves pyyhkäisten), ja lappu
 sulkeutuu 2,5 s viimeisen merkin jälkeen, ellei katsoja ole avannut tai koskenut sitä.
-`scoreChanges.js` päättelee uudet merkit ja niiden ajoituksen; ajoitukset ovat `motion.js`:ssä.
-Merkit ovat DOM:ssa heti ja piilossa piirtoon asti, joten Redux-tilaa ei viivytetä.
+`scoreChanges.ts` päättelee uudet merkit ja niiden ajoituksen; ajoitukset ovat `motion.ts`:ssä.
+Merkit ovat DOM:ssa heti ja piilossa piirtoon asti, joten vahvistettua tilaa ei viivytetä.
 Ilman piirtoa näytetään ensimmäinen tilannekuva, pelin tai pelaajien vaihtuminen,
 WebSocket-yhteyden palautuminen, uusinta ja useamman pelin hyppäys kerralla. Vähennetyn
 liikkeen asetuksella merkit ilmestyvät samaan aikaan ilman piirtoa ja lappu ilman siirtymää.
@@ -64,7 +64,7 @@ valita vain `SET_DEALER`-toiminnon ollessa sallittu; uusinnassa valinta on poist
 Säännöt ovat backendin README:ssä.
 
 ## Komponenttien esikatselu
-`src/preview/` on erillinen Vite-sivu (`vite.preview.config.js`, portti 1235), joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
+`src/preview/` on erillinen Vite-sivu (`vite.preview.config.ts`, portti 1235), joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
 ```js
 export default { title: "Card", group: "Components", variants: { card: () => <Card ... /> } }
 ```
@@ -92,27 +92,27 @@ tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-js
 - Muunnettu: `src/types/kirves.ts` (backendin sopimukset), `src/api/`, `src/auth/` (`token`, `session`,
   `AuthProvider`, `useAuth`), `kirves/`-hakemiston puhtaat apurit
   (`handOrder`, `playableCards`, `turnState`, `scoreChanges`, `cardMotion`, `motion`) sekä
-  `vite.config.ts` ja `vite.preview.config.ts`. Komponentit, Redux, `Api.js` ja esikatselun moottori
-  ovat edelleen JavaScriptiä, eikä JS:ää tarkisteta (`checkJs` pois).
+  `src/game/`-hakemiston sivutilan ohjaimet ja koukut sekä `vite.config.ts` ja
+  `vite.preview.config.ts`. Komponentit ja esikatselun moottori ovat edelleen
+  JavaScriptiä, eikä JS:ää tarkisteta (`checkJs` pois).
 - `typecheck`-tehtävä listaa TS-tiedostot (`src/types/*.ts`, `src/components/kirves/*.ts`,
-  `src/api/*.ts`, `src/auth/*.ts(x)`, `test/*.ts`, konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
+  `src/game/*.ts`, `src/api/*.ts`, `src/auth/*.ts(x)`, `test/*.ts`, konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
   `deno check` seuraa tuonteja, eikä Deno löydä JS:n tuonteja ilman päätettä (`./components/App`),
   joten tarkistus rajataan TS-tiedostoihin.
 - Jokaisen TS-tiedoston tuonnissa on `.ts`-pääte, myös JS-tiedostoista (`"./handOrder.ts"`).
 - Testit ajetaan `deno test`illä. `test/*.mjs`-testejä ei tyyppitarkisteta; uudet testit (`http`,
-  `kirvesApi`, `session`) ovat `.ts`-tiedostoja (`node:test`) ja mukana `typecheck`issa.
+  `kirvesApi`, `resource`, `session`) ovat `.ts`-tiedostoja (`node:test`) ja mukana `typecheck`issa.
 - `lint:hooks` ajaa vain säännön `react-rules-of-hooks`. Deno ei tarkista `exhaustive-deps`-sääntöä;
   ESLintiä ei oteta käyttöön.
 - `src/types/kirves.ts` kuvaa backendin JSON:n staattisesti. Se ei validoi vastauksia ajon
   aikana. Kortti-indeksit (`PLAY_CARD`, `DISCARD`) ovat backendin `myCardsInHand`-indeksejä,
   eivät näyttöjärjestyksen paikkoja (`sortHandCards` palauttaa `{ card, index }`). Tyypit eivät
   korvaa backendin sääntötarkistuksia; sallitut toiminnot tulevat `availableActions`-kentässä.
-  Nykyinen JS lähettää `declineCut`- ja `keepExtraCard`-arvot merkkijonoina (`"true"`), jotka
-  backend muuntaa; tyypit kuvaavat backendin totuusarvoja.
+  `declineCut` ja `keepExtraCard` lähetetään JSON-totuusarvoina.
 
 ## Huomioita
 - Vite ajetaan Denolla (`deno run -A npm:vite`); riippuvuudet asennetaan `node_modules`-hakemistoon (`nodeModulesDir: auto`). Testit ovat `node:test`-testejä, jotka `deno test` ajaa.
-- Rakennustyökalu on Vite (`vite.config.js` sovellukselle, `vite.preview.config.js` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
+- Rakennustyökalu on Vite (`vite.config.ts` sovellukselle, `vite.preview.config.ts` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
 - `deno task build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
 - Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
 - Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
@@ -132,18 +132,19 @@ lisää osoitteeseen `VITE_API_URL` + `/api/` ja lähettää `Authorization`-ots
 (ei `Bearer`-etuliitettä; backendin arvo alkaa `JWT `). Tyhjä vastaus on `undefined`. Virhe on `ApiError`
 (`kind` `http` tai `network`, `status`, `message` backendin `message`-kentästä tai suomenkielinen
 oletus); keskeytys heittää alkuperäisen `AbortError`in. Uudelleenyrityksiä ei ole. `auth.ts` sisältää
-`login`, `restore` ja `updateUser`, `kirves.ts` jokaisen pelin päätepisteen. Pelikomponentit käyttävät
-edelleen Reduxia ja Axiosta (`Store.js`, `Api.js`); `kirves.ts`:n funktiot odottavat siirtoa.
+`login`, `restore` ja `updateUser`, `kirves.ts` jokaisen pelin päätepisteen. Pelisivujen koukut kutsuvat `kirves.ts`:n funktioita istunnon
+`gameRequest`-suojauksen kautta. Redux, Axios ja Ramda on poistettu.
 
 Käyttäjän istunto kuuluu `src/auth/`-hakemistolle. `token.ts` on ainoa paikka, joka tuntee
-`localStorage`-avaimen `kirves-token` (`Api.js` lukee tokenin `getToken()`illa). `session.ts` on
+`localStorage`-avaimen `kirves-token` (`http.ts` lukee tokenin `getToken()`illa). `session.ts` on
 Reactista riippumaton ohjain: se pitää tilan, sukupolvilaskurin ja keskeytettävät pyynnöt. Uloskirjautuminen,
 uusi kirjautuminen, palautuksen valmistuminen ja `dispose()` korottavat sukupolvea ja keskeyttävät
 kesken olevat pyynnöt, jolloin myöhästyneet vastaukset hylätään. `AuthProvider` ja `useAuth` tuovat tilan
 Reactiin (`useSyncExternalStore`).
 
 Tila (`useAuth()`): `status` (`restoring`, `anonymous`, `authenticated`), `user` (ilman `jwt`:tä),
-`loginError`, `loggingIn`, `updateError`, `updating` sekä `login`, `loginFailed`, `logout`, `updateUser`.
+`loginError`, `loggingIn`, `updateError`, `updating`, istunnon `sessionKey` sekä
+`login`, `loginFailed`, `logout`, `updateUser` ja `gameRequest`.
 - `restoring` on alkutila vain, jos tallennettu token on olemassa; muuten tila on heti `anonymous`.
   Palautus epäonnistuu hiljaa: token poistetaan ja näytetään kirjautuminen ilman virheilmoitusta.
 - Etusivulle ohjataan vasta tilassa `anonymous`, ja Google One Tap näytetään vain siinä (ei
@@ -152,11 +153,39 @@ Tila (`useAuth()`): `status` (`restoring`, `anonymous`, `authenticated`), `user`
   Nimimerkin tallennus säilyttää tokenin, ellei vastaus sisällä uutta `jwt`:tä. Päivityksen 401
   päättää istunnon; muut virheet näkyvät `updateError`ina.
 
-Rajoitus: pelipyynnöt (Redux/Axios) eivät päätä istuntoa 401-vastauksesta, koska backend palauttaa 401
-myös tilanteessa "ei omistaja / ei ylläpitäjä". Vanhentunut token näkyy pelipyyntöjen virheinä
-(`alert`) kunnes käyttäjä kirjautuu ulos tai lataa sivun uudelleen; lataus ajaa palautuksen, joka
-epäonnistuu ja näyttää kirjautumisen. Yleinen 401-käsittely vaatisi erillisen tilakoodin
-omistajuusvirheille backendissä.
+Pelipyynnön 401 päättää istunnon ja keskeyttää muut pelipyynnöt. Sivun keskeyttämä tai
+vanhaan istuntoon kuuluva pyyntö ei voi päättää uutta istuntoa. Pelin omistajuus- ja
+ylläpito-oikeuden puute palauttaa 403:n, samoin tuntematon käyttäjä; nämä eivät kirjaa ulos.
+Ota backendin 403-muutos käyttöön ennen tätä web-versiota. Vanha web toimii uuden backendin
+kanssa; uusi web tulkitsisi vanhan backendin omistajuus-401:n istunnon päättymiseksi.
+
+## Pelisivujen tila ja päivitykset
+
+`src/game/hooks.ts`:n `useGames` omistaa aulan pelilistan sekä erilliset loki- ja
+uusintaresurssit. `useGame(id)` omistaa live-pelin vahvistetut tilannekuvat. Koukut
+liittävät Reactista riippumattoman `resource.ts`-ohjaimen näkymään `useSyncExternalStore`lla.
+Näkymäkomponenttien nimetyt viennit saavat edelleen datan propseina esikatselua varten.
+GamePeek säilyttää oman tilannekuvansa ja keskeyttää haun suljettaessa tai kohteen vaihtuessa.
+
+Yksi resurssin haku on kerrallaan käynnissä. Haun aikana saapuvat päivityspyynnöt
+yhdistyvät yhdeksi seuraavaksi hauksi; kelvolliset välitilanteet näytetään heti. STOMP
+`/topic/refresh` kertoo vain muuttuneen pelin numeron, ja koko katsojakohtainen tilanne
+haetaan HTTP:llä. Tilaus tehdään kirjautuneena reitin pelinumerolle myös ensimmäisen
+haun epäonnistuessa. Yhteyden avauduttua ja palautuessa tilauksen jälkeen haetaan uusi
+tilanne; sen kortti- ja pisteanimaatiot ohitetaan.
+
+Liittyminen ja pelitoiminto hakevat vahvistetun tilanteen myös ilman socket-ilmoitusta.
+Myös hylätty liittyminen päivittää tilanteen ja säilyttää backendin virheviestin. Luonti,
+poisto ja palautus päivittävät aulan listan; luonnin palauttaman listan jälkeen tehdään
+sama vahvistushaku. Muutosta edeltävä kesken oleva haku hylätään. Uusi muutos on estetty
+kunnes muutos ja sitä seuraavat haut valmistuvat; epäonnistuneen haun voi uusia.
+Virheet, lataus ja palautuksen vahvistus näkyvät sivulla ilman `alert()`-ikkunoita.
+Korttien paljastus kuuluu vain siihen tilannekuvaan, jossa se valittiin.
+
+Reitin, lokin, uusintavalinnan tai istunnon vaihto nollaa omistetun datan ja keskeyttää
+pyynnöt. Keskeytyssignaalin lisäksi sukupolvi estää myöhästyneen vastauksen tallentamisen.
+`sessionKey` vaihtuu myös uudella kirjautumisella samaan käyttäjään. Istunnon palautuksen
+aikana ei tehdä pelipyyntöjä eikä ohjata etusivulle.
 
 ## Pelipöytä ja teema
 
@@ -216,7 +245,7 @@ Kun valtti on tiedossa, oma käsi järjestetään vasemmalta oikealle: punainen 
 musta jokeri, jätkät (risti, pata, hertta, ruutu), muut valtit ässästä kakkoseen ja lopuksi
 muut maat ässästä kakkoseen. Muiden maiden keskinäinen järjestys on aina risti, pata,
 hertta, ruutu (valtti ohitetaan), joten se pysyy vakaana korttien poistuessa kädestä.
-Ilman valttia näytetään saatu järjestys. Järjestys koskee vain näkymää: `handOrder.js`
+Ilman valttia näytetään saatu järjestys. Järjestys koskee vain näkymää: `handOrder.ts`
 säilyttää korttien alkuperäiset indeksit `PLAY_CARD`- ja `DISCARD`-kutsuja varten eikä
 muuta backendin korttilistaa tai pöydälle pelattujen korttien järjestystä. Päätöstä odottava
 ylimääräinen kortti pysyy erillisenä käden vieressä.
@@ -247,10 +276,10 @@ jokerit ja jätkät sekä valtin vaihdon vaikutus käteen.
 
 ## Korttien animaatiot
 
-Animaatiot kuvaavat vain backendin vahvistamia tilannekuvia; Redux-tilaa tai toimintoja ei
-viivytetä animaatioiden takia. `cardMotion.js` vertaa edellistä ja uutta tilannekuvaa ja
+Animaatiot kuvaavat vain backendin vahvistamia tilannekuvia; vahvistettua tilaa tai toimintoja ei
+viivytetä animaatioiden takia. `cardMotion.ts` vertaa edellistä ja uutta tilannekuvaa ja
 kertoo sallitut liikkeet, `CardMotion.jsx` mittaa korttien paikat pöydän suhteen ja toteuttaa
-liikkeet Web Animations -rajapinnalla. Ajoitukset ovat `motion.js`:ssä.
+liikkeet Web Animations -rajapinnalla. Ajoitukset ovat `motion.ts`:ssä.
 
 - Oman käden kortit tunnistetaan kortin koodista; `PLAY_CARD`- ja `DISCARD`-indeksit ovat
   erillään. Kortit siirtyvät uusille paikoilleen valtin vaihtuessa ja korttien poistuessa.

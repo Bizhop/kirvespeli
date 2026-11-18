@@ -6,6 +6,7 @@ import { createSession } from "./session.ts"
 import type { AuthState } from "./session.ts"
 
 export interface AuthApi extends AuthState {
+  gameRequest<T>(operation: (signal: AbortSignal) => Promise<T>, signal?: AbortSignal): Promise<T>
   login(credential: string): Promise<void>
   loginFailed(error?: unknown): void
   logout(): void
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<AuthApi>(
     () => ({
       ...state,
+      gameRequest: session.gameRequest,
       login: session.login,
       loginFailed: session.loginFailed,
       logout: session.logout,

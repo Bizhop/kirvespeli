@@ -147,7 +147,7 @@ public class KirvesController {
 
     private static ResponseStatusException createKirvesResponseStatus(KirvesGameException e) {
         if(e.getType() == UNAUTHORIZED) {
-            return new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+            return new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
         }
         else if(e.getType() == BAD_REQUEST) {
             return new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

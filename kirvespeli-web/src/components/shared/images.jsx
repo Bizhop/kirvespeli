@@ -1,4 +1,3 @@
-import { prop } from "ramda"
 import React from "react"
 
 import svgImages from "./svg/svgImages"
@@ -34,7 +33,7 @@ export const SvgImage = ({ name, className, width, height, ...props }) => {
       alt={props.alt ?? name}
       width={width ?? (defaultSize ? 140 : undefined)}
       height={height ?? (defaultSize ? 200 : undefined)}
-      src={prop(name, svgImages)}
+      src={svgImages[name]}
     />
   )
 }

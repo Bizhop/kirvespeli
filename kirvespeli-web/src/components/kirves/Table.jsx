@@ -16,7 +16,16 @@ export const seatPresets = {
   5: ["bottom", "left", "top-left", "top-right", "right"],
   6: ["bottom", "bottom-left", "top-left", "top", "top-right", "bottom-right"],
 }
-const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motionResetKey }) => {
+const Table = ({
+  game,
+  action,
+  join,
+  isReplay,
+  cardsVisible,
+  showAllCards,
+  motionResetKey,
+  pending = false,
+}) => {
   const positions = seatPresets[game.players.length] ?? seatPresets[6]
   const actions = game.myAvailableActions ?? []
   const selectingDealer = !isReplay && actions.includes("SET_DEALER")
@@ -33,6 +42,7 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motio
             game={game}
             position={positions[i]}
             playing={playing}
+            pending={pending}
             inTurn={inTurn.has(player.email)}
             cardsVisible={cardsVisible}
             onSelectDealer={
@@ -50,13 +60,13 @@ const Table = ({ game, action, join, isReplay, cardsVisible, showAllCards, motio
         <div className={`deck-position deck-${positions[Math.max(0, dealerIndex)]}`}>
           <Deck game={game} />
         </div>
-        <TableCenter game={game} selectingDealer={selectingDealer} join={join} />
+        <TableCenter game={game} selectingDealer={selectingDealer} join={join} pending={pending} />
         <ScoreSlip game={game} animate={!isReplay} resetKey={motionResetKey} />
       </div>
       {!isReplay && (
-        <div className="hand-area">
-          <Hand game={game} action={action} />
-          <ActionBar game={game} action={action} showAllCards={showAllCards} />
+        <div className="hand-area" aria-busy={pending}>
+          <Hand game={game} action={pending ? undefined : action} />
+          <ActionBar game={game} action={action} showAllCards={showAllCards} pending={pending} />
         </div>
       )}
     </CardMotion>

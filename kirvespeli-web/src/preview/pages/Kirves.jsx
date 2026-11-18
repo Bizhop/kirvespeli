@@ -18,7 +18,6 @@ const baseData = {
   getReplay: logAction("getReplay"),
   restoreGame: logAction("restoreGame"),
   getGames: logAction("getGames"),
-  gamesFetched: true,
 }
 
 export default {
@@ -26,6 +25,18 @@ export default {
   group: "Containers",
   variants: {
     initial: () => <KirvesContainer {...baseData} />,
+    loading: () => <KirvesContainer {...baseData} games={[]} loading />,
+    loadError: () => (
+      <KirvesContainer
+        {...baseData}
+        games={[]}
+        error="Yhteys palvelimeen epäonnistui"
+        retry={logAction("retry")}
+      />
+    ),
+    pending: () => <KirvesContainer {...baseData} pending />,
+    operationError: () => <KirvesContainer {...baseData} operationError="Et voi poistaa peliä" />,
+    restored: () => <KirvesContainer {...baseData} notice="Pelitilanne palautettu" />,
     withLog: () => <KirvesContainer {...baseData} logVisible selectedLogIndex={0} />,
     withLogAndReplay: () => (
       <KirvesContainer {...baseData} logVisible selectedLogIndex={2} replay={hand.replays[2]} />

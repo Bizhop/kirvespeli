@@ -2,12 +2,13 @@ import React from "react"
 import { Button, Tooltip } from "@mui/material"
 
 // Shared appearance and selection feedback for speech and suit choices.
-const SelectionButton = ({ label, onClick, children }) => (
+const SelectionButton = ({ label, onClick, children, disabled }) => (
   <Tooltip title={label}>
     <Button
       variant="text"
       aria-label={label}
       onClick={onClick}
+      disabled={disabled}
       sx={{
         minWidth: 72,
         height: 72,

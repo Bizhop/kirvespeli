@@ -293,3 +293,107 @@ test("subscribers are notified and can unsubscribe", async () => {
   t.session.loginFailed()
   assert.equal(n, 1)
 })
+
+test("game 401 ends the session and aborts all other pending game requests", async () => {
+  const t = await authenticated()
+  let signal!: AbortSignal
+  const late = deferred<string>()
+  const other = t.session.gameRequest(s => {
+    signal = s
+    return late.promise
+  })
+  const rejected = assert.rejects(other, { name: "AbortError" })
+  await assert.rejects(
+    t.session.gameRequest(async () => {
+      throw http(401)
+    }),
+    ApiError,
+  )
+  assert.equal(t.session.getState().status, "anonymous")
+  assert.equal(t.token(), null)
+  assert.equal(signal.aborted, true)
+  late.resolve("private data")
+  await rejected
+})
+
+test("game permission, unknown-user and network errors keep the authenticated session", async () => {
+  const t = await authenticated()
+  for (const error of [http(403), http(400), new ApiError("network", 0, "offline")]) {
+    await assert.rejects(
+      t.session.gameRequest(async () => {
+        throw error
+      }),
+      ApiError,
+    )
+    assert.equal(t.session.getState().status, "authenticated")
+    assert.equal(t.token(), "JWT new")
+  }
+})
+
+test("late game 401 after switching accounts cannot expire the new session", async () => {
+  const t = await authenticated()
+  const late = deferred<void>()
+  const old = assert.rejects(
+    t.session.gameRequest(() => late.promise),
+    { name: "AbortError" },
+  )
+  t.session.logout()
+  const login = t.session.login("other")
+  t.pending.login[1].resolve({ ...ville, email: "other@x.fi", jwt: "JWT other" })
+  await login
+  late.reject(http(401))
+  await old
+  assert.equal(t.session.getState().user?.email, "other@x.fi")
+  assert.equal(t.token(), "JWT other")
+})
+
+test("canceled page request cannot end the session or return late private data", async () => {
+  const t = await authenticated()
+  for (const fail of [false, true]) {
+    const controller = new AbortController()
+    const late = deferred<string>()
+    const done = assert.rejects(
+      t.session.gameRequest(() => late.promise, controller.signal),
+      { name: "AbortError" },
+    )
+    controller.abort()
+    if (fail) late.reject(http(401))
+    else late.resolve("old route")
+    await done
+    assert.equal(t.session.getState().status, "authenticated")
+  }
+})
+
+test("game calls do not start while restoring or anonymous", async () => {
+  for (const token of [null, "JWT old"]) {
+    const t = setup(token)
+    let called = false
+    await assert.rejects(
+      t.session.gameRequest(async () => {
+        called = true
+      }),
+      { name: "AbortError" },
+    )
+    assert.equal(called, false)
+  }
+})
+
+test("re-authentication as the same user changes the page session key", async () => {
+  const t = await authenticated()
+  const before = t.session.getState().sessionKey
+  const login = t.session.login("new credential")
+  assert.ok(t.session.getState().sessionKey > before)
+  let called = false
+  await assert.rejects(
+    t.session.gameRequest(async () => {
+      called = true
+    }),
+    { name: "AbortError" },
+  )
+  assert.equal(called, false)
+  t.pending.login[1].resolve(ville)
+  await login
+  assert.equal(t.session.getState().user?.email, ville.email)
+  assert.ok(t.session.getState().sessionKey > before)
+  assert.equal(await t.session.gameRequest(async () => "new session"), "new session")
+})

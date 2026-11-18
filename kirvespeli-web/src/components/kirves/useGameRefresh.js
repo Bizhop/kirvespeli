@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { Client } from "@stomp/stompjs"
 
 // Calls onRefresh(gameId) when the backend announces a change to this game on /topic/refresh.
-// After a reconnect, notifications may have been missed: onResync(gameId) is called instead so
+// On connection, notifications may have been missed: onResync(gameId) is called so
 // the caller can fetch a fresh snapshot and present it without transitions.
 const useGameRefresh = (gameId, onRefresh, enabled = true, onResync) => {
   const resync = useRef(onResync)
@@ -11,23 +11,25 @@ const useGameRefresh = (gameId, onRefresh, enabled = true, onResync) => {
     if (!enabled || gameId == null) {
       return
     }
-    let connected = false
+    let active = true
     const client = new Client({
       brokerURL: import.meta.env.VITE_WEB_SOCKET_URL,
       reconnectDelay: 5000,
       onConnect: () => {
-        if (connected) resync.current?.(gameId)
-        connected = true
+        if (!active) return
         client.subscribe("/topic/refresh", message => {
-          if (message.body === String(gameId)) {
+          if (active && message.body === String(gameId)) {
             onRefresh(gameId)
           }
         })
+        // Subscribe first, then fetch: also closes the initial fetch/subscription gap.
+        resync.current?.(gameId)
       },
     })
     client.activate()
     return () => {
-      client.deactivate()
+      active = false
+      void client.deactivate()
     }
   }, [gameId, onRefresh, enabled])
 }
