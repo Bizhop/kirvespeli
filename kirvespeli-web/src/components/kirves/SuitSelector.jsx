@@ -3,7 +3,7 @@ import { SvgImage } from "../shared/images"
 import translate from "../shared/translate"
 import SelectionButton from "./SelectionButton"
 
-const SuitSelector = ({ currentTrump, action, gameId }) => (
+const SuitSelector = ({ currentTrump, action, gameId, disabled }) => (
   <div className="selection-group" role="group" aria-label="Valitse valtti">
     <h3 className="selection-label">Valitse valtti</h3>
     <div className="selection-options suit-options">
@@ -12,6 +12,7 @@ const SuitSelector = ({ currentTrump, action, gameId }) => (
         .map(suit => (
           <SelectionButton
             key={suit}
+            disabled={disabled}
             label={translate(suit)}
             onClick={() => action({ gameId, action: "SPEAK_SUIT", suit })}
           >

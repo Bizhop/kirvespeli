@@ -15,12 +15,9 @@ import { logAction } from "../logAction"
 
 const baseData = {
   join: logAction("join"),
-  refresh: logAction("refresh"),
   action: logAction("action"),
   showAllCards: logAction("showAllCards"),
-  getGame: () => {},
   authStatus: "authenticated",
-  socketDisabled: true,
 }
 
 // The site header is included so the fit-to-viewport layout is checked as on the live page.
@@ -36,6 +33,14 @@ export default {
   group: "Containers",
   variants: {
     waitingForPlayers: page(waitingGame),
+    loading: () => <KirvesGame {...baseData} loading />,
+    loadError: () => (
+      <KirvesGame {...baseData} error="Yhteys palvelimeen epäonnistui" retry={logAction("retry")} />
+    ),
+    joinError: () => (
+      <KirvesGame {...baseData} game={waitingGame} operationError="Peli on täynnä" />
+    ),
+    pendingAction: () => <KirvesGame {...baseData} game={speakingGame} pending />,
     waitingFourPlayers: page(waitingFourGame),
     gameStart: page(game),
     gameEnd: page(game2),

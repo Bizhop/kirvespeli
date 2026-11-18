@@ -17,7 +17,7 @@ import { MOTION, prefersReducedMotion } from "./motion.ts"
 // After each confirmed snapshot the registered elements are measured relative to the table.
 // Elements that keep their key move from their previous position (FLIP); new and removed
 // elements fade, the own played card flies from the hand to its row, and a deal comes from
-// the deck. Redux state is never delayed: motion only decorates the already rendered state.
+// the deck. Confirmed state is never delayed: motion only decorates the already rendered state.
 
 const MotionContext = createContext(null)
 const MotionEnabledContext = createContext(true)

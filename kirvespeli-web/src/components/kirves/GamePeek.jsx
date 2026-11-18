@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { NavLink } from "react-router"
 import {
   Alert,
@@ -18,21 +18,39 @@ import RenderGame from "./RenderGame"
 import MessagesButton from "./MessagesButton"
 import { playerName } from "../shared/playerName"
 
-// A read-only look at a game from the game list. The snapshot is kept here, not in the store,
+// A read-only look at a game from the game list. The snapshot is kept here, independently of live play,
 // so peeking never replaces the game open in the game view. Hands stay hidden: the backend
 // leaves them out for anyone not seated, and the viewer's own hand is not shown here either.
 const GamePeek = ({ brief, fetchGame, onClose }) => {
   const [game, setGame] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const request = useRef(null)
   const load = useCallback(() => {
+    request.current?.abort()
+    const controller = new AbortController()
+    request.current = controller
     setLoading(true)
     setError(null)
-    Promise.resolve(fetchGame(brief.id))
-      .then(setGame, () => setError("Pelin haku epäonnistui"))
-      .finally(() => setLoading(false))
+    Promise.resolve()
+      .then(() => fetchGame(brief.id, controller.signal))
+      .then(
+        snapshot => {
+          if (!controller.signal.aborted) setGame(snapshot)
+        },
+        error => {
+          if (!controller.signal.aborted) setError(error?.message || "Pelin haku epäonnistui")
+        },
+      )
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
   }, [brief.id, fetchGame])
-  useEffect(load, [load])
+  useEffect(() => {
+    setGame(null)
+    load()
+    return () => request.current?.abort()
+  }, [load])
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth aria-labelledby="game-peek-title">
       <DialogTitle id="game-peek-title" className="game-heading" sx={{ m: 0 }}>

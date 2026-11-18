@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react"
-import { connect } from "react-redux"
+import React from "react"
 import { Navigate, useParams } from "react-router"
-import { path } from "ramda"
 import { Box } from "@mui/material"
 
-import { useAuth } from "../../auth/useAuth.ts"
-import { getGame, joinGame, action, showAllCards } from "./kirvesActions"
+import { useGame } from "../../game/hooks.ts"
+import RequestStatus from "./RequestStatus"
 import RenderGame from "./RenderGame"
 import Icon from "../shared/Icon"
 import MessagesButton from "./MessagesButton"
@@ -16,30 +14,14 @@ export const KirvesGame = ({
   game,
   cardsVisible,
   join,
-  refresh,
   action,
   showAllCards,
-  getGame,
-  socketDisabled,
+  resetKey = 0,
+  ...status
 }) => {
-  const { id } = useParams()
-  useEffect(() => {
-    if (id && String(game?.id) !== id) {
-      getGame(id)
-    }
-  }, [id, game?.id])
-  // a resync renders the next snapshot without card motion
-  const [resyncKey, setResyncKey] = useState(0)
-  const resync = useCallback(
-    gameId => {
-      setResyncKey(key => key + 1)
-      refresh(gameId)
-    },
-    [refresh],
-  )
-  useGameRefresh(game?.id, refresh, !socketDisabled, resync)
   return (
     <div>
+      <RequestStatus {...status} loading={!game && status.loading} pending={false} />
       {game && (
         <Box sx={{ flexGrow: 1 }} className="kirves-container">
           <h1 className="game-heading">
@@ -55,7 +37,8 @@ export const KirvesGame = ({
             join={join}
             showAllCards={showAllCards}
             cardsVisible={cardsVisible}
-            motionResetKey={resyncKey}
+            motionResetKey={resetKey}
+            pending={status.pending}
           />
         </Box>
       )}
@@ -64,24 +47,15 @@ export const KirvesGame = ({
   )
 }
 
-const mapStateToProps = state => ({
-  game: path(["kirves", "game"], state),
-  cardsVisible: path(["kirves", "cardsVisible"], state),
-})
-
-const mapDispatchToProps = dispatch => ({
-  join: gameId => dispatch(joinGame(gameId)).then(() => dispatch(getGame(gameId))),
-  refresh: gameId => dispatch(getGame(gameId)),
-  action: params => dispatch(action(params)),
-  showAllCards: () => dispatch(showAllCards()),
-  getGame: gameId => dispatch(getGame(gameId)),
-})
-
-const ConnectedKirvesGame = connect(mapStateToProps, mapDispatchToProps)(KirvesGame)
-
-const KirvesGameWithAuth = () => {
-  const { status } = useAuth()
-  return <ConnectedKirvesGame authStatus={status} />
+const KirvesGameWithState = () => {
+  const { id } = useParams()
+  const state = useGame(Number(id))
+  const validId = Number.isSafeInteger(Number(id)) && Number(id) >= 0
+  useGameRefresh(Number(id), state.refresh, state.enabled && validId, state.resync)
+  if (state.authStatus === "restoring") return <p role="status">Palautetaan istuntoa…</p>
+  if (state.authStatus === "anonymous") return <Navigate to="/" />
+  if (!validId) return <p role="alert">Virheellinen pelinumero</p>
+  return <KirvesGame {...state} retry={state.refresh} />
 }
 
-export default KirvesGameWithAuth
+export default KirvesGameWithState

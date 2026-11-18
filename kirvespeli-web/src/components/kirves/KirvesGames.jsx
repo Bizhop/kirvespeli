@@ -24,7 +24,7 @@ import { playerName } from "../shared/playerName"
 import { GAME_FILTERS, filterGames } from "./gameFilter"
 import GamePeek from "./GamePeek"
 
-const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
+const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame, pending }) => {
   const [filter, setFilter] = useState("all")
   const [peeked, setPeeked] = useState(null)
   const visibleGames = filterGames(games, filter)
@@ -95,6 +95,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
                   {user?.email === game.admin.email && (
                     <Tooltip title="Avaa loki">
                       <IconButton
+                        disabled={pending}
                         onClick={() => getLog({ gameId: game.id, handId: game.lastHandId })}
                       >
                         <ListIcon />
@@ -105,7 +106,7 @@ const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
                 <TableCell>
                   {user?.email === game.admin.email && (
                     <Tooltip title="Poista peli">
-                      <IconButton onClick={() => deleteGame(game.id)}>
+                      <IconButton disabled={pending} onClick={() => deleteGame(game.id)}>
                         <DeleteForeverIcon />
                       </IconButton>
                     </Tooltip>
@@ -116,7 +117,14 @@ const KirvesGames = ({ games, user, getLog, deleteGame, fetchGame }) => {
           </TableBody>
         </Table>
       </TableContainer>
-      {peeked && <GamePeek brief={peeked} fetchGame={fetchGame} onClose={() => setPeeked(null)} />}
+      {peeked && (
+        <GamePeek
+          key={peeked.id}
+          brief={peeked}
+          fetchGame={fetchGame}
+          onClose={() => setPeeked(null)}
+        />
+      )}
     </>
   )
 }

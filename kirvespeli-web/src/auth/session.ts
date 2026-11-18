@@ -4,6 +4,8 @@ import { ApiError, isAbortError } from "../api/http.ts"
 export type AuthStatus = "restoring" | "anonymous" | "authenticated"
 
 export interface AuthState {
+  /** Changes whenever authentication supersedes the previous session. */
+  sessionKey: number
   status: AuthStatus
   /** Never keeps the jwt; the token lives only in the token store. */
   user: Omit<User, "jwt"> | null
@@ -34,6 +36,7 @@ export interface Session {
   loginFailed(error?: unknown): void
   logout(): void
   updateUser(input: { nickname: string }): Promise<void>
+  gameRequest<T>(operation: (signal: AbortSignal) => Promise<T>, signal?: AbortSignal): Promise<T>
   dispose(): void
 }
 
@@ -67,6 +70,7 @@ const loginMessage = (e: unknown): string =>
   (e instanceof ApiError && e.kind === "network" ? NETWORK_MESSAGE : LOGIN_FALLBACK)
 
 const anonymousState: AuthState = {
+  sessionKey: 0,
   status: "anonymous",
   user: null,
   loginError: null,
@@ -81,19 +85,22 @@ export const createSession = ({ api, tokens }: SessionDeps): Session => {
     status: tokens.get() ? "restoring" : "anonymous",
   }
   const listeners = new Set<() => void>()
+  const gameControllers = new Set<AbortController>()
   let generation = 0
   let restoreController: AbortController | null = null
   let loginController: AbortController | null = null
   let updateController: AbortController | null = null
 
   const setState = (patch: Partial<AuthState>) => {
-    state = { ...state, ...patch }
+    state = { ...state, ...patch, sessionKey: generation }
     listeners.forEach(listener => listener())
   }
 
   // Supersedes everything pending: late responses see a different generation and are dropped.
   const supersede = () => {
     generation += 1
+    gameControllers.forEach(controller => controller.abort())
+    gameControllers.clear()
     restoreController?.abort()
     loginController?.abort()
     updateController?.abort()
@@ -220,6 +227,33 @@ export const createSession = ({ api, tokens }: SessionDeps): Session => {
     }
   }
 
+  // Guard every game request with the auth generation. A late 401 from an old
+  // account must never log out a newer session, even when fetch ignores abort.
+  const gameRequest = async <T>(
+    operation: (signal: AbortSignal) => Promise<T>,
+    signal?: AbortSignal,
+  ): Promise<T> => {
+    const stale = () => new DOMException("Request superseded", "AbortError")
+    if (state.status !== "authenticated" || state.loggingIn || signal?.aborted) throw stale()
+    const started = generation
+    const controller = new AbortController()
+    const abort = () => controller.abort()
+    signal?.addEventListener("abort", abort, { once: true })
+    gameControllers.add(controller)
+    try {
+      const result = await operation(controller.signal)
+      if (generation !== started || controller.signal.aborted) throw stale()
+      return result
+    } catch (e) {
+      if (generation !== started || controller.signal.aborted) throw stale()
+      if (e instanceof ApiError && e.kind === "http" && e.status === 401) endSession()
+      throw e
+    } finally {
+      signal?.removeEventListener("abort", abort)
+      gameControllers.delete(controller)
+    }
+  }
+
   const dispose = () => {
     supersede()
     if (state.loggingIn || state.updating) {
@@ -240,6 +274,7 @@ export const createSession = ({ api, tokens }: SessionDeps): Session => {
     loginFailed,
     logout,
     updateUser,
+    gameRequest,
     dispose,
   }
 }

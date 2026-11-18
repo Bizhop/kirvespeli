@@ -15,7 +15,7 @@ const DepartureCountdown = ({ seconds }) => {
   return <span>Peli jatkuu automaattisesti {left} s kuluttua</span>
 }
 
-const ActionBar = ({ game, action, showAllCards }) => {
+const ActionBar = ({ game, action, showAllCards, pending }) => {
   const actions = game.myAvailableActions ?? []
   const departing = departingPlayers(game)
   const button = (name, label, extra = {}) =>
@@ -23,6 +23,7 @@ const ActionBar = ({ game, action, showAllCards }) => {
       <ActionButton
         key={`${name}:${label}`}
         action={action}
+        disabled={pending}
         actionName={name}
         gameId={game.id}
         label={label}
@@ -33,10 +34,10 @@ const ActionBar = ({ game, action, showAllCards }) => {
     <div className="action-bar">
       {button("DEAL", "Jaa", { icon: "dealer" })}
       {button("CUT", "Nosta")}
-      {game.canDeclineCut && button("CUT", "Älä nosta", { declineCut: "true" })}
+      {game.canDeclineCut && button("CUT", "Älä nosta", { declineCut: true })}
       {button("FOLD", "Mene pakkaan")}
-      {button("ACE_OR_TWO_DECISION", "Pidä", { keepExtraCard: "true" })}
-      {button("ACE_OR_TWO_DECISION", "Hylkää", { keepExtraCard: "false" })}
+      {button("ACE_OR_TWO_DECISION", "Pidä", { keepExtraCard: true })}
+      {button("ACE_OR_TWO_DECISION", "Hylkää", { keepExtraCard: false })}
       {actions.includes("SPEAK") && (
         <div className="selection-group" role="group" aria-label="Puhe">
           <h3 className="selection-label">Puhe</h3>
@@ -48,7 +49,12 @@ const ActionBar = ({ game, action, showAllCards }) => {
         </div>
       )}
       {actions.includes("SPEAK_SUIT") && (
-        <SuitSelector currentTrump={game.trump} action={action} gameId={game.id} />
+        <SuitSelector
+          disabled={pending}
+          currentTrump={game.trump}
+          action={action}
+          gameId={game.id}
+        />
       )}
       {actions.includes("PLAY_CARD") && <span>Valitse pelattava kortti</span>}
       {actions.includes("DISCARD") && <span>Valitse hylättävä kortti</span>}

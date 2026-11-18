@@ -28,6 +28,7 @@ const Seat = ({
   cardsVisible,
   position = "bottom",
   onSelectDealer,
+  pending = false,
   playing = hasPlayStarted(game),
   inTurn = playersInTurn(game).has(player.email),
 }) => {
@@ -63,6 +64,7 @@ const Seat = ({
                 : `Valitse ${nickname} jakajaksi`
               : undefined
           }
+          disabled={selectable ? pending : undefined}
           aria-pressed={selectable ? currentDealer : undefined}
           aria-disabled={selectable && currentDealer ? true : undefined}
         >

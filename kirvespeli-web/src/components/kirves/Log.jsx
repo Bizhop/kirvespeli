@@ -16,7 +16,7 @@ import PreviewIcon from "@mui/icons-material/Preview"
 
 import translate from "../shared/translate"
 
-const Log = ({ logId, logItems, selectedLogIndex, getReplay, restoreGame }) => (
+const Log = ({ logId, logItems, selectedLogIndex, getReplay, restoreGame, pending }) => (
   <Box>
     <h2>
       Loki (peli: {logId.gameId} käsi: {logId.handId})
@@ -56,6 +56,8 @@ const Log = ({ logId, logItems, selectedLogIndex, getReplay, restoreGame }) => (
               </TableCell>
               <TableCell>
                 <IconButton
+                  disabled={pending}
+                  aria-label={`Näytä tilanne ${index + 1}`}
                   onClick={() =>
                     getReplay({
                       gameId: logId.gameId,
@@ -70,6 +72,8 @@ const Log = ({ logId, logItems, selectedLogIndex, getReplay, restoreGame }) => (
               <TableCell>
                 {selectedLogIndex == index && (
                   <IconButton
+                    disabled={pending}
+                    aria-label={`Palauta tilanne ${index + 1}`}
                     onClick={() =>
                       restoreGame({
                         gameId: logId.gameId,
