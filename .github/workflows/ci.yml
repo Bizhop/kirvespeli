@@ -147,9 +147,11 @@ jobs:
       - run: deno install --frozen
       - run: deno task format:check
       - run: deno task typecheck
-      - run: deno task lint:hooks
+      - run: deno task lint
       - run: deno task test
       - run: deno task build
+      - run: test -s dist/index.html
+      - run: deno task build:preview
 
   ci-ok:
     needs: [changes, backend, backend-db, backend-image, web]

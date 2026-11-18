@@ -4,7 +4,7 @@ Vaatii Deno 2 (`.dvmrc`). Riippuvuudet ja komennot ovat tiedostossa `deno.json`,
 
 ## Sovelluksen käynnistys
 ```
-deno install
+deno install --frozen
 deno task start
 ```
 
@@ -13,10 +13,13 @@ Sovellus käynnistyy osoitteeseen http://localhost:1234 ja käyttää backendiä
 ## Muut komennot
 ```
 deno task build           # tuotantoversio hakemistoon dist/
+deno task build:preview   # esikatselun koonti hakemistoon dist-preview/
 deno task preview         # komponenttien esikatselu osoitteeseen http://localhost:1235
 deno task format          # prettier
-deno task typecheck       # deno check: TypeScript-tiedostot, tiukka tila
-deno task lint:hooks      # deno lint, vain react-rules-of-hooks
+deno task format:check    # lähdekoodi, esikatselu, testit ja Vite-asetukset
+deno task typecheck       # deno check: koko src/, test/ ja Vite-asetukset, tiukka tila
+deno task lint            # koukkusääntö, käyttämättömät muuttujat ja eksplisiittinen any
+deno task lint:hooks      # vain react-rules-of-hooks
 deno task test            # käden järjestys, kortti-indeksit, liikkeen tilavertailu, esikatseludata, API-kutsut ja istunto
 ```
 
@@ -65,17 +68,24 @@ Säännöt ovat backendin README:ssä.
 
 ## Komponenttien esikatselu
 `src/preview/` on erillinen Vite-sivu (`vite.preview.config.ts`, portti 1235), joka näyttää komponentit staattisella datalla (`src/preview/data/`) ulkoasun tarkistamista varten. Jokainen komponentti on oma tiedostonsa `src/preview/pages/`-hakemistossa:
-```js
-export default { title: "Card", group: "Components", variants: { card: () => <Card ... /> } }
+```tsx
+import type { PreviewPage } from "../types.ts"
+import Card from "../../components/kirves/Card.tsx"
+
+export default {
+  title: "Card",
+  group: "Components",
+  variants: { card: () => <Card card="AH" index={0} /> },
+} satisfies PreviewPage
 ```
-Uusi sivu lisätään listaan `src/preview/pages/index.js`. Variantti valitaan välilehdistä;
+Uusi sivu lisätään listaan `src/preview/pages/index.ts`. Variantti valitaan välilehdistä;
 vain valittu variantti on kerrallaan renderöitynä omassa `MemoryRouter`issaan.
 Vaihto nollaa variantin paikallisen tilan. Callback-propseina käytetään
 `logAction("nimi")`, joka kirjoittaa kutsun konsoliin ja sivun alareunaan.
 Sivuvalikon (‹) ja otsikon välilehtineen (▴) voi piilottaa mobiiliasettelun tarkistamista
 varten; yläkulmiin jäävät pienet palautuspainikkeet, ja valinta muistetaan selaimessa.
 Esikatselun pelitilanteet (`src/preview/data/`) tehdään pelaamalla toimintoja pienellä
-Kirves-moottorilla (`kirves.js`), joka noudattaa backendin sääntöjä: nosto, jako, ässä tai
+Kirves-moottorilla (`kirves.ts`), joka noudattaa backendin sääntöjä: nosto, jako, ässä tai
 kakkonen valttikorttina, hylkäys, puhe, valtin vaihto, tikit, pakkaan meno, pisteytys,
 poistumiset ja pelin loppu. Korttimäärät, pakan koko, tikkien voittajat, vuorot, toiminnot,
 pisteet, viestit ja toimintoloki seuraavat pelatuista toiminnoista. Sääntöjä rikkova toiminto
@@ -89,20 +99,21 @@ Tyyppitarkistus tehdään `deno check`illä (Denon oma TypeScript); `tsc`, `type
 tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-jsx`, `vite/client`) ovat
 `deno.json`:n `compilerOptions`-kentässä. Editorissa tarvitaan Denon kielipalvelin.
 
-- Muunnettu: `src/types/kirves.ts` (backendin sopimukset), `src/api/`, `src/auth/` (`token`, `session`,
-  `AuthProvider`, `useAuth`), `kirves/`-hakemiston puhtaat apurit
-  (`handOrder`, `playableCards`, `turnState`, `scoreChanges`, `cardMotion`, `motion`) sekä
-  `src/game/`-hakemiston sivutilan ohjaimet ja koukut sekä `vite.config.ts` ja
-  `vite.preview.config.ts`. Komponentit ja esikatselun moottori ovat edelleen
-  JavaScriptiä, eikä JS:ää tarkisteta (`checkJs` pois).
-- `typecheck`-tehtävä listaa TS-tiedostot (`src/types/*.ts`, `src/components/kirves/*.ts`,
-  `src/game/*.ts`, `src/api/*.ts`, `src/auth/*.ts(x)`, `test/*.ts`, konfiguraatiot). Uusi `.ts`-tiedosto hakemistoon, jota glob ei kata, on lisättävä tehtävään.
-  `deno check` seuraa tuonteja, eikä Deno löydä JS:n tuonteja ilman päätettä (`./components/App`),
-  joten tarkistus rajataan TS-tiedostoihin.
-- Jokaisen TS-tiedoston tuonnissa on `.ts`-pääte, myös JS-tiedostoista (`"./handOrder.ts"`).
-- Testit ajetaan `deno test`illä. `test/*.mjs`-testejä ei tyyppitarkisteta; uudet testit (`http`,
-  `kirvesApi`, `resource`, `session`) ovat `.ts`-tiedostoja (`node:test`) ja mukana `typecheck`issa.
-- `lint:hooks` ajaa vain säännön `react-rules-of-hooks`. Deno ei tarkista `exhaustive-deps`-sääntöä;
+- Kaikki ylläpidetty lähdekoodi, komponentit, esikatselu, simulaatiomoottori, testit ja
+  Vite-asetukset ovat TypeScriptiä (`.ts`/`.tsx`). JS-siirtymäpoikkeuksia, `allowJs`- tai
+  `checkJs`-asetuksia ei tarvita. `typecheck` tarkistaa koko `src/`- ja `test/`-hakemiston
+  sekä molemmat Vite-asetukset; uudet alihakemistot tulevat mukaan automaattisesti.
+- Suhteellisissa tuonneissa on `.ts`- tai `.tsx`-pääte. Selainkoodi käyttää DOM- ja
+  `vite/client`-tyyppejä; Deno tarjoaa testien ja asetusten `node:`-rajapintojen tyypit.
+- Esikatselusivut toteuttavat `PreviewPage`-sopimuksen (`src/preview/types.ts`).
+  Simulaation `SimPlayer` kuvaa muuttuvaa sisäistä tilaa; `view()` palauttaa täyden
+  `GameOut`-yhteensopivan tilannekuvan, jonka puuttuvat kortit ja maat ovat `null`.
+  Puhtaiden apurien testit käyttävät vain niiden tarvitsemia kenttiä sisältäviä syötteitä.
+- Testit ajetaan `deno test`illä. `test/*.test.ts` käyttää `node:test`iä, ja myös testien
+  apurit tarkistetaan tiukasti. Muotoilu kattaa testit lähdekoodin ja asetusten lisäksi.
+- `lint` tarkistaa säännöt `react-rules-of-hooks`, `no-unused-vars` ja `no-explicit-any`
+  lähdekoodista, testeistä ja asetuksista. `lint:hooks` rajaa tarkistuksen koukkusääntöön.
+  Deno ei tarkista `exhaustive-deps`-sääntöä;
   ESLintiä ei oteta käyttöön.
 - `src/types/kirves.ts` kuvaa backendin JSON:n staattisesti. Se ei validoi vastauksia ajon
   aikana. Kortti-indeksit (`PLAY_CARD`, `DISCARD`) ovat backendin `myCardsInHand`-indeksejä,
@@ -115,10 +126,10 @@ tai `tsconfig.json`-tiedostoa ei ole. Kääntäjäasetukset (`strict`, `react-js
 - Rakennustyökalu on Vite (`vite.config.ts` sovellukselle, `vite.preview.config.ts` esikatselulle). Sovelluksen juuri on `src/`, tuotos `dist/` ja `.env`-tiedostot luetaan projektin juuresta.
 - `deno task build` tyhjentää `dist/`-hakemiston. Esikatselu ei kuulu tuotantoversioon: `src/preview/` ei ole sovelluksen tuontipolulla.
 - Kuvat (SVG, PNG) tuodaan tavallisella tuonnilla (`import x from "./x.svg"`), ja `construct.sh` tuottaa saman muodon. `build.assetsInlineLimit` on 0, joten kuvat pysyvät erillisinä välimuistitettavina tiedostoina eivätkä paisuta JS-pakettia.
-- Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin). Parcelin `browserslist` ei ole enää käytössä.
-- Asetustiedostoissa `root` on `src/` tai `src/preview/`, joten polut (`envDir`, `cacheDir`, `server.fs.allow`) annetaan absoluuttisina. Suhteellinen `envDir` ei löydä `.env`-tiedostoja.
-- Esikatselun juuri on `src/preview/`, joten jaettu `styles/style.css` tuodaan `index.jsx`:ssä eikä linkillä. Kehityspalvelin ei palvele juuren ulkopuolista linkkiä.
-- Deno ei nosta välillisiä riippuvuuksia käytettäväksi (kuten npm): jokaisen tuodun paketin pitää olla `deno.json`:n `imports`-kentässä (esim. `Box` tuodaan `@mui/material`ista, ei `@mui/system`ista). Puuttuva paketti näkyy vasta esikatselun kehityspalvelimessa, koska CI ei käynnistä sitä.
+- Selainkohde on `build.target: "baseline-widely-available"` (Vite 8:n oletus, nimetty näkyviin).
+- Asetustiedostoissa `root` on `src/` tai `src/preview/`, joten polut (`envDir`, `cacheDir`, `server.fs.allow`) annetaan absoluuttisina. Suhteellinen `envDir` ei löydä `.env`-tiedostoja. Molemmat kehityspalvelimet sallivat projektihakemiston, jotta Denon `node_modules`-hakemistossa olevat fontit voidaan palvella.
+- Esikatselun juuri on `src/preview/`, joten jaettu `styles/style.css` tuodaan `index.tsx`:ssä eikä linkillä. Kehityspalvelin ei palvele juuren ulkopuolista linkkiä.
+- Deno ei nosta välillisiä riippuvuuksia käytettäväksi (kuten npm): jokaisen tuodun paketin pitää olla `deno.json`:n `imports`-kentässä (esim. `Box` tuodaan `@mui/material`ista, ei `@mui/system`ista). CI rakentaa myös esikatselun (`build:preview`), jolloin sen tuonnit ja resurssit tarkistuvat.
 - Ympäristömuuttujat luetaan `import.meta.env`-olion kautta, ja vain `VITE_`-alkuiset muuttujat päätyvät selaimeen.
 
 ## Osoitteet
@@ -133,7 +144,7 @@ lisää osoitteeseen `VITE_API_URL` + `/api/` ja lähettää `Authorization`-ots
 (`kind` `http` tai `network`, `status`, `message` backendin `message`-kentästä tai suomenkielinen
 oletus); keskeytys heittää alkuperäisen `AbortError`in. Uudelleenyrityksiä ei ole. `auth.ts` sisältää
 `login`, `restore` ja `updateUser`, `kirves.ts` jokaisen pelin päätepisteen. Pelisivujen koukut kutsuvat `kirves.ts`:n funktioita istunnon
-`gameRequest`-suojauksen kautta. Redux, Axios ja Ramda on poistettu.
+`gameRequest`-suojauksen kautta.
 
 Käyttäjän istunto kuuluu `src/auth/`-hakemistolle. `token.ts` on ainoa paikka, joka tuntee
 `localStorage`-avaimen `kirves-token` (`http.ts` lukee tokenin `getToken()`illa). `session.ts` on
@@ -152,6 +163,16 @@ Tila (`useAuth()`): `status` (`restoring`, `anonymous`, `authenticated`), `user`
 - Kirjautumisen vastauksen `jwt` tallennetaan tokeniksi; jos se puuttuu, kirjautuminen epäonnistuu.
   Nimimerkin tallennus säilyttää tokenin, ellei vastaus sisällä uutta `jwt`:tä. Päivityksen 401
   päättää istunnon; muut virheet näkyvät `updateError`ina.
+
+Nimimerkkilomake on hallittu React-lomake: Tallenna on käytössä vain muuttuneelle arvolle,
+Enter lähettää lomakkeen, ja keskeneräinen tallennus estää uuden lähetyksen. Vahvistettu
+käyttäjäpäivitys tai käyttäjän vaihto palauttaa lomakkeen alkutilaan. Hylätty tallennus säilyttää
+syötetyn nimimerkin ja näyttää istunnon `updateError`-viestin. Lomakkeella ei ole erillistä
+lomakekirjastoa.
+
+MUI käyttää Emotionia (`@emotion/react`, `@emotion/styled`); sovellus määrittää oman
+Emotion-välimuistin (`@emotion/cache`). Korttien liike käyttää Web Animations -rajapintaa,
+pisteiden piirto CSS/SVG-animaatioita. Erillistä animaatiokirjastoa ei tarvita.
 
 Pelipyynnön 401 päättää istunnon ja keskeyttää muut pelipyynnöt. Sivun keskeyttämä tai
 vanhaan istuntoon kuuluva pyyntö ei voi päättää uutta istuntoa. Pelin omistajuus- ja
@@ -190,7 +211,7 @@ aikana ei tehdä pelipyyntöjä eikä ohjata etusivulle.
 ## Pelipöytä ja teema
 
 `RenderGame` käyttää samaa `Table`-näkymää pelissä ja lokin uusinnassa. Paikat valitaan
-`Table.jsx`:n `seatPresets`-taulukosta 1–6 pelaajalle. Katsoja on alhaalla, seuraava pelaaja
+`Table.tsx`:n `seatPresets`-taulukosta 1–6 pelaajalle. Katsoja on alhaalla, seuraava pelaaja
 vasemmalla ja pelijärjestys jatkuu myötäpäivään. Sivustakatsoja ja uusinta käyttävät
 backendin istumajärjestystä. Uusinnassa ei ole omaa kättä, toimintopalkkia tai valintoja.
 Pöytä on koko pelialueen levyinen (enintään 1000 px); pisteet ovat pöydän lapussa ja viestit
@@ -217,11 +238,11 @@ kirveen sääntöjen mukaisesti (Seuraava tilanne, Toista, Alusta), myös näkym
 sovitettuna. `ScoreMark`-sivun `drawing` piirtää kaikki merkit, ja `MessagesButton`-sivu
 näyttää viestikuvakkeen.
 
-Yhteinen MUI-teema on `src/theme.js`:ssä; sovellus ja esikatselu käyttävät sitä.
+Yhteinen MUI-teema on `src/theme.ts`:ssä; sovellus ja esikatselu käyttävät sitä.
 Vihreä huopatausta tehdään CSS-liukuvärillä. Abel ja Alegreya Sans SC 700 tulevat
 `@fontsource`-paketeista paikallisina fonttitiedostoina ilman Google Fonts -pyyntöjä.
 
-`shared/Icon.jsx`:n kuvakartta määrittää kuvakkeet ja suomenkieliset selitteet. Vanhan
+`shared/Icon.tsx`:n kuvakartta määrittää kuvakkeet ja suomenkieliset selitteet. Vanhan
 mallin jakaja- ja puhekuvat ovat `shared/icons/`-hakemistossa 128 px PNG-kuvina.
 Otsikon kirves säilyttää alkuperäisen kokonsa. Ilmoittautunut pelaaja (`declared.svg`) on vaihdettava
 paikkamerkki; lopullisen kuvan voi vaihtaa kuvakarttaan.
@@ -278,7 +299,7 @@ jokerit ja jätkät sekä valtin vaihdon vaikutus käteen.
 
 Animaatiot kuvaavat vain backendin vahvistamia tilannekuvia; vahvistettua tilaa tai toimintoja ei
 viivytetä animaatioiden takia. `cardMotion.ts` vertaa edellistä ja uutta tilannekuvaa ja
-kertoo sallitut liikkeet, `CardMotion.jsx` mittaa korttien paikat pöydän suhteen ja toteuttaa
+kertoo sallitut liikkeet, `CardMotion.tsx` mittaa korttien paikat pöydän suhteen ja toteuttaa
 liikkeet Web Animations -rajapinnalla. Ajoitukset ovat `motion.ts`:ssä.
 
 - Oman käden kortit tunnistetaan kortin koodista; `PLAY_CARD`- ja `DISCARD`-indeksit ovat
@@ -310,3 +331,14 @@ kääntöjä; asetuksen muutos huomioidaan heti.
 Esikatselun `CardMotion` käy läpi tilannekuvasarjoja painikkeilla: pelatut kortit ja uusi
 jako, valtin vaihto ja ylimääräinen kortti, nosto, paljastus, nopeat päivitykset, uusintahypyt sekä samat
 julkiset tapahtumat kahden pelaajan ja sivustakatsojan näkymissä.
+
+## Tarkistukset ja julkaisu
+
+CI tekee lukitun asennuksen (`deno install --frozen`), muotoilun tarkistuksen, tiukan
+tyyppitarkistuksen, lint-sääntöjen tarkistuksen, testit sekä sovelluksen ja esikatselun
+koonnit. Sovelluksen koonti tuottaa edelleen `dist/index.html`:n; julkaisu synkronoi vain
+`dist/`-hakemiston. `dist-preview/` on erillinen paikallinen tarkistustuotos.
+
+Kirjautumisen ja pelitoimintojen selaintarkistukset voidaan tehdä paikallisesti jäljitellyillä
+API- ja WebSocket-vastauksilla. Oikea Google-kirjautuminen, One Tap / FedCM ja backendin
+sääntöjen sekä käyttöoikeuksien yhteistoiminta vaativat toimivan backendin ja oikean istunnon.

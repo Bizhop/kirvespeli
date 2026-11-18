@@ -9,16 +9,13 @@
     "npm:@mui/icons-material@^9.5.0": "9.5.0_@mui+material@9.5.0_@types+react@19.3.0_react@19.3.1_@emotion+react@11.14.0_@emotion+styled@11.14.1_react-dom@19.3.1",
     "npm:@mui/material@^9.5.0": "9.5.0_@emotion+react@11.14.0_@emotion+styled@11.14.1_@types+react@19.3.0_react@19.3.1_react-dom@19.3.1",
     "npm:@react-oauth/google@~0.13.5": "0.13.5_react@19.3.1_react-dom@19.3.1",
-    "npm:@react-spring/web@^10.1.2": "10.1.2_react@19.3.1_react-dom@19.3.1",
     "npm:@stomp/stompjs@^7.5.0": "7.5.0",
     "npm:@types/react-dom@^19.3.0": "19.3.0_@types+react@19.3.0",
     "npm:@types/react@^19.3.0": "19.3.0",
     "npm:@vitejs/plugin-react@^6.3.0": "6.3.0_vite@8.3.8",
-    "npm:final-form@^5.0.1": "5.0.1",
     "npm:prettier@*": "3.10.1",
     "npm:prettier@^3.9.10": "3.10.1",
     "npm:react-dom@^19.3.1": "19.3.1_react@19.3.1",
-    "npm:react-final-form@^7.0.1": "7.0.1_final-form@5.0.1_react@19.3.1",
     "npm:react-router@^8.5.1": "8.5.1_@types+react@19.3.0_@types+react-dom@19.3.0_react@19.3.1_react-dom@19.3.1",
     "npm:react@^19.3.1": "19.3.1",
     "npm:vite@*": "8.3.8",
@@ -376,49 +373,6 @@
         "react-dom"
       ]
     },
-    "@react-spring/animated@10.1.2_react@19.3.1": {
-      "integrity": "sha512-yAsQ/bbp6+vko7WNCI1M00c6KLE9XKTGCrgRhQqS4JcK3oF5qBV4rHYrQEprvEvYXxt+1H5FsLS2eVValEPfFw==",
-      "dependencies": [
-        "@react-spring/shared",
-        "@react-spring/types",
-        "react"
-      ]
-    },
-    "@react-spring/core@10.1.2_react@19.3.1": {
-      "integrity": "sha512-lPGOAg0V+PV3ucopOajD+YCxoe8twALqAeG4c/+sqVjBsyUNNdx8qfz/DcNSPKA8PV3+AyQELlCxlDfap9cmBQ==",
-      "dependencies": [
-        "@react-spring/animated",
-        "@react-spring/shared",
-        "@react-spring/types",
-        "react"
-      ]
-    },
-    "@react-spring/rafz@10.1.2": {
-      "integrity": "sha512-KC6vSFZyPnRJ2rXqipV9QqR4SaYbYXjvKfdYKWipNK2mWuV79gr20WmpVUOsTiEHGRY3WSOdWCHN+P9Pdaqb7Q=="
-    },
-    "@react-spring/shared@10.1.2_react@19.3.1": {
-      "integrity": "sha512-47/8bNQ/o0uEmxEnPBuERlC29VSqiTn5P9ln9tUMSVkYKYxBtouYE686F5kAGj+eHRPoNCw7drxWE9nv2d1LMw==",
-      "dependencies": [
-        "@react-spring/rafz",
-        "@react-spring/types",
-        "react"
-      ]
-    },
-    "@react-spring/types@10.1.2": {
-      "integrity": "sha512-G4CWowmVPz+rDG1y9QRVq/prZNxiNwQaHC0kgT/MgY6jAGgdRgTV4VThpvJDwWvUitk3xZB4soP4d36fjeQ09g=="
-    },
-    "@react-spring/web@10.1.2_react@19.3.1_react-dom@19.3.1": {
-      "integrity": "sha512-KxDB3zaDqy9qFsu7fdxjyraAxweHH4k5TW5WGT/OuMK6hKaxSDfhrQfRBzfFaSVvMBf+NghbJFanllV4ia6i7A==",
-      "dependencies": [
-        "@react-spring/animated",
-        "@react-spring/core",
-        "@react-spring/shared",
-        "@react-spring/types",
-        "csstype",
-        "react",
-        "react-dom"
-      ]
-    },
     "@remix-run/route-pattern@0.22.1": {
       "integrity": "sha512-czdGJWh09Lapvcqt7Vb09KlrU2PhRJ8xQaI+AItTuD9aDJ5MAgxnS38lnys6Ll+6RJEqPiaUqTwIQhVLwFvv+w=="
     },
@@ -619,12 +573,6 @@
         "picomatch"
       ]
     },
-    "final-form@5.0.1": {
-      "integrity": "sha512-Ohygw2lDgc2HNynfUu82Jp5U45+OLLeBQcwWbrex1IAbQw0uNaFMUbm5dhYCF6y7jcORgl5tg19/1zYxlJtLmg==",
-      "dependencies": [
-        "@babel/runtime"
-      ]
-    },
     "find-root@1.1.0": {
       "integrity": "sha512-NKfW6bec6GfKc0SGx1e07QZY9PE99u0Bft/0rzSD5k3sO/vwkVUpDUKVm5Gpp5Ue3YfShPFTX2070tDs5kB9Ng=="
     },
@@ -822,14 +770,6 @@
         "scheduler"
       ]
     },
-    "react-final-form@7.0.1_final-form@5.0.1_react@19.3.1": {
-      "integrity": "sha512-8K1ITLecBI7F+jCxiMA/JI1amHT/+klQB+nhl5YFZu3R1sQftbiQk/UfwRDvE7ZxIqIvCf8nYLDQRrfwaDT3kQ==",
-      "dependencies": [
-        "@babel/runtime",
-        "final-form",
-        "react"
-      ]
-    },
     "react-is@16.13.1": {
       "integrity": "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="
     },
@@ -958,15 +898,12 @@
       "npm:@mui/icons-material@^9.5.0",
       "npm:@mui/material@^9.5.0",
       "npm:@react-oauth/google@~0.13.5",
-      "npm:@react-spring/web@^10.1.2",
       "npm:@stomp/stompjs@^7.5.0",
       "npm:@types/react-dom@^19.3.0",
       "npm:@types/react@^19.3.0",
       "npm:@vitejs/plugin-react@^6.3.0",
-      "npm:final-form@^5.0.1",
       "npm:prettier@^3.9.10",
       "npm:react-dom@^19.3.1",
-      "npm:react-final-form@^7.0.1",
       "npm:react-router@^8.5.1",
       "npm:react@^19.3.1",
       "npm:vite@^8.3.8"

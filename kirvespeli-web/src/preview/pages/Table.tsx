@@ -1,0 +1,71 @@
+import type { PreviewPage } from "../types.ts"
+import React from "react"
+import RenderGame from "../../components/kirves/RenderGame.tsx"
+import {
+  tableGames,
+  waitingGame,
+  waitingFourGame,
+  dealerGame,
+  cutGame,
+  cutTurnGame,
+  speakingGame,
+  suitGame,
+  spectatorGame,
+  extraCardGame,
+  discardGame,
+  departureGame,
+  departureWaitingGame,
+  departureAdminGame,
+  departureMultipleGame,
+  departureAcknowledgedGame,
+  departureEarlyEndGame,
+  departureGameEndGame,
+} from "../data/games.ts"
+import { logAction } from "../logAction.ts"
+const props = {
+  action: logAction("action"),
+  join: logAction("join"),
+  showAllCards: logAction("showAllCards"),
+}
+const variants = {
+  ...Object.fromEntries(
+    Object.entries(tableGames).map(([count, game]) => [
+      `${count} players`,
+      () => <RenderGame game={game} {...props} />,
+    ]),
+  ),
+  waiting: () => <RenderGame game={waitingGame} {...props} />,
+  waitingFourPlayers: () => <RenderGame game={waitingFourGame} {...props} />,
+  dealerSelection: () => <RenderGame game={dealerGame} {...props} />,
+  cutTurn: () => <RenderGame game={cutTurnGame} {...props} />,
+  cut: () => <RenderGame game={cutGame} {...props} />,
+  speaking: () => <RenderGame game={speakingGame} {...props} />,
+  suitSelection: () => <RenderGame game={suitGame} {...props} />,
+  extraCard: () => <RenderGame game={extraCardGame} {...props} />,
+  discard: () => <RenderGame game={discardGame} {...props} />,
+  spectator: () => <RenderGame game={spectatorGame} {...props} />,
+  departure: () => <RenderGame game={departureGame} {...props} />,
+  departureWaiting: () => <RenderGame game={departureWaitingGame} {...props} />,
+  departureAdmin: () => <RenderGame game={departureAdminGame} {...props} />,
+  departureMultiple: () => <RenderGame game={departureMultipleGame} {...props} />,
+  departureAcknowledged: () => <RenderGame game={departureAcknowledgedGame} {...props} />,
+  departureEarlyEnd: () => <RenderGame game={departureEarlyEndGame} {...props} />,
+  departureGameEnd: () => <RenderGame game={departureGameEndGame} {...props} />,
+  replay: () => <RenderGame game={tableGames[6]} {...props} isReplay cardsVisible />,
+}
+
+export default {
+  title: "Table",
+  group: "Containers",
+  variants: {
+    ...variants,
+    ...Object.fromEntries(
+      Object.entries(variants)
+        .filter(([name]) => name !== "replay")
+        .map(([name, render]) => [
+          `fit ${name}`,
+          () => React.cloneElement(render(), { fitViewport: true }),
+        ]),
+    ),
+  },
+} satisfies PreviewPage

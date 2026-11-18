@@ -1,0 +1,49 @@
+import { HashRouter as Router, Route, Routes } from "react-router"
+import { CssBaseline, ThemeProvider, Container, Box } from "@mui/material"
+import createCache from "@emotion/cache"
+import { CacheProvider } from "@emotion/react"
+import theme from "../theme.ts"
+import { GoogleOAuthProvider } from "@react-oauth/google"
+
+import Header from "./shared/Header.tsx"
+import DashContainer from "./dash/DashContainer.tsx"
+import KirvesContainer from "./kirves/KirvesContainer.tsx"
+import KirvesGame from "./kirves/KirvesGame.tsx"
+import { AuthProvider } from "../auth/AuthProvider.tsx"
+
+const emotionCache = createCache({ key: "css" })
+
+const NotFound = () => (
+  <Box sx={{ flexGrow: 1 }}>
+    <h1>Page not Found 404!</h1>
+  </Box>
+)
+
+const MyRoutes = () => (
+  <Routes>
+    <Route path="/" element={<DashContainer />} />
+    <Route path="/kirves" element={<KirvesContainer />} />
+    <Route path="/kirves/:id" element={<KirvesGame />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+)
+
+const App = () => (
+  <CacheProvider value={emotionCache}>
+    <ThemeProvider theme={theme}>
+      <GoogleOAuthProvider clientId="266150004835-mke4j8q77p37nqlgaaer1aplhaijro84.apps.googleusercontent.com">
+        <AuthProvider>
+          <Router>
+            <CssBaseline />
+            <Container maxWidth="xl">
+              <Header />
+              <MyRoutes />
+            </Container>
+          </Router>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
+  </CacheProvider>
+)
+
+export default App
