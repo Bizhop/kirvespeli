@@ -800,6 +800,91 @@ button {
   width: min(360px, calc(100vw - 32px));
   max-height: min(60vh, 480px);
   overflow: auto;
+  padding: 0;
+  color: inherit;
+  /* the panel is rendered inside the game heading: don't inherit its font */
+  font: 400 1rem/1.5 "Abel", sans-serif;
+  text-align: start;
+  background: #465c0b;
+  border: 1px solid #ffffff66;
+  border-radius: 12px;
+  box-shadow: 0 5px 16px #0006;
+}
+@supports (position-area: block-end) {
+  .messages-popover {
+    inset: auto;
+    margin: 4px 0;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline,
+      --messages-narrow;
+  }
+}
+/* a narrow screen where the panel fits neither side of the button: keep the side gutters */
+@position-try --messages-narrow {
+  position-area: block-end span-all;
+  justify-self: start;
+  margin: 4px 16px;
+}
+
+/* Native overlays (GamePeek, MessagesButton): entry animation only. Exit animations need
+   `overlay`, which Firefox and Safari lack, so overlays close instantly. */
+.game-peek[open],
+.messages-popover:popover-open {
+  opacity: 1;
+  @starting-style {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    scale: 1;
+    @starting-style {
+      scale: 0.95;
+    }
+  }
+}
+.game-peek,
+.messages-popover {
+  transition: opacity 0.2s ease-out, scale 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-peek,
+  .messages-popover {
+    transition-duration: 0.1s;
+  }
+}
+
+/* A game from the game list in a modal dialog (GamePeek). */
+.game-peek {
+  width: min(900px, 100% - 32px);
+  max-width: none;
+  max-height: calc(100% - 64px);
+  padding: 0;
+  color: inherit;
+  background: #465c0b;
+  border: 1px solid #ffffff66;
+  border-radius: 12px;
+  box-shadow: 0 11px 15px #0005;
+  overflow: hidden;
+}
+.game-peek[open] {
+  display: flex;
+  flex-direction: column;
+}
+.game-peek:modal {
+  overscroll-behavior: contain;
+}
+.game-peek::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: #00000080;
+  transition: background-color 0.2s ease-out;
+}
+.game-peek[open]::backdrop {
+  @starting-style {
+    background-color: transparent;
+  }
 }
 .messages-empty {
   margin: 12px 16px;
