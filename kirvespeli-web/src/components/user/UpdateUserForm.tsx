@@ -34,11 +34,15 @@ const UpdateUserForm = ({ onSubmit, user, submitting = false }: Props) => {
     <form onSubmit={submit}>
       <TextField
         name="nickname"
-        label="Nickname"
+        label="Nimimerkki"
         type="text"
         margin="normal"
         autoFocus
         fullWidth
+        autoComplete="nickname"
+        slotProps={{
+          htmlInput: { enterKeyHint: "done", spellCheck: false, autoCapitalize: "none" },
+        }}
         value={draft.nickname}
         disabled={busy}
         onChange={event => setDraft(current => ({ ...current, nickname: event.target.value }))}

@@ -26,7 +26,7 @@ export default {
         {...handlers}
         status="authenticated"
         user={user}
-        updateError="Nickname on jo käytössä"
+        updateError="Nimimerkki on jo käytössä"
       />
     ),
     loggedOut: () => <DashContainer {...handlers} status="anonymous" user={null} />,

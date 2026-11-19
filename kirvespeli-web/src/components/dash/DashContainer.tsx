@@ -48,7 +48,7 @@ export const DashContainer = ({
               md: 2,
             }}
           >
-            <strong>Nickname</strong>
+            <strong>Nimimerkki</strong>
           </Grid>
           <Grid
             size={{

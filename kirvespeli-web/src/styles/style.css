@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --card-w: 140px;
   --score-loss-color: #ffe6a0;
 }
