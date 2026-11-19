@@ -20,7 +20,7 @@ const FormPreview = ({
     await logAction("updateUser")(input)
     setError(null)
     await new Promise(resolve => setTimeout(resolve, 700))
-    if (reject) setError("Nickname on jo käytössä")
+    if (reject) setError("Nimimerkki on jo käytössä")
     else setCurrent(user => ({ ...user, nickname: input.nickname }))
   }
   return (

@@ -248,7 +248,7 @@ export class KirvesGame {
 
   recordLoss(loser: SimPlayer, points: number) {
     let losses = 0
-    for (const entry of [...this.history].reverse()) {
+    for (const entry of this.history.toReversed()) {
       if (entry.axe) break
       if (entry.loser === loser.email) losses++
     }
@@ -474,7 +474,7 @@ export class KirvesGame {
   // card, otherwise the lowest trump, otherwise the lowest card.
   choose(player: SimPlayer): CardCode {
     const strength = (card: CardCode) => (isTrump(card, this.trump) ? 100 : 0) + rankOf(card)
-    const byStrength = [...player.hand].sort((a, b) => strength(a) - strength(b))
+    const byStrength = player.hand.toSorted((a, b) => strength(a) - strength(b))
     if (this.firstOfRound === player) return byStrength.at(-1) ?? fail("empty hand")
     const led = suitOf(this.firstOfRound!.played.at(-1)!, this.trump)
     const follow = byStrength.filter(card => suitOf(card, this.trump) === led)

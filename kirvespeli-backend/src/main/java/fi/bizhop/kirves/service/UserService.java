@@ -76,7 +76,7 @@ public class UserService {
             var updated = this.USER_REPO.save(user);
             return new User(updated);
         } catch (DataIntegrityViolationException e) {
-            throw new UserException("Nickname on jo käytössä");
+            throw new UserException("Nimimerkki on jo käytössä");
         } catch (Exception e) {
             throw new UserException("Käyttäjän tallennus epäonnistui");
         }

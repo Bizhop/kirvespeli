@@ -73,7 +73,7 @@ class UserDbTest extends DbTestBase {
 
         // relies on the constraint violation surfacing at save, i.e. no surrounding transaction
         var e = assertThrows(UserException.class, () -> this.userService.updateUser("b@example.com", nickname("Same")));
-        assertEquals("Nickname on jo käytössä", e.getMessage());
+        assertEquals("Nimimerkki on jo käytössä", e.getMessage());
         assertEquals("Initial B", this.userRepo.findByEmail("b@example.com").orElseThrow().nickname);
     }
 

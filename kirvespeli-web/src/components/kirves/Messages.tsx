@@ -4,7 +4,7 @@ import { List, ListItem, ListItemText } from "@mui/material"
 const Messages = ({ messages }: { messages: readonly string[] }) =>
   messages.length ? (
     <List dense className="messages-list">
-      {[...messages].reverse().map((message, index) => (
+      {messages.toReversed().map((message, index) => (
         <ListItem key={`li-${index}`}>
           <ListItemText primary={message} />
         </ListItem>
