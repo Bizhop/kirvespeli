@@ -1,0 +1,108 @@
+import type { ReplayId } from "../../types/kirves.ts"
+import type { useGames } from "../../game/hooks.ts"
+import {
+  Box,
+  TableContainer,
+  Table,
+  Paper,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
+} from "@mui/material"
+import CheckIcon from "@mui/icons-material/Check"
+import PreviewIcon from "@mui/icons-material/Preview"
+
+import translate from "../shared/translate.ts"
+
+const Log = ({
+  logId,
+  logItems,
+  selectedLogIndex,
+  getReplay,
+  restoreGame,
+  pending,
+}: Pick<ReturnType<typeof useGames>, "logId" | "logItems"> & {
+  getReplay: (id: ReplayId) => void
+  restoreGame: (id: ReplayId) => void
+} & Partial<Pick<ReturnType<typeof useGames>, "selectedLogIndex" | "pending">>) =>
+  logId && (
+    <Box>
+      <h2>
+        Loki (peli: {logId.gameId} käsi: {logId.handId})
+      </h2>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Pelaaja</TableCell>
+              <TableCell>Toiminto</TableCell>
+              <TableCell>Lisätieto</TableCell>
+              <TableCell>Näytä tilanne</TableCell>
+              <TableCell>Palauta tilanne</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {logItems.map((item, index) => (
+              <TableRow key={`log-item-${index}`}>
+                <TableCell>{item.user.nickname}</TableCell>
+                <TableCell>{translate(item.input.action)}</TableCell>
+                <TableCell>
+                  {(() => {
+                    switch (item.input.action) {
+                      case "PLAY_CARD":
+                      case "DISCARD":
+                        return `index=${item.input.index}`
+                      case "ACE_OR_TWO_DECISION":
+                        return item.input.keepExtraCard ? "Pidetty" : "Hylätty"
+                      case "SPEAK":
+                        return translate(item.input.speak)
+                      case "SPEAK_SUIT":
+                        return translate(item.input.suit)
+                      default:
+                        return ""
+                    }
+                  })()}
+                </TableCell>
+                <TableCell>
+                  <IconButton
+                    disabled={pending}
+                    aria-label={`Näytä tilanne ${index + 1}`}
+                    onClick={() =>
+                      getReplay({
+                        gameId: logId.gameId,
+                        handId: logId.handId,
+                        index,
+                      })
+                    }
+                  >
+                    <PreviewIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell>
+                  {selectedLogIndex == index && (
+                    <IconButton
+                      disabled={pending}
+                      aria-label={`Palauta tilanne ${index + 1}`}
+                      onClick={() =>
+                        restoreGame({
+                          gameId: logId.gameId,
+                          handId: logId.handId,
+                          index,
+                        })
+                      }
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  )
+
+export default Log

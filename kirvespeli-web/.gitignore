@@ -1,7 +1,3 @@
-.parcel-cache/
-vite.config.js.timestamp-*
-dist/
 node_modules/
-
-
+dist/
 dist-preview/

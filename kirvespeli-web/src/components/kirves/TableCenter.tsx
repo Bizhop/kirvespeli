@@ -1,0 +1,98 @@
+import type { TableProps } from "./props.ts"
+import { Button } from "@mui/material"
+import { SvgImage } from "../shared/images.tsx"
+import DealerSelector from "./DealerSelector.tsx"
+import { useMotionRef } from "./CardMotion.tsx"
+import { cutKey, trumpKey, DECK_KEY } from "./cardMotion.ts"
+
+export const Deck = ({ game }: Pick<TableProps, "game">) => {
+  const motionRef = useMotionRef()
+  if (!game.cardsInDeck && !game.trumpCard) return null
+  const layers = Math.min(5, Math.ceil((game.cardsInDeck ?? 0) / 10))
+  return (
+    <div
+      className="table-deck"
+      ref={motionRef?.(DECK_KEY)}
+      aria-label={`Pakassa ${game.cardsInDeck ?? 0} korttia`}
+    >
+      {game.trumpCard && (
+        <SvgImage
+          name={game.trumpCard}
+          className="deck-trump"
+          ref={motionRef?.(trumpKey(game.trumpCard))}
+        />
+      )}
+      {Array.from({ length: layers }, (_, i) => (
+        <SvgImage
+          key={i}
+          name="back"
+          className="deck-card"
+          style={{ transform: `translate(${i * 2}px, ${-i * 2}px)` }}
+        />
+      ))}
+      <span className="deck-count">{game.cardsInDeck ?? 0}</span>
+    </div>
+  )
+}
+const TableCenter = ({
+  game,
+  selectingDealer,
+  join,
+  pending,
+}: Pick<TableProps, "game" | "join" | "pending"> & { selectingDealer?: boolean }) => {
+  const motionRef = useMotionRef()
+  return (
+    <div className="table-center">
+      {selectingDealer && <DealerSelector />}
+      {game.waitingForPlayers && (
+        <div className="waiting-panel">
+          <p>
+            {(game.playersTotal ?? game.players?.length ?? 0) < 2
+              ? "Odotetaan pelaajia (vähintään 2)"
+              : "Odotetaan pelaajia"}
+          </p>
+          {game.canJoin && join && (
+            <Button
+              variant="contained"
+              disabled={pending}
+              onClick={() => game.id != null && join(game.id)}
+            >
+              Liity peliin
+            </Button>
+          )}
+        </div>
+      )}
+      <div className="table-suits">
+        {game.trump && (
+          <div>
+            Valtti
+            <SvgImage name={`Suit${game.trump}`} className="suit-indicator" />
+          </div>
+        )}
+        {game.firstCardSuit && (
+          <div>
+            Ajettu maa
+            <SvgImage name={`Suit${game.firstCardSuit}`} className="suit-indicator" />
+          </div>
+        )}
+      </div>
+      {game.cutCard && (
+        <div className="cut-cards" aria-label="Nostokortit">
+          <SvgImage
+            name={game.cutCard}
+            className="center-card"
+            ref={motionRef?.(cutKey(game.cutCard))}
+          />
+          {game.secondCutCard && (
+            <SvgImage
+              name={game.secondCutCard}
+              className="center-card opaque50"
+              ref={motionRef?.(cutKey(game.secondCutCard))}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+export default TableCenter
