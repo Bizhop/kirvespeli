@@ -1,7 +1,20 @@
+@property --slot-index {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --slot-count {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 1;
+}
 :root {
   color-scheme: dark;
   --card-w: 140px;
   --score-loss-color: #ffe6a0;
+}
+body {
+  font-size-adjust: from-font;
 }
 h1,
 h2,
@@ -9,6 +22,7 @@ h3,
 h4 {
   font-family: "Alegreya Sans SC", sans-serif;
   font-weight: 700;
+  font-size-adjust: cap-height from-font;
 }
 button,
 a {
@@ -161,14 +175,14 @@ a {
   height: auto;
   aspect-ratio: 7 / 10;
   object-fit: contain;
-  transform: rotate(-5deg);
+  rotate: calc(-8deg + 3deg * sibling-index());
 }
 .seat-card + .seat-card {
   margin-left: -13px;
 }
 .seat-card.extra-card {
   margin-left: 7px;
-  transform: rotate(8deg);
+  rotate: 8deg;
 }
 .seat-bottom {
   left: 50%;
@@ -246,7 +260,11 @@ a {
   border-radius: 6px;
   color: inherit;
   background: transparent;
-  transition: transform 0.15s;
+  translate: 0;
+  rotate: 0deg;
+  transition:
+    translate 0.15s,
+    rotate 0.15s;
 }
 .playing-card:disabled {
   opacity: 1;
@@ -293,7 +311,7 @@ a {
 }
 /* revealed trick-winning cards are raised from their row, in proportion to the card size */
 .playing-card.won-visible {
-  transform: translateY(calc(var(--card-w) * -0.15));
+  translate: 0 calc(var(--card-w) * -0.15);
 }
 .playing-card.illegal-play {
   opacity: 0.45;
@@ -304,8 +322,8 @@ a {
   animation: trick-winner-bounce 700ms ease-in-out 2;
 }
 @keyframes trick-winner-bounce {
-  0%, 100% { transform: translateY(calc(var(--card-w) * -0.15)); }
-  50% { transform: translateY(calc(var(--card-w) * -0.4)); }
+  0%, 100% { translate: 0 calc(var(--card-w) * -0.15); }
+  50% { translate: 0 calc(var(--card-w) * -0.4); }
 }
 @media (prefers-reduced-motion: reduce) {
   .playing-card.trick-winner {
@@ -450,28 +468,23 @@ a {
   gap: 0;
   padding: 0 8px;
 }
+.own-hand .card-slot {
+  /* Registered so the index is resolved on the slot (the sibling) and inherited by the card. */
+  --slot-index: sibling-index();
+  --slot-count: sibling-count();
+}
 .own-hand .playing-card {
-  transform: rotate(-3deg);
+  --fan-offset: calc(var(--slot-index) - (var(--slot-count) + 1) / 2);
+  rotate: calc(1.5deg * var(--fan-offset));
+  translate: 0 calc(-8px + 2px * var(--fan-offset) * var(--fan-offset));
   box-shadow: 0 4px 8px #17260744;
 }
 .own-hand .card-slot + .card-slot {
   margin-left: calc(var(--card-w) * -0.22);
 }
-.own-hand .card-slot:nth-child(2) .playing-card {
-  transform: translateY(-5px) rotate(-2deg);
-}
-.own-hand .card-slot:nth-child(3) .playing-card {
-  transform: translateY(-8px);
-}
-.own-hand .card-slot:nth-child(4) .playing-card {
-  transform: translateY(-5px) rotate(2deg);
-}
-.own-hand .card-slot:nth-child(5) .playing-card {
-  transform: rotate(3deg);
-}
 @media (hover: hover) {
   .own-hand .playing-card.playable:hover {
-    transform: translateY(-20px);
+    translate: 0 -20px;
     z-index: 1;
   }
 }
@@ -598,18 +611,6 @@ a {
 .played-cards .cards,
 .own-hand .cards {
   flex-wrap: nowrap;
-}
-.seat-card:nth-child(2) {
-  transform: rotate(-2deg);
-}
-.seat-card:nth-child(3) {
-  transform: rotate(1deg);
-}
-.seat-card:nth-child(4) {
-  transform: rotate(4deg);
-}
-.seat-card:nth-child(5) {
-  transform: rotate(7deg);
 }
 
 .seat-selectable .seat-info:not([aria-disabled="true"]) {
@@ -831,13 +832,17 @@ button {
   color: var(--ink);
   background: linear-gradient(225deg, #e4dcc0 0 9px, var(--paper) 9px);
   box-shadow: 0 3px 8px #15230588;
-  transform: rotate(-6deg);
+  translate: 0;
+  rotate: -6deg;
   cursor: pointer;
-  transition: transform 160ms ease;
+  transition:
+    translate 160ms ease,
+    rotate 160ms ease;
 }
 .score-slip-note:hover,
 .score-slip-note:focus-visible {
-  transform: rotate(-2deg) translateY(-3px);
+  rotate: -2deg;
+  translate: 0 -3px;
 }
 .score-slip-note:focus-visible {
   outline: 2px solid #fff3bd;
@@ -861,20 +866,28 @@ button {
     0 1px 0 #e4dcc0,
     0 10px 28px #15230599;
   transform-origin: 100% 100%;
-  transform: translate(-6px, -6px) rotate(-6deg) scale(0.12);
+  translate: -6px -6px;
+  rotate: -6deg;
+  scale: 0.12;
   opacity: 0;
   visibility: hidden;
   transition:
-    transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    translate 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    rotate 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    scale 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
     opacity 200ms ease,
     visibility 0s linear 280ms;
 }
 .score-slip-open .score-slip-paper {
-  transform: rotate(-1deg);
+  translate: 0;
+  rotate: -1deg;
+  scale: 1;
   opacity: 1;
   visibility: visible;
   transition:
-    transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    translate 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    rotate 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    scale 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
     opacity 120ms ease,
     visibility 0s;
 }
@@ -977,5 +990,7 @@ button {
 .score-slip-static .score-slip-paper {
   width: max-content;
   max-height: 420px;
-  transform: none;
+  translate: 0;
+  rotate: 0deg;
+  scale: 1;
 }

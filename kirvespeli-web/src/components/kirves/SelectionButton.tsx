@@ -28,21 +28,30 @@ const SelectionButton = ({
         "&:hover": { bgcolor: "transparent" },
         "& .status-icon": {
           transformOrigin: "50% 80%",
-          transition: "transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1.3)",
+          translate: "0",
+          rotate: "0deg",
+          scale: "1",
+          transition: [
+            "translate 240ms cubic-bezier(0.2, 0.8, 0.2, 1.3)",
+            "rotate 240ms cubic-bezier(0.2, 0.8, 0.2, 1.3)",
+            "scale 240ms cubic-bezier(0.2, 0.8, 0.2, 1.3)",
+          ].join(", "),
         },
         "@media (hover: hover)": {
-          "&:hover .status-icon": {
-            transform: "translateY(-5px) scale(1.12) rotate(-4deg)",
-          },
+          "&:hover .status-icon": { translate: "0 -5px", scale: "1.12", rotate: "-4deg" },
         },
         "&.Mui-focusVisible .status-icon": {
-          transform: "translateY(-5px) scale(1.12) rotate(-4deg)",
+          translate: "0 -5px",
+          scale: "1.12",
+          rotate: "-4deg",
         },
-        "&:active .status-icon": { transform: "scale(1.02)" },
+        "&:active .status-icon": { translate: "0", rotate: "0deg", scale: "1.02" },
         "@media (prefers-reduced-motion: reduce)": {
           "& .status-icon": { transition: "none" },
           "&:hover .status-icon, &.Mui-focusVisible .status-icon": {
-            transform: "scale(1.06)",
+            translate: "0",
+            rotate: "0deg",
+            scale: "1.06",
           },
         },
         "&.Mui-focusVisible": { outline: "2px solid #fff3bd", outlineOffset: 2 },
